@@ -6,67 +6,85 @@
   <title>Wander Ease 數位會員中心</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <style>
     /* 🤎 專屬品牌色系 */
-    :root { --brand-bg: #efe8df; --brand-charcoal: #2c2c2f; --brand-brown: #795238; --brand-brown-hover: #5e3f2b; --brand-white: #ffffff; }
+    :root {
+      --brand-bg: #efe8df;       
+      --brand-charcoal: #2c2c2f; 
+      --brand-brown: #795238;    
+      --brand-brown-hover: #5e3f2b; 
+      --brand-white: #ffffff;    
+    }
+
     body { background-color: var(--brand-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--brand-charcoal); padding-bottom: 50px; }
     
-    .header-img { width: 100%; height: 160px; background: var(--brand-charcoal); color: var(--brand-white); display: flex; align-items: center; justify-content: center; flex-direction: column; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: 0.3s;}
+    /* 頂部形象區 */
+    .header-img { width: 100%; height: 160px; background: var(--brand-charcoal); color: var(--brand-white); display: flex; align-items: center; justify-content: center; flex-direction: column; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .header-img-mini { height: 100px; border-radius: 0 0 20px 20px; }
     
+    /* 質感卡片設定 */
     .card-custom { border: none; border-radius: 16px; box-shadow: 0 8px 24px rgba(44,44,47,0.06); background: var(--brand-white); padding: 24px; position: relative; }
-    .overlap-top { margin-top: -30px; }
+    .overlap-top { margin-top: -30px; } 
     .card-order { border: 1px solid #e0d8d0; border-radius: 16px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); background: var(--brand-white); margin-bottom: 20px; overflow: hidden; }
     
+    /* 按鈕與表單 */
     .btn-brand { background-color: var(--brand-brown); color: var(--brand-white); border-radius: 12px; padding: 14px; font-weight: 600; font-size: 16px; border: none; width: 100%; transition: 0.2s; }
-    .btn-brand:hover { background-color: var(--brand-brown-hover); color: var(--brand-white); }
+    .btn-brand:hover, .btn-brand:active { background-color: var(--brand-brown-hover); color: var(--brand-white); }
+    .btn-outline-brand { border: 1.5px solid var(--brand-brown); color: var(--brand-brown); border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; background: transparent; transition: 0.2s; }
+    .btn-outline-brand:hover, .btn-outline-brand:active { background-color: var(--brand-brown); color: var(--brand-white); }
     
     .form-label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-    .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; }
+    .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; width: 100%; }
     .form-control:focus { border-color: var(--brand-brown); box-shadow: 0 0 0 3px rgba(121,82,56,0.15); background-color: var(--brand-white); }
     
+    /* 📦 訂單明細精緻排版 */
     .order-header { background-color: #fbfaf9; padding: 16px 20px; border-bottom: 1px solid #efe8df; display: flex; justify-content: space-between; align-items: center; }
-    .order-header h6 { margin: 0; font-weight: 700; font-size: 15px; max-width: 68%; }
+    .order-header h6 { margin: 0; font-weight: 700; color: var(--brand-charcoal); font-size: 15px; line-height: 1.4; max-width: 68%; }
     .order-body { padding: 20px; }
     
     .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; color: #444; }
+    .item-name { flex: 1; padding-right: 15px; line-height: 1.4; }
     .item-qty { color: #888; font-size: 12px; margin-left: 6px; font-weight: 600; }
+    .item-price { font-weight: 500; }
     
+    /* 財務小計區塊 */
     .summary-box { background: #fdfcfb; padding: 14px 16px; border-radius: 12px; margin-top: 14px; border: 1px solid #f2ebe1; }
     .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: #666; }
     .total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--brand-charcoal); margin-top: 10px; padding-top: 10px; border-top: 1.5px dashed #e0d8d0; }
     
-    .info-item { display: flex; justify-content: space-between; font-size: 13px; margin-top:8px;}
+    /* 附加資訊區塊 */
+    .info-box { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .info-item { display: flex; justify-content: space-between; font-size: 13px; }
     .info-label { color: #888; font-weight: 500; }
-    .info-value { font-weight: 600; }
+    .info-value { font-weight: 600; color: var(--brand-charcoal); }
     
     .pay-info-box { background: #f6f0ea; padding: 14px; border-radius: 10px; font-size: 13px; color: var(--brand-brown-hover); line-height: 1.6; margin-top: 16px; }
     .note-box { background: #f8f9fa; border: 1px solid #eee; padding: 14px; border-radius: 10px; font-size: 13px; color: #555; line-height: 1.6; margin-top: 12px; }
     
-    .badge-status { padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    /* 狀態標籤 */
+    .badge-status { padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
     .status-done { background-color: #eef5ee; color: #436b46; } 
     .status-pending { background-color: #fdf3f2; color: #a95a52; } 
     
-    /* 畫面切換 */
-    .view-section { display: none; animation: fadeIn 0.5s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* 載入動畫 */
+    .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; }
+    .spinner-border { color: var(--brand-brown); }
   </style>
 </head>
 <body>
 
-  <div id="loadingArea" class="view-section" style="display:block;">
+  <div id="loadingArea" style="display:block;">
     <div class="header-img header-img-mini">
         <h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4>
     </div>
-    <div class="text-center mt-5">
-      <div class="spinner-border" style="color: var(--brand-brown);" role="status"></div>
-      <p class="mt-3 fw-bold text-secondary" id="loadingText">安全連線中，請稍候...</p>
+    <div class="loader-overlay mt-5">
+      <div class="spinner-border mb-3" role="status"></div>
+      <p class="small text-muted fw-bold">安全連線中，請稍候...</p>
     </div>
   </div>
 
-  <div id="bindArea" class="view-section">
+  <div id="bindArea" style="display:none;">
     <div class="header-img">
       <h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2>
       <p class="small mt-2 mb-0" style="color: #d1c8c1;">數位會員中心</p>
@@ -74,123 +92,167 @@
     <div class="container">
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
-        <div class="mb-3"><label class="form-label">📱 完整的手機號碼</label><input type="tel" id="bindPhone" class="form-control" placeholder="0912345678"></div>
-        <div class="mb-3"><label class="form-label"✉️ 常用 Email</label><input type="email" id="bindEmail" class="form-control" placeholder="your@email.com"></div>
-        <div class="mb-4"><label class="form-label">👤 社群名稱 (必填)</label><input type="text" id="bindName" class="form-control" placeholder="例如：林小美"></div>
+        
+        <div class="mb-3">
+          <label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label>
+          <input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678">
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label>
+          <input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com">
+        </div>
+        
+        <div class="mb-4">
+          <label class="form-label">👤 過去常填的社群名稱 <span class="text-danger fw-bold">*</span></label>
+          <input type="text" id="bindName" class="form-control" placeholder="請填寫您跟團時使用的名稱">
+        </div>
+        
         <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
       </div>
     </div>
   </div>
 
-  <div id="homeArea" class="view-section">
+  <div id="homeArea" style="display:none;">
     <div class="header-img header-img-mini">
       <h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4>
     </div>
+    
     <div class="container pt-4">
       <div class="text-center mb-4">
         <h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5>
         <p class="small mt-2" style="color: #888;">歡迎來到您的專屬數位空間</p>
       </div>
-      <div id="ordersContainer"></div>
+      
+      <div id="ordersContainer">
+        <div class="card card-custom p-4 text-center" id="fetchPromptCard">
+          <div class="mb-3" style="font-size: 32px; color: var(--brand-brown);"><i class="bi bi-box2-heart"></i></div>
+          <h6 class="fw-bold mb-2">我的歷史訂單</h6>
+          <p class="small text-muted mb-4">點擊下方按鈕，為您同步最新訂單資訊。</p>
+          <button class="btn-outline-brand" onclick="fetchOldOrders()" id="btnFetch">
+            <i class="bi bi-arrow-clockwise me-1"></i> 載入訂單紀錄
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  
   <script>
-    // ⚠️ 這裡請換成您剛剛在 GAS 按下「部署」後產生的 Web App URL！
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
-    
-    // 我們剛剛拿到的 LIFF ID
+    // ⚠️ 您的 GAS 網址與 LIFF ID
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
-    let currentUserProfile = null;
+    let currentLineUid = "";
 
-    // 1. 初始化 LIFF SDK (0.1秒無痕登入的魔法)
-    async function initializeLiff() {
+    // 1. 初始化 LINE LIFF (自動登入拿 UID)
+    window.onload = async function() {
         try {
             await liff.init({ liffId: LIFF_ID });
             if (!liff.isLoggedIn()) {
-                // 如果不是在 LINE 裡面開，強迫他登入
                 liff.login();
             } else {
-                // 已登入，抓取個人資料
-                currentUserProfile = await liff.getProfile();
-                document.getElementById('bindName').value = currentUserProfile.displayName;
-                document.getElementById('loadingText').innerText = "驗證身分中...";
-                checkUserBinding(currentUserProfile.userId);
+                const profile = await liff.getProfile();
+                currentLineUid = profile.userId;
+                // (已移除自動帶入 LINE 暱稱的設定，保持輸入框留白)
+                checkMemberStatus(); // 向 GAS 檢查身分
             }
         } catch (err) {
-            document.getElementById('loadingArea').innerHTML = `<div class="text-center mt-5 text-danger fw-bold">系統連線失敗，請稍後再試。</div>`;
+            alert("LINE 登入失敗，請確認在 LINE 內部開啟。");
+            document.getElementById('loadingArea').style.display = 'none';
         }
-    }
+    };
 
-    // 2. 呼叫 GAS API 檢查是否綁定過
-    async function checkUserBinding(uid) {
+    // 2. 檢查是否綁定過
+    async function checkMemberStatus() {
         try {
-            const response = await fetch(`${GAS_API_URL}?action=getMemberData&lineUid=${uid}`);
-            const data = await response.json();
+            const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
+            const serverData = await res.json();
 
             document.getElementById('loadingArea').style.display = 'none';
 
-            if (data.status === "BOUND") {
+            if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
-                document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${data.userData["社群名稱/姓名"]}`;
-                renderOrders(data.orders);
+                document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
             } else {
                 document.getElementById('bindArea').style.display = 'block';
             }
         } catch (err) {
-            alert("獲取資料失敗：" + err.message);
+            document.getElementById('loadingArea').style.display = 'none';
+            alert("系統連線異常，請稍後再試。");
         }
     }
 
-    // 3. 執行會員綁定 (使用 POST 傳送，避免網址過長)
+    // 3. 執行綁定 (用 POST 打 API 給 GAS)
     async function executeBind() {
-        const phone = document.getElementById('bindPhone').value.trim();
-        const email = document.getElementById('bindEmail').value.trim();
-        const name = document.getElementById('bindName').value.trim();
-        if(!phone || !name) return alert("手機號碼與社群名稱為必填！");
+      const phone = document.getElementById('bindPhone').value.trim();
+      const email = document.getElementById('bindEmail').value.trim();
+      const name = document.getElementById('bindName').value.trim();
+      
+      // 增加防呆：3個欄位皆為必填
+      if(!phone || !email || !name) return alert("手機號碼、Email 與社群名稱皆為必填欄位！");
 
-        const btn = document.getElementById('btnBind');
-        btn.innerText = "資料寫入中..."; btn.disabled = true;
+      const btn = document.getElementById('btnBind');
+      btn.innerText = "資料寫入中..."; btn.disabled = true;
 
-        try {
-            const response = await fetch(GAS_API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
-                    action: 'bindUser',
-                    lineUid: currentUserProfile.userId,
-                    phone: phone,
-                    email: email,
-                    name: name
-                })
-            });
-            const data = await response.json();
-            
-            if(data.status === "SUCCESS") {
-                // 綁定成功，重新拉取資料
-                document.getElementById('bindArea').style.display = 'none';
-                document.getElementById('loadingArea').style.display = 'block';
-                document.getElementById('loadingText').innerText = "為您準備專屬資料中...";
-                checkUserBinding(currentUserProfile.userId);
-            } else {
-                alert("綁定失敗: " + data.message);
-                btn.innerText = "確認綁定"; btn.disabled = false; 
-            }
-        } catch (err) {
-            alert("網路錯誤：" + err.message);
-            btn.innerText = "確認綁定"; btn.disabled = false; 
-        }
+      try {
+          const res = await fetch(GAS_WEB_APP_URL, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: new URLSearchParams({
+                  action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name
+              })
+          });
+          const data = await res.json();
+          if(data.status === "SUCCESS") {
+             document.getElementById('bindArea').style.display = 'none';
+             document.getElementById('homeArea').style.display = 'block';
+             document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
+          } else { 
+             alert("發生錯誤: " + data.message); 
+             btn.innerText="確認綁定"; btn.disabled=false; 
+          }
+      } catch(e) { 
+          alert("網路錯誤"); 
+          btn.innerText="確認綁定"; btn.disabled=false; 
+      }
     }
 
-    // 4. 渲染高級卡片
-    function renderOrders(orders) {
+    // 4. 載入與渲染訂單
+    async function fetchOldOrders() {
+      const container = document.getElementById('ordersContainer');
+      container.innerHTML = `
+        <div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">為您撈取歷史訂單中...</p></div>
+      `;
+
+      try {
+          const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
+          const data = await res.json();
+          renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
+      } catch(err) {
+          container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`;
+      }
+    }
+
+    // 5. 渲染高級卡片介面
+    function renderOrders(res) {
       const container = document.getElementById('ordersContainer');
       
+      if (res.status === "ERROR") {
+        container.innerHTML = `
+          <div class="card card-custom text-center p-4">
+            <h6 class="fw-bold mb-2">😅 哎呀</h6>
+            <p class="small text-muted mb-0">${res.message}</p>
+          </div>`;
+        return;
+      }
+
+      const orders = res.data.orders;
       if (!orders || orders.length === 0) {
         container.innerHTML = `
-          <div class="card card-custom text-center p-4 mt-3">
-            <div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-box2-heart"></i></div>
+          <div class="card card-custom text-center p-4">
+            <div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div>
             <h6 class="fw-bold text-muted mb-0">目前沒有歷史訂單紀錄</h6>
           </div>`;
         return;
@@ -203,37 +265,48 @@
         const badgeClass = isDone ? 'status-done' : 'status-pending';
 
         let itemsHtml = order.items.map(i => `
-          <div class="item-row"><div class="item-name">${i.name} <span class="item-qty">x${i.qty}</span></div><div class="item-price">$${i.amount}</div></div>
+          <div class="item-row">
+            <div class="item-name">${i.name} <span class="item-qty">x${i.qty}</span></div>
+            <div class="item-price">$${i.amount}</div>
+          </div>
         `).join('');
 
         let detailsHtml = '';
         if (order.last5) detailsHtml += `<div class="info-item"><span class="info-label">匯款後五碼</span><span class="info-value">${order.last5}</span></div>`;
         if (order.payDeadline) detailsHtml += `<div class="info-item"><span class="info-label">匯款期限</span><span class="info-value text-danger">${order.payDeadline}</span></div>`;
         
-        let payInfoHtml = order.payInfo ? `<div class="pay-info-box"><i class="bi bi-credit-card-2-front me-1"></i> <b>匯款資訊</b><div class="mt-1">${String(order.payInfo).replace(/\n/g, '<br>')}</div></div>` : '';
-        let noteHtml = order.note ? `<div class="note-box"><i class="bi bi-chat-text me-1"></i> <b>備註：</b>${order.note}</div>` : '';
+        let payInfoHtml = '';
+        if (order.payInfo) payInfoHtml = `<div class="pay-info-box"><i class="bi bi-credit-card-2-front me-1"></i> <b>匯款資訊</b><div class="mt-1">${String(order.payInfo).replace(/\n/g, '<br>')}</div></div>`;
+
+        let noteHtml = '';
+        if (order.note) noteHtml = `<div class="note-box"><i class="bi bi-chat-text me-1"></i> <b>備註：</b>${order.note}</div>`;
 
         html += `
           <div class="card-order">
-            <div class="order-header"><h6 class="text-truncate">${order.label}</h6><span class="badge-status ${badgeClass}">${order.payStatus}</span></div>
+            <div class="order-header">
+              <h6 class="text-truncate">${order.label}</h6>
+              <span class="badge-status ${badgeClass}">${order.payStatus}</span>
+            </div>
+            
             <div class="order-body">
               <div class="mb-3">${itemsHtml}</div>
+              
               <div class="summary-box">
                 <div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
                 <div class="summary-row"><span>運費</span><span>$${order.ship}</span></div>
                 <div class="total-row"><span>應付總額</span><span style="color: var(--brand-brown);">$${order.due}</span></div>
               </div>
-              ${detailsHtml ? `<div class="mt-3">${detailsHtml}</div>` : ''}
+              
+              ${detailsHtml ? `<div class="info-box">${detailsHtml}</div>` : ''}
               ${payInfoHtml}
               ${noteHtml}
             </div>
-          </div>`;
+          </div>
+        `;
       });
+
       container.innerHTML = html;
     }
-
-    // 啟動魔法！
-    initializeLiff();
   </script>
 </body>
 </html>
