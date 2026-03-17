@@ -128,7 +128,7 @@
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
     <div class="loader-overlay mt-5">
         <div class="spinner-border mb-3" role="status"></div>
-        <p class="small text-muted fw-bold">🔒 安全驗證中，為您打造專屬空間...</p>
+        <p class="small text-muted fw-bold">🔒 安全驗證中，即將進入您的專屬空間...</p>
     </div>
   </div>
 
@@ -210,7 +210,7 @@
     // 🌟 動畫：文字輪播 (降低撈訂單的體感時間)
     let fetchInterval;
     function startFetchAnimation() {
-        const texts = ["連線至雲端資料庫...", "正在為您比對訂單明細...", "運算最新貨況進度...", "即將完成，請稍候..."];
+        const texts = ["專屬資料載入中...", "正在載入訂單紀錄...", "更新最新貨況進度...", "即將完成，再一下下...", "Mini Orm：0+5 = 1..2..3..4."];
         let i = 0;
         document.getElementById('carouselText').innerText = texts[0];
         fetchInterval = setInterval(() => {
@@ -224,7 +224,7 @@
       container.innerHTML = `
         <div class="loader-overlay">
             <div class="spinner-border mb-3" role="status"></div>
-            <div id="carouselText" class="text-carousel">連線至雲端資料庫...</div>
+            <div id="carouselText" class="text-carousel">訂單紀錄載入完成...</div>
         </div>`;
       
       startFetchAnimation();
