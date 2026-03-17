@@ -15,6 +15,12 @@
       --brand-brown: #795238;    
       --brand-brown-hover: #5e3f2b; 
       --brand-white: #ffffff;    
+      
+      /* 前台專屬軌道進度配色 */
+      --track-bg: #e0d8d0;
+      --track-active: #795238; 
+      --track-final: #2c2c2f;
+      --track-muted: #b8b0a8;
     }
 
     body { background-color: var(--brand-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--brand-charcoal); padding-bottom: 50px; }
@@ -26,7 +32,6 @@
     /* 質感卡片設定 */
     .card-custom { border: none; border-radius: 16px; box-shadow: 0 8px 24px rgba(44,44,47,0.06); background: var(--brand-white); padding: 24px; position: relative; }
     .overlap-top { margin-top: -30px; } 
-    .card-order { border: 1px solid #e0d8d0; border-radius: 16px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); background: var(--brand-white); margin-bottom: 20px; overflow: hidden; }
     
     /* 按鈕與表單 */
     .btn-brand { background-color: var(--brand-brown); color: var(--brand-white); border-radius: 12px; padding: 14px; font-weight: 600; font-size: 16px; border: none; width: 100%; transition: 0.2s; }
@@ -38,100 +43,107 @@
     .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; width: 100%; }
     .form-control:focus { border-color: var(--brand-brown); box-shadow: 0 0 0 3px rgba(121,82,56,0.15); background-color: var(--brand-white); }
     
-    /* 📦 訂單明細精緻排版 */
-    .order-header { background-color: #fbfaf9; padding: 16px 20px; border-bottom: 1px solid #efe8df; display: flex; justify-content: space-between; align-items: center; }
-    .order-header h6 { margin: 0; font-weight: 700; color: var(--brand-charcoal); font-size: 15px; line-height: 1.4; max-width: 68%; }
-    .order-body { padding: 20px; }
-    
-    .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; color: #444; }
-    .item-name { flex: 1; padding-right: 15px; line-height: 1.4; }
-    .item-qty { color: #888; font-size: 12px; margin-left: 6px; font-weight: 600; }
-    .item-price { font-weight: 500; }
-    
-    /* 財務小計區塊 */
-    .summary-box { background: #fdfcfb; padding: 14px 16px; border-radius: 12px; margin-top: 14px; border: 1px solid #f2ebe1; }
-    .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: #666; }
-    .total-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: 700; color: var(--brand-charcoal); margin-top: 10px; padding-top: 10px; border-top: 1.5px dashed #e0d8d0; }
-    
-    /* 附加資訊區塊 */
-    .info-box { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-    .info-item { display: flex; justify-content: space-between; font-size: 13px; }
-    .info-label { color: #888; font-weight: 500; }
-    .info-value { font-weight: 600; color: var(--brand-charcoal); }
-    
-    .pay-info-box { background: #f6f0ea; padding: 14px; border-radius: 10px; font-size: 13px; color: var(--brand-brown-hover); line-height: 1.6; margin-top: 16px; }
-    .note-box { background: #f8f9fa; border: 1px solid #eee; padding: 14px; border-radius: 10px; font-size: 13px; color: #555; line-height: 1.6; margin-top: 12px; }
-    
-    /* 狀態標籤 */
-    .badge-status { padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
-    .status-done { background-color: #eef5ee; color: #436b46; } 
-    .status-pending { background-color: #fdf3f2; color: #a95a52; } 
-    
     /* 載入動畫 */
     .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; }
     .spinner-border { color: var(--brand-brown); }
+
+    /* =========================================
+       🛒 前台專屬：完美移植卡片 UI 
+       ========================================= */
+    .sim-card { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
+    .sim-card-header { background-color: #fbfaf9; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+    .sim-card-header:hover { background-color: #f6f0ea; }
+    .sim-card-title { font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; margin: 0; display: flex; align-items: center; }
+    .sim-card-title-prefix { color: var(--brand-charcoal); margin-right: 8px; }
+    .sim-card-title-divider { color: #ccc; margin: 0 8px; font-weight: 300; }
+    
+    /* 右上角 Badge 變更為品牌色系 */
+    .sim-status-badge { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 4px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+    .sim-status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
+    
+    .sim-card-content { display: none; border-top: 1px dashed #e0d8d0; padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
+    .sim-card-content.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* 📢 公告區塊 */
+    .sim-notice-box { background-color: #fdfcfb; border-left: 4px solid var(--brand-brown); padding: 15px; margin: 0 20px 20px 20px; border-radius: 4px; font-size: 14px; color: var(--brand-charcoal); font-weight: bold; line-height: 1.6; text-align: left; }
+    
+    /* 🚀 軌道式貨況進度圖 (品牌色版) */
+    .sim-progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
+    .sim-progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+    .sim-tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
+    .sim-tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: var(--track-bg); z-index: 0; }
+    .sim-tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
+    
+    .sim-step-dot { width: 32px; height: 32px; border-radius: 50%; background-color: var(--brand-white); border: 3px solid var(--track-muted); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 0 4px var(--brand-white); margin-bottom: 8px; transition: 0.3s; }
+    .sim-step-dot.active { background-color: var(--track-active); border-color: var(--track-active); }
+    .sim-step-dot.final { border-color: var(--track-final); }
+    .sim-step-dot.final.active { background-color: var(--track-final); }
+    
+    .sim-step-label { font-size: 12px; font-weight: bold; color: var(--track-active); text-align: center; margin-bottom: 4px; white-space: nowrap; }
+    .sim-step-label.muted { color: var(--track-muted); }
+    .sim-step-label.final { color: var(--track-final); }
+    .sim-step-pct { font-size: 16px; font-weight: 900; color: var(--brand-charcoal); }
+    .sim-step-pct.muted { color: var(--track-muted); }
+
+    /* 📦 淺底色明細與總金額框 */
+    .sim-order-details-box { background-color: #fbfaf9; border: 1px solid #e0d8d0; border-radius: 12px; margin: 0 20px 20px 20px; padding: 15px 20px; }
+    .sim-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e0d8d0; font-size: 14.5px; color: var(--brand-charcoal); }
+    .sim-item-row:first-child { padding-top: 0; }
+    .sim-item-name { font-weight: 700; line-height: 1.4; }
+    .sim-item-qty { color: #888; margin-left: 8px; font-size: 12px; font-weight: 600; }
+    
+    .sim-summary-divider { height: 1px; border-top: 1px dashed #e0d8d0; margin: 15px 0; }
+    .sim-summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
+    
+    .sim-last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
+    .sim-last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    
+    /* 編輯後五碼按鈕 */
+    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; }
+    .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); }
+
+    .sim-total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
+    .sim-total-price { color: var(--brand-brown); }
+    
+    /* 🏦 銀行匯款與備註資訊區 */
+    .sim-bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
+    .sim-bank-title { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .sim-bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: var(--brand-charcoal); white-space: pre-wrap; line-height: 1.6; }
+    .sim-bank-warning { font-size: 13px; font-weight: bold; color: #a95a52; margin-top: 12px; }
+    .sim-done-note { margin-top: 10px; font-size: 13.5px; font-weight: 700; color: var(--brand-brown); background-color: #f6f0ea; padding: 8px 12px; border-radius: 8px; display: inline-block; }
   </style>
 </head>
 <body>
 
   <div id="loadingArea" style="display:block;">
-    <div class="header-img header-img-mini">
-        <h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4>
-    </div>
-    <div class="loader-overlay mt-5">
-      <div class="spinner-border mb-3" role="status"></div>
-      <p class="small text-muted fw-bold">安全連線中，請稍候...</p>
-    </div>
+    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
+    <div class="loader-overlay mt-5"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">安全連線中，請稍候...</p></div>
   </div>
 
   <div id="bindArea" style="display:none;">
-    <div class="header-img">
-      <h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2>
-      <p class="small mt-2 mb-0" style="color: #d1c8c1;">數位會員中心</p>
-    </div>
+    <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">數位會員中心</p></div>
     <div class="container">
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
-        
-        <div class="mb-3">
-          <label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label>
-          <input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678">
-        </div>
-        
-        <div class="mb-3">
-          <label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label>
-          <input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com">
-        </div>
-        
-        <div class="mb-4">
-          <label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label>
-          <input type="text" id="bindName" class="form-control" placeholder='您在"不是「代購」是泰中毒"群組裡的名稱'>
-        </div>
-        
+        <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
+        <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
+        <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在"不是「代購」是泰中毒"群組裡的名稱'></div>
         <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
       </div>
     </div>
   </div>
 
   <div id="homeArea" style="display:none;">
-    <div class="header-img header-img-mini">
-      <h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4>
-    </div>
-    
+    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
     <div class="container pt-4">
-      <div class="text-center mb-4">
-        <h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5>
-        <p class="small mt-2" style="color: #888;">歡迎來到您的專屬數位空間</p>
-      </div>
-      
+      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5><p class="small mt-2" style="color: #888;">歡迎來到您的專屬數位空間</p></div>
       <div id="ordersContainer">
         <div class="card card-custom p-4 text-center" id="fetchPromptCard">
           <div class="mb-3" style="font-size: 32px; color: var(--brand-brown);"><i class="bi bi-box2-heart"></i></div>
           <h6 class="fw-bold mb-2">我的歷史訂單</h6>
           <p class="small text-muted mb-4">點擊下方按鈕，為您同步最新訂單資訊。</p>
-          <button class="btn-outline-brand" onclick="fetchOldOrders()" id="btnFetch">
-            <i class="bi bi-arrow-clockwise me-1"></i> 載入訂單紀錄
-          </button>
+          <button class="btn-outline-brand" onclick="fetchOldOrders()" id="btnFetch"><i class="bi bi-arrow-clockwise me-1"></i> 載入訂單紀錄</button>
         </div>
       </div>
     </div>
@@ -140,173 +152,239 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <script>
-    // ⚠️ 您的 GAS 網址與 LIFF ID
+    // ⚠️ 請填入你正式的 GAS Web App URL
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
     let currentLineUid = "";
 
-    // 1. 初始化 LINE LIFF (自動登入拿 UID)
     window.onload = async function() {
         try {
             await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) {
-                liff.login();
-            } else {
-                const profile = await liff.getProfile();
-                currentLineUid = profile.userId;
-                // (已移除自動帶入 LINE 暱稱的設定，保持輸入框留白)
-                checkMemberStatus(); // 向 GAS 檢查身分
+            if (!liff.isLoggedIn()) { liff.login(); } 
+            else {
+                const profile = await liff.getProfile(); currentLineUid = profile.userId;
+                checkMemberStatus(); 
             }
-        } catch (err) {
-            alert("LINE 登入失敗，請確認在 LINE 內部開啟。");
-            document.getElementById('loadingArea').style.display = 'none';
-        }
+        } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
     };
 
-    // 2. 檢查是否綁定過
     async function checkMemberStatus() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
             const serverData = await res.json();
-
             document.getElementById('loadingArea').style.display = 'none';
-
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
-            } else {
-                document.getElementById('bindArea').style.display = 'block';
-            }
-        } catch (err) {
-            document.getElementById('loadingArea').style.display = 'none';
-            alert("系統連線異常，請稍後再試。");
-        }
+            } else { document.getElementById('bindArea').style.display = 'block'; }
+        } catch (err) { document.getElementById('loadingArea').style.display = 'none'; alert("系統連線異常，請稍後再試。"); }
     }
 
-    // 3. 執行綁定 (用 POST 打 API 給 GAS)
     async function executeBind() {
-      const phone = document.getElementById('bindPhone').value.trim();
-      const email = document.getElementById('bindEmail').value.trim();
-      const name = document.getElementById('bindName').value.trim();
-      
-      // 增加防呆：3個欄位皆為必填
+      const phone = document.getElementById('bindPhone').value.trim(); const email = document.getElementById('bindEmail').value.trim(); const name = document.getElementById('bindName').value.trim();
       if(!phone || !email || !name) return alert("手機號碼、Email 與社群名稱皆為必填欄位！");
-
-      const btn = document.getElementById('btnBind');
-      btn.innerText = "資料寫入中..."; btn.disabled = true;
+      const btn = document.getElementById('btnBind'); btn.innerText = "資料寫入中..."; btn.disabled = true;
 
       try {
-          const res = await fetch(GAS_WEB_APP_URL, {
-              method: "POST",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: new URLSearchParams({
-                  action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name
-              })
-          });
+          const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name }) });
           const data = await res.json();
           if(data.status === "SUCCESS") {
-             document.getElementById('bindArea').style.display = 'none';
-             document.getElementById('homeArea').style.display = 'block';
+             document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-          } else { 
-             alert("發生錯誤: " + data.message); 
-             btn.innerText="確認綁定"; btn.disabled=false; 
-          }
-      } catch(e) { 
-          alert("網路錯誤"); 
-          btn.innerText="確認綁定"; btn.disabled=false; 
-      }
+          } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
+      } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
 
-    // 4. 載入與渲染訂單
     async function fetchOldOrders() {
       const container = document.getElementById('ordersContainer');
-      container.innerHTML = `
-        <div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">為您撈取歷史訂單中...</p></div>
-      `;
-
+      container.innerHTML = `<div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">為您撈取歷史訂單中...</p></div>`;
       try {
           const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
           const data = await res.json();
           renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
-      } catch(err) {
-          container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`;
-      }
+      } catch(err) { container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; }
     }
 
-    // 5. 渲染高級卡片介面
+    // 🌟 互動功能：修改後五碼 API
+    async function promptEditLast5(orderId, currentLast5) {
+        let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
+        if (newLast5 === null) return; // 按取消
+        newLast5 = newLast5.trim();
+        if (newLast5.length !== 5 || isNaN(newLast5)) return alert("請輸入正確的 5 位數字！");
+
+        const container = document.getElementById('ordersContainer');
+        container.innerHTML = `<div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">正在為您更新帳號資訊...</p></div>`;
+
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ action: 'updateLast5', orderId: orderId, newLast5: newLast5, lineUid: currentLineUid })
+            });
+            const data = await res.json();
+            if (data.status === "SUCCESS") {
+                alert("✅ 修改成功！");
+                fetchOldOrders(); // 重新撈取最新訂單畫面
+            } else {
+                alert("修改失敗：" + data.message);
+                fetchOldOrders(); // 失敗也回復畫面
+            }
+        } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
+    }
+
+    // 🎨 前台專屬渲染引擎 (100% 移植後台模擬器＋變色龍)
     function renderOrders(res) {
-      const container = document.getElementById('ordersContainer');
-      
-      if (res.status === "ERROR") {
-        container.innerHTML = `
-          <div class="card card-custom text-center p-4">
-            <h6 class="fw-bold mb-2">😅 哎呀</h6>
-            <p class="small text-muted mb-0">${res.message}</p>
-          </div>`;
-        return;
-      }
+        const container = document.getElementById('ordersContainer');
+        if (res.status === "ERROR") { container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold mb-2">😅 哎呀</h6><p class="small text-muted mb-0">${res.message}</p></div>`; return; }
+        const orders = res.data.orders;
+        if (!orders || orders.length === 0) { container.innerHTML = `<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有歷史訂單紀錄</h6></div>`; return; }
 
-      const orders = res.data.orders;
-      if (!orders || orders.length === 0) {
-        container.innerHTML = `
-          <div class="card card-custom text-center p-4">
-            <div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div>
-            <h6 class="fw-bold text-muted mb-0">目前沒有歷史訂單紀錄</h6>
-          </div>`;
-        return;
-      }
-
-      let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
-      
-      orders.forEach(order => {
-        const isDone = order.payStatus.includes('完成') || order.payStatus.includes('V') || order.payStatus.includes('無須') || order.payStatus.includes('貨付') || order.payStatus.includes('OK');
-        const badgeClass = isDone ? 'status-done' : 'status-pending';
-
-        let itemsHtml = order.items.map(i => `
-          <div class="item-row">
-            <div class="item-name">${i.name} <span class="item-qty">x${i.qty}</span></div>
-            <div class="item-price">$${i.amount}</div>
-          </div>
-        `).join('');
-
-        let detailsHtml = '';
-        if (order.last5) detailsHtml += `<div class="info-item"><span class="info-label">匯款後五碼</span><span class="info-value">${order.last5}</span></div>`;
-        if (order.payDeadline) detailsHtml += `<div class="info-item"><span class="info-label">匯款期限</span><span class="info-value text-danger">${order.payDeadline}</span></div>`;
+        let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         
-        let payInfoHtml = '';
-        if (order.payInfo) payInfoHtml = `<div class="pay-info-box"><i class="bi bi-credit-card-2-front me-1"></i> <b>匯款資訊</b><div class="mt-1">${String(order.payInfo).replace(/\n/g, '<br>')}</div></div>`;
+        let cardsHtml = orders.map((order, idx) => {
+            let collapseId = `sim-collapse-${idx}`;
+            let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
+            let badgeClass = isPaid ? 'sim-status-done' : 'sim-status-badge'; // 未付款用紅色警告色系
+            let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
 
-        let noteHtml = '';
-        if (order.note) noteHtml = `<div class="note-box"><i class="bi bi-chat-text me-1"></i> <b>備註：</b>${order.note}</div>`;
+            let titleText = escHTML(order.label);
+            let titleHtml = `<div class="sim-card-title">${titleText}</div>`;
+            if (titleText.includes('|')) {
+                let parts = titleText.split('|');
+                titleHtml = `<div class="sim-card-title"><span class="sim-card-title-prefix">${parts[0].trim()}</span><span class="sim-card-title-divider">|</span><span>${parts[1].trim()}</span></div>`;
+            }
 
-        html += `
-          <div class="card-order">
-            <div class="order-header">
-              <h6 class="text-truncate">${order.label}</h6>
-              <span class="badge-status ${badgeClass}">${order.payStatus}</span>
-            </div>
-            
-            <div class="order-body">
-              <div class="mb-3">${itemsHtml}</div>
-              
-              <div class="summary-box">
-                <div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
-                <div class="summary-row"><span>運費</span><span>$${order.ship}</span></div>
-                <div class="total-row"><span>應付總額</span><span style="color: var(--brand-brown);">$${order.due}</span></div>
-              </div>
-              
-              ${detailsHtml ? `<div class="info-box">${detailsHtml}</div>` : ''}
-              ${payInfoHtml}
-              ${noteHtml}
-            </div>
-          </div>
-        `;
-      });
+            let noticeHtml = '';
+            if (order.groupNotice || order.groupMemo) {
+                noticeHtml = `<div class="sim-notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
+            }
 
-      container.innerHTML = html;
+            // 雙軌貨況進度圖
+            let progressHtml = '';
+            if (order.progress) {
+                let p = order.progress;
+                if (p.b1 && p.b1.totalPurchased > 0) {
+                    let t = p.b1.totalPurchased;
+                    let pctTw = Math.round((p.b1.twArrived / t) * 100) || 0;
+                    let pctShipped = Math.round((p.b1.shipped / t) * 100) || 0;
+                    let pctFlight = 0; 
+                    
+                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = ''; let act3 = ''; let act4 = pctTw > 0 ? 'active' : '';
+
+                    progressHtml += `
+                    <div class="sim-progress-wrapper bg-white mb-3">
+                        <div class="sim-progress-title"><span>📦 [非預購款] 貨況</span></div>
+                        <div class="sim-tracker-container">
+                            <div class="sim-tracker-line"></div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act1}"></div><div class="sim-step-label ${act1?'':'muted'}">官方已出貨</div><div class="sim-step-pct ${act1?'':'muted'}">${pctShipped}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act2}"></div><div class="sim-step-label ${act2?'':'muted'}">泰國倉庫到貨</div><div class="sim-step-pct ${act2?'':'muted'}">${pctFlight}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act3}"></div><div class="sim-step-label ${act3?'':'muted'}">海關查驗中</div><div class="sim-step-pct ${act3?'':'muted'}">${pctFlight}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot final ${act4}"></div><div class="sim-step-label final ${act4?'':'muted'}">台灣到貨</div><div class="sim-step-pct final ${act4?'':'muted'}">${pctTw}%</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                
+                if (p.b2 && p.b2.totalPurchased > 0) {
+                    let t = p.b2.totalPurchased;
+                    let pctShipped = Math.round((p.b2.shipped / t) * 100) || 0;
+                    let pctFlight = Math.round((p.b2.flight / t) * 100) || 0;
+                    let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
+                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
+
+                    progressHtml += `
+                    <div class="sim-progress-wrapper bg-white mb-3">
+                        <div class="sim-progress-title"><span>🚚 [預購款] 貨況</span></div>
+                        <div class="sim-tracker-container">
+                            <div class="sim-tracker-line"></div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act1}"></div><div class="sim-step-label ${act1?'':'muted'}">官方已出貨</div><div class="sim-step-pct ${act1?'':'muted'}">${pctShipped}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act2}"></div><div class="sim-step-label ${act2?'':'muted'}">泰國倉庫到貨</div><div class="sim-step-pct ${act2?'':'muted'}">${pctFlight}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot ${act3}"></div><div class="sim-step-label ${act3?'':'muted'}">海關查驗中</div><div class="sim-step-pct ${act3?'':'muted'}">${pctFlight}%</div>
+                            </div>
+                            <div class="sim-tracker-step">
+                                <div class="sim-step-dot final ${act4}"></div><div class="sim-step-label final ${act4?'':'muted'}">台灣到貨</div><div class="sim-step-pct final ${act4?'':'muted'}">${pctTw}%</div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+            }
+
+            let itemsHtml = order.items.map(i => `
+                <div class="sim-item-row">
+                    <div><span class="sim-item-name">${escHTML(i.name)}</span><span class="sim-item-qty">x${i.qty}</span></div>
+                    <div class="fw-bold">$${i.amount}</div>
+                </div>
+            `).join('');
+
+            // ✏️ 修改後五碼按鈕實裝
+            let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
+            let last5ValueHtml = order.last5 ? `<span class="sim-last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal">尚未提供 ${editBtn}</span>`;
+            let last5Html = `<div class="sim-last5-row"><div class="sim-info-label">匯款後五碼</div>${last5ValueHtml}</div>`;
+
+            let detailsBoxHtml = `
+            <div class="sim-order-details-box shadow-sm mb-3">
+                ${itemsHtml}
+                <div class="sim-summary-divider"></div>
+                <div class="sim-summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
+                <div class="sim-summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>
+                ${last5Html}
+                <div class="sim-total-row"><span>應匯款金額</span><span class="sim-total-price">$${order.due}</span></div>
+            </div>`;
+
+            let bankHtml = '';
+            if (isPaid) {
+                let noteHtml = order.personalNote ? `<div class="sim-done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
+                bankHtml = `
+                <div class="sim-bank-info text-center shadow-sm">
+                    <div class="fw-bold text-success fs-5" style="color: #436b46 !important;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>
+                    ${noteHtml}
+                </div>`;
+            } else if (order.groupBankInfo) {
+                let deadlineHtml = order.groupDeadline ? `<span class="text-danger" style="font-size:13px; font-weight:800;">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
+                bankHtml = `
+                <div class="sim-bank-info shadow-sm">
+                    <div class="sim-bank-title d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>
+                        ${deadlineHtml}
+                    </div>
+                    <div class="sim-bank-text">${escHTML(order.groupBankInfo)}</div>
+                    <div class="sim-bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div>
+                </div>`;
+            }
+
+            return `
+            <div class="sim-card">
+                <div class="sim-card-header" onclick="toggleSimCard('${collapseId}')">
+                    ${titleHtml}
+                    <div class="sim-status-badge ${badgeClass}">${escHTML(order.payStatus)}</div>
+                </div>
+                <div id="${collapseId}" class="sim-card-content">
+                    ${noticeHtml}
+                    ${progressHtml}
+                    ${detailsBoxHtml}
+                    ${bankHtml}
+                </div>
+            </div>`;
+        }).join('');
+
+        html += cardsHtml;
+        container.innerHTML = html;
     }
+
+    function toggleSimCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
+    function escHTML(str) { return String(str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
   </script>
 </body>
 </html>
