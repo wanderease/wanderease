@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>Wander Ease 會員中心</title>
+  <title>Wander Ease 數位會員中心</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
@@ -16,7 +16,6 @@
       --brand-brown-hover: #5e3f2b; 
       --brand-white: #ffffff;    
       
-      /* 軌道進度配色 */
       --track-bg: #e0d8d0;
       --track-active: #795238; 
       --track-final: #2c2c2f;
@@ -25,15 +24,12 @@
 
     body { background-color: var(--brand-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--brand-charcoal); padding-bottom: 50px; }
     
-    /* 頂部形象區 */
     .header-img { width: 100%; height: 160px; background: var(--brand-charcoal); color: var(--brand-white); display: flex; align-items: center; justify-content: center; flex-direction: column; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .header-img-mini { height: 100px; border-radius: 0 0 20px 20px; }
     
-    /* 質感卡片設定 */
     .card-custom { border: none; border-radius: 16px; box-shadow: 0 8px 24px rgba(44,44,47,0.06); background: var(--brand-white); padding: 24px; position: relative; }
     .overlap-top { margin-top: -30px; } 
     
-    /* 按鈕與表單 */
     .btn-brand { background-color: var(--brand-brown); color: var(--brand-white); border-radius: 12px; padding: 14px; font-weight: 600; font-size: 16px; border: none; width: 100%; transition: 0.2s; }
     .btn-brand:hover, .btn-brand:active { background-color: var(--brand-brown-hover); color: var(--brand-white); }
     .btn-outline-brand { border: 1.5px solid var(--brand-brown); color: var(--brand-brown); border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; background: transparent; transition: 0.2s; }
@@ -46,25 +42,27 @@
     /* 🌟 UX 優化：多樣化載入動畫 */
     .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; }
     .spinner-border { color: var(--brand-brown); }
+    
     .text-carousel { font-size: 14px; font-weight: bold; color: var(--brand-charcoal); margin-top: 15px; min-height: 20px; }
+    
     .progress-bar-custom { width: 80%; max-width: 250px; height: 6px; background-color: #e0d8d0; border-radius: 10px; margin: 15px auto 0; overflow: hidden; position: relative; }
     .progress-bar-fill { height: 100%; background-color: var(--brand-brown); width: 0%; transition: width 0.5s ease; animation: loadBar 2s infinite ease-in-out; }
     @keyframes loadBar { 0% { width: 10%; transform: translateX(-10%); } 50% { width: 50%; transform: translateX(50%); } 100% { width: 10%; transform: translateX(110%); } }
 
     /* =========================================
-       🛒 前台專屬：卡片 UI 與手風琴
+       🛒 前台專屬：完美移植卡片 UI 
        ========================================= */
     @media (min-width: 768px) { #ordersContainer { max-width: 600px; margin: 0 auto; } }
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
     
-    /* 🌟 主卡片手風琴標題 (保證不跑版) */
     .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
     .order-header:hover { background-color: #f6f0ea; }
     
-    .order-title-container { display: flex; flex-direction: column; flex: 1; min-width: 0; }
-    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    /* 🌟 標題絕對換行設計 (強制 block) */
+    .order-title-container { display: block; flex: 1; min-width: 0; }
+    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; }
+    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; }
     
     .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
     .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
@@ -76,13 +74,11 @@
     /* 📢 公告區塊 (深黃色底 + 深褐色字) */
     .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
     
-    /* 🌟 貨況手風琴開關 */
     .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
     .progress-toggle-btn:hover { background-color: #f6f0ea; }
     .progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
     .progress-content.show { display: block; }
 
-    /* 🚀 軌道式貨況進度圖 */
     .progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
     .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
     .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
@@ -100,7 +96,6 @@
     .step-pct { font-size: 16px; font-weight: 900; color: var(--brand-charcoal); }
     .step-pct.muted { color: var(--track-muted); }
 
-    /* 📦 淺底色明細與總金額框 */
     .details-box { background-color: #fbfaf9; border: 1px solid #e0d8d0; border-radius: 12px; margin: 0 20px 20px 20px; padding: 15px 20px; }
     .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e0d8d0; font-size: 14.5px; color: var(--brand-charcoal); }
     .item-row:first-child { padding-top: 0; }
@@ -113,7 +108,6 @@
     .last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
     .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
     
-    /* 編輯後五碼按鈕 */
     .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
     .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
@@ -121,7 +115,6 @@
     .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
     .total-price { color: #dc3545; }
     
-    /* 🏦 銀行匯款與備註資訊區 */
     .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
     .bank-title { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: var(--brand-charcoal); white-space: pre-wrap; line-height: 1.6; }
@@ -217,7 +210,7 @@
     // 🌟 動畫：文字輪播 (降低撈訂單的體感時間)
     let fetchInterval;
     function startFetchAnimation() {
-        const texts = ["專屬資料載入中...", "努力為您撈取最新進度...", "快好了，再等我一下下...", "連線進行中..."];
+        const texts = ["連線至雲端資料庫...", "正在為您比對訂單明細...", "運算最新貨況進度...", "即將完成，請稍候..."];
         let i = 0;
         document.getElementById('carouselText').innerText = texts[0];
         fetchInterval = setInterval(() => {
@@ -273,14 +266,8 @@
         } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
     }
 
-    // 🌟 主卡片收合控制
-    function toggleOrderCard(id) { 
-        let el = document.getElementById(id); 
-        if (el.classList.contains('show')) el.classList.remove('show'); 
-        else el.classList.add('show'); 
-    }
-
-    // 🌟 貨況手風琴控制
+    function toggleOrderCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
+    
     function toggleProgressCard(id) { 
         if (event) { event.stopPropagation(); }
         let el = document.getElementById(id); 
@@ -310,11 +297,11 @@
             let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
             let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
 
-            // 🌟 完美斷行邏輯 (兼容全形｜與半形|)
+            // 🌟 強制換行的標題設計
             let titleText = escHTML(order.label);
             let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
-            if (/\||｜/.test(titleText)) {
-                let parts = titleText.split(/\||｜/);
+            if (titleText.includes('|')) {
+                let parts = titleText.split('|');
                 titleHtml = `
                 <div class="order-title-container">
                     <span class="order-title-brand">${parts[0].trim()}</span>
@@ -322,7 +309,6 @@
                 </div>`;
             }
 
-            // 📢 深色高警示公告
             let noticeHtml = '';
             if (order.groupNotice || order.groupMemo) {
                 noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
@@ -385,7 +371,6 @@
                 }
             }
 
-            // 🌟 乾淨的明細列表 (無品項狀態)
             let itemsHtml = order.items.map(i => `
                 <div class="item-row">
                     <div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div>
