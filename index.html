@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>Wander Ease 數位會員中心</title>
+  <title>Wander Ease 會員中心</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
@@ -50,22 +50,21 @@
     /* =========================================
        🛒 前台專屬：完美移植卡片 UI (手風琴式)
        ========================================= */
-    /* 🌟 手機滿版優先，電腦版置中限寬 */
-    @media (min-width: 768px) {
-        #ordersContainer { max-width: 600px; margin: 0 auto; }
-    }
+    @media (min-width: 768px) { #ordersContainer { max-width: 600px; margin: 0 auto; } }
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
     
     /* 🌟 點擊標題展開 (手風琴) */
-    .order-header { background-color: #fbfaf9; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+    .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
     .order-header:hover { background-color: #f6f0ea; }
     
-    .order-title { font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; margin: 0; display: flex; align-items: center; }
-    .order-title-prefix { color: var(--brand-charcoal); margin-right: 8px; }
-    .order-title-divider { color: #ccc; margin: 0 8px; font-weight: 300; }
+    /* 🌟 標題垂直斷行設計 */
+    .order-title-container { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+    .order-title-brand { font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.2; margin-bottom: 2px; }
+    .order-title-series { font-weight: 600; color: #666; font-size: 0.95rem; }
     
-    .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 4px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
+    /* 右側 Badge 保證不被壓縮 */
+    .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
     .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
     
     /* 🌟 預設隱藏內容區 */
@@ -73,10 +72,16 @@
     .order-content.show { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* 📢 公告區塊 */
-    .notice-box { background-color: #fdfcfb; border-left: 4px solid var(--brand-brown); padding: 15px; margin: 0 20px 20px 20px; border-radius: 4px; font-size: 14px; color: var(--brand-charcoal); font-weight: bold; line-height: 1.6; text-align: left; }
+    /* 📢 公告區塊 (加深顏色) */
+    .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 4px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
     
-    /* 🚀 軌道式貨況進度圖 (品牌色版) */
+    /* 🌟 貨況手風琴開關 */
+    .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
+    .progress-toggle-btn:hover { background-color: #f6f0ea; }
+    .progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .progress-content.show { display: block; }
+
+    /* 🚀 軌道式貨況進度圖 */
     .progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
     .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
     .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
@@ -111,8 +116,9 @@
     .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
     .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
+    /* 🌟 應匯款金額強制紅色 */
     .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
-    .total-price { color: var(--brand-brown); }
+    .total-price { color: #dc3545; }
     
     /* 🏦 銀行匯款與備註資訊區 */
     .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
@@ -160,7 +166,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <script>
-    // ⚠️ 請填入你「前台系統」真實部署的 Web App URL
+    // ⚠️ 這裡請換回你「前台系統」真實部署的 Web App URL
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
@@ -179,14 +185,12 @@
 
     async function checkMemberStatus() {
         try {
-            // 🌟 修正：進來只驗證身分，不撈訂單，解決轉圈圈很久的問題
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
             const serverData = await res.json();
             document.getElementById('loadingArea').style.display = 'none';
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
-                // 不自動 fetchOldOrders()，讓客人停在首頁
             } else { document.getElementById('bindArea').style.display = 'block'; }
         } catch (err) { document.getElementById('loadingArea').style.display = 'none'; alert("系統連線異常，請稍後再試。"); }
     }
@@ -206,10 +210,9 @@
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
 
-    // 🌟 點擊按鈕後才開始轉圈圈撈訂單
     async function fetchOldOrders() {
       const container = document.getElementById('ordersContainer');
-      container.innerHTML = `<div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">為您撈取最新訂單中...</p></div>`;
+      container.innerHTML = `<div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">努力幫您撈取資料中... (約需幾秒鐘)</p></div>`;
       try {
           const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
           const data = await res.json();
@@ -217,11 +220,8 @@
       } catch(err) { container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; }
     }
 
-    // 🌟 互動功能：修改後五碼
     async function promptEditLast5(orderId, currentLast5) {
-        // 阻止事件冒泡，以免觸發手風琴收合
         if (event) { event.stopPropagation(); }
-
         let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
         if (newLast5 === null) return; 
         newLast5 = newLast5.trim();
@@ -236,21 +236,30 @@
                 body: new URLSearchParams({ action: 'updateLast5', orderId: orderId, newLast5: newLast5, lineUid: currentLineUid })
             });
             const data = await res.json();
-            if (data.status === "SUCCESS") {
-                alert("✅ 帳號修改成功！");
-                fetchOldOrders(); 
-            } else {
-                alert("修改失敗：" + data.message);
-                fetchOldOrders(); 
-            }
+            if (data.status === "SUCCESS") { alert("✅ 帳號修改成功！"); fetchOldOrders(); } 
+            else { alert("修改失敗：" + data.message); fetchOldOrders(); }
         } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
     }
 
-    // 🌟 手風琴收合控制
+    // 🌟 主卡片收合控制
     function toggleOrderCard(id) { 
         let el = document.getElementById(id); 
         if (el.classList.contains('show')) el.classList.remove('show'); 
         else el.classList.add('show'); 
+    }
+
+    // 🌟 貨況進度手風琴控制
+    function toggleProgressCard(id) { 
+        if (event) { event.stopPropagation(); }
+        let el = document.getElementById(id); 
+        let btn = document.getElementById(id + '-btn');
+        if (el.classList.contains('show')) {
+            el.classList.remove('show');
+            btn.innerHTML = '🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';
+        } else { 
+            el.classList.add('show'); 
+            btn.innerHTML = '🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';
+        }
     }
 
     // 🎨 前台專屬渲染引擎
@@ -263,16 +272,23 @@
         let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         
         let cardsHtml = orders.map((order, idx) => {
-            let collapseId = `order-collapse-${idx}`; // 獨立的 ID 供手風琴使用
+            let collapseId = `order-collapse-${idx}`; 
+            let progressCollapseId = `progress-collapse-${idx}`; // 獨立的貨況 ID
+            
             let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
             let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
             let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
 
+            // 🌟 標題以 `|` 斷行，左側改為 Flex Column
             let titleText = escHTML(order.label);
-            let titleHtml = `<div class="order-title">${titleText}</div>`;
+            let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
             if (titleText.includes('|')) {
                 let parts = titleText.split('|');
-                titleHtml = `<div class="order-title"><span class="order-title-prefix">${parts[0].trim()}</span><span class="order-title-divider">|</span><span>${parts[1].trim()}</span></div>`;
+                titleHtml = `
+                <div class="order-title-container">
+                    <span class="order-title-brand">${parts[0].trim()}</span>
+                    <span class="order-title-series">${parts[1].trim()}</span>
+                </div>`;
             }
 
             let noticeHtml = '';
@@ -280,8 +296,9 @@
                 noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
             }
 
-            // 雙軌貨況進度圖
+            // 🌟 貨況進度圖 (包進手風琴 div 內)
             let progressHtml = '';
+            let progressContentHtml = '';
             if (order.progress) {
                 let p = order.progress;
                 
@@ -293,23 +310,15 @@
                     
                     let act1 = pctShipped > 0 ? 'active' : ''; let act2 = ''; let act3 = ''; let act4 = pctTw > 0 ? 'active' : '';
 
-                    progressHtml += `
+                    progressContentHtml += `
                     <div class="progress-wrapper mb-3">
                         <div class="progress-title"><span>📦 [非預購款] 貨況</span></div>
                         <div class="tracker-container">
                             <div class="tracker-line"></div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方已出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國倉庫到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗中</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div>
-                            </div>
+                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
+                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
+                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
+                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
                         </div>
                     </div>`;
                 }
@@ -321,24 +330,26 @@
                     let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
                     let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
 
-                    progressHtml += `
+                    progressContentHtml += `
                     <div class="progress-wrapper mb-3">
                         <div class="progress-title"><span>🚚 [預購款] 貨況</span></div>
                         <div class="tracker-container">
                             <div class="tracker-line"></div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方已出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國倉庫到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗中</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div>
-                            </div>
-                            <div class="tracker-step">
-                                <div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div>
-                            </div>
+                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
+                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
+                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
+                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
                         </div>
+                    </div>`;
+                }
+
+                if (progressContentHtml !== '') {
+                    progressHtml = `
+                    <div id="${progressCollapseId}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">
+                        🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div id="${progressCollapseId}" class="progress-content">
+                        ${progressContentHtml}
                     </div>`;
                 }
             }
@@ -350,7 +361,6 @@
                 </div>
             `).join('');
 
-            // ✏️ 修改後五碼按鈕實裝
             let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
             let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
@@ -386,7 +396,6 @@
                 </div>`;
             }
 
-            // 🌟 將 onClick 綁定到 header，實現手風琴效果
             return `
             <div class="card-order">
                 <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
