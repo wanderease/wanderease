@@ -39,19 +39,13 @@
     .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; width: 100%; }
     .form-control:focus { border-color: var(--brand-brown); box-shadow: 0 0 0 3px rgba(121,82,56,0.15); background-color: var(--brand-white); }
     
-    /* 🌟 UX 優化：多樣化載入動畫 */
     .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; }
     .spinner-border { color: var(--brand-brown); }
-    
     .text-carousel { font-size: 14px; font-weight: bold; color: var(--brand-charcoal); margin-top: 15px; min-height: 20px; }
-    
     .progress-bar-custom { width: 80%; max-width: 250px; height: 6px; background-color: #e0d8d0; border-radius: 10px; margin: 15px auto 0; overflow: hidden; position: relative; }
     .progress-bar-fill { height: 100%; background-color: var(--brand-brown); width: 0%; transition: width 0.5s ease; animation: loadBar 2s infinite ease-in-out; }
     @keyframes loadBar { 0% { width: 10%; transform: translateX(-10%); } 50% { width: 50%; transform: translateX(50%); } 100% { width: 10%; transform: translateX(110%); } }
 
-    /* =========================================
-       🛒 前台專屬：完美移植卡片 UI 
-       ========================================= */
     @media (min-width: 768px) { #ordersContainer { max-width: 600px; margin: 0 auto; } }
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
@@ -59,10 +53,9 @@
     .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
     .order-header:hover { background-color: #f6f0ea; }
     
-    /* 🌟 標題絕對換行設計 (強制 block) */
     .order-title-container { display: block; flex: 1; min-width: 0; }
-    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; }
-    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; }
+    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
     
     .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
     .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
@@ -71,7 +64,6 @@
     .order-content.show { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* 📢 公告區塊 (深黃色底 + 深褐色字) */
     .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
     
     .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
@@ -111,7 +103,6 @@
     .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
     .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
-    /* 🌟 應匯款金額強制紅色 */
     .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
     .total-price { color: #dc3545; }
     
@@ -163,7 +154,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <script>
-    // ⚠️ 這裡請換回你「前台系統」真實部署的 Web App URL
+    // ⚠️ 部署完成後，請務必將下方的網址替換為你「最新的網頁應用程式網址」！
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
@@ -183,13 +174,22 @@
     async function checkMemberStatus() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-            const serverData = await res.json();
+            const text = await res.text();
+            
+            // 🌟 終極錯誤偵測器：如果收到的不是 JSON，直接印出錯誤，不再瞎猜！
+            let serverData;
+            try { serverData = JSON.parse(text); } 
+            catch(e) { throw new Error("API 網址可能未更新或權限設定錯誤。請檢查 GAS_WEB_APP_URL。伺服器回傳：\n" + text.substring(0, 100)); }
+
             document.getElementById('loadingArea').style.display = 'none';
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
             } else { document.getElementById('bindArea').style.display = 'block'; }
-        } catch (err) { document.getElementById('loadingArea').style.display = 'none'; alert("系統連線異常，請稍後再試。"); }
+        } catch (err) { 
+            document.getElementById('loadingArea').style.display = 'none'; 
+            alert("系統連線異常：\n" + err.message); 
+        }
     }
 
     async function executeBind() {
@@ -207,10 +207,9 @@
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
 
-    // 🌟 動畫：文字輪播 (降低撈訂單的體感時間)
     let fetchInterval;
     function startFetchAnimation() {
-        const texts = ["連線至雲端資料庫...", "正在為您比對訂單明細...", "運算最新貨況進度...", "即將完成，請稍候..."];
+        const texts = ["專屬資料載入中...", "努力為您撈取最新進度...", "快好了，再等我一下下...", "連線進行中..."];
         let i = 0;
         document.getElementById('carouselText').innerText = texts[0];
         fetchInterval = setInterval(() => {
@@ -231,7 +230,11 @@
 
       try {
           const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-          const data = await res.json();
+          const text = await res.text();
+          let data;
+          try { data = JSON.parse(text); } 
+          catch(e) { throw new Error("資料解析失敗，請確認 API 網址是否正確。"); }
+
           clearInterval(fetchInterval);
           renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
       } catch(err) { 
@@ -248,7 +251,6 @@
         if (newLast5.length !== 5 || isNaN(newLast5)) return alert("請輸入正確的 5 位數字！");
 
         const container = document.getElementById('ordersContainer');
-        // 🌟 動畫：修改後五碼專用的進度條動畫
         container.innerHTML = `
             <div class="loader-overlay">
                 <div class="progress-bar-custom"><div class="progress-bar-fill"></div></div>
@@ -297,11 +299,10 @@
             let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
             let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
 
-            // 🌟 強制換行的標題設計
             let titleText = escHTML(order.label);
             let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
-            if (titleText.includes('|')) {
-                let parts = titleText.split('|');
+            if (/\||｜/.test(titleText)) {
+                let parts = titleText.split(/\||｜/);
                 titleHtml = `
                 <div class="order-title-container">
                     <span class="order-title-brand">${parts[0].trim()}</span>
@@ -345,6 +346,7 @@
                     let pctShipped = Math.round((p.b2.shipped / t) * 100) || 0;
                     let pctFlight = Math.round((p.b2.flight / t) * 100) || 0;
                     let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
+
                     let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
 
                     progressContentHtml += `
