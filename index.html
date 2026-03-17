@@ -48,11 +48,19 @@
     .spinner-border { color: var(--brand-brown); }
 
     /* =========================================
-       🛒 前台專屬：完美移植卡片 UI 
+       🛒 前台專屬：完美移植卡片 UI (手風琴式)
        ========================================= */
+    /* 🌟 手機滿版優先，電腦版置中限寬 */
+    @media (min-width: 768px) {
+        #ordersContainer { max-width: 600px; margin: 0 auto; }
+    }
+
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
+    
+    /* 🌟 點擊標題展開 (手風琴) */
     .order-header { background-color: #fbfaf9; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
     .order-header:hover { background-color: #f6f0ea; }
+    
     .order-title { font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; margin: 0; display: flex; align-items: center; }
     .order-title-prefix { color: var(--brand-charcoal); margin-right: 8px; }
     .order-title-divider { color: #ccc; margin: 0 8px; font-weight: 300; }
@@ -60,7 +68,9 @@
     .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 4px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; }
     .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
     
-    .order-content { padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
+    /* 🌟 預設隱藏內容區 */
+    .order-content { display: none; border-top: 1px dashed #e0d8d0; padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
+    .order-content.show { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
     /* 📢 公告區塊 */
@@ -68,7 +78,7 @@
     
     /* 🚀 軌道式貨況進度圖 (品牌色版) */
     .progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
-    .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; }
+    .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
     .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
     .tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: var(--track-bg); z-index: 0; }
     .tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
@@ -98,8 +108,8 @@
     .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
     
     /* 編輯後五碼按鈕 */
-    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; }
-    .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); }
+    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
+    .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
     .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
     .total-price { color: var(--brand-brown); }
@@ -126,7 +136,7 @@
         <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
-        <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在"不是「代購」是泰中毒"群組裡的名稱'></div>
+        <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在群組裡的名稱'></div>
         <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
       </div>
     </div>
@@ -150,7 +160,7 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <script>
-    // ⚠️ 這裡請換回你「前台系統」真實部署的 Web App URL！
+    // ⚠️ 請填入你「前台系統」真實部署的 Web App URL
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
@@ -169,13 +179,14 @@
 
     async function checkMemberStatus() {
         try {
+            // 🌟 修正：進來只驗證身分，不撈訂單，解決轉圈圈很久的問題
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
             const serverData = await res.json();
             document.getElementById('loadingArea').style.display = 'none';
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
-                fetchOldOrders(); // 🌟 綁定成功後自動載入訂單
+                // 不自動 fetchOldOrders()，讓客人停在首頁
             } else { document.getElementById('bindArea').style.display = 'block'; }
         } catch (err) { document.getElementById('loadingArea').style.display = 'none'; alert("系統連線異常，請稍後再試。"); }
     }
@@ -191,11 +202,11 @@
           if(data.status === "SUCCESS") {
              document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-             fetchOldOrders();
           } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
 
+    // 🌟 點擊按鈕後才開始轉圈圈撈訂單
     async function fetchOldOrders() {
       const container = document.getElementById('ordersContainer');
       container.innerHTML = `<div class="loader-overlay"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">為您撈取最新訂單中...</p></div>`;
@@ -206,8 +217,11 @@
       } catch(err) { container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; }
     }
 
-    // 🌟 互動功能：修改後五碼 API
+    // 🌟 互動功能：修改後五碼
     async function promptEditLast5(orderId, currentLast5) {
+        // 阻止事件冒泡，以免觸發手風琴收合
+        if (event) { event.stopPropagation(); }
+
         let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
         if (newLast5 === null) return; 
         newLast5 = newLast5.trim();
@@ -223,7 +237,7 @@
             });
             const data = await res.json();
             if (data.status === "SUCCESS") {
-                alert("✅ 修改成功！");
+                alert("✅ 帳號修改成功！");
                 fetchOldOrders(); 
             } else {
                 alert("修改失敗：" + data.message);
@@ -232,7 +246,14 @@
         } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
     }
 
-    // 🎨 前台專屬渲染引擎 (完美移植版)
+    // 🌟 手風琴收合控制
+    function toggleOrderCard(id) { 
+        let el = document.getElementById(id); 
+        if (el.classList.contains('show')) el.classList.remove('show'); 
+        else el.classList.add('show'); 
+    }
+
+    // 🎨 前台專屬渲染引擎
     function renderOrders(res) {
         const container = document.getElementById('ordersContainer');
         if (res.status === "ERROR") { container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold mb-2">😅 哎呀</h6><p class="small text-muted mb-0">${res.message}</p></div>`; return; }
@@ -242,6 +263,7 @@
         let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         
         let cardsHtml = orders.map((order, idx) => {
+            let collapseId = `order-collapse-${idx}`; // 獨立的 ID 供手風琴使用
             let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
             let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
             let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
@@ -258,7 +280,7 @@
                 noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
             }
 
-            // 🌟 雙軌貨況進度圖 (品牌配色)
+            // 雙軌貨況進度圖
             let progressHtml = '';
             if (order.progress) {
                 let p = order.progress;
@@ -269,9 +291,7 @@
                     let pctShipped = Math.round((p.b1.shipped / t) * 100) || 0;
                     let pctFlight = 0; 
                     
-                    let act1 = pctShipped > 0 ? 'active' : ''; 
-                    let act2 = ''; let act3 = ''; 
-                    let act4 = pctTw > 0 ? 'active' : '';
+                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = ''; let act3 = ''; let act4 = pctTw > 0 ? 'active' : '';
 
                     progressHtml += `
                     <div class="progress-wrapper mb-3">
@@ -299,11 +319,7 @@
                     let pctShipped = Math.round((p.b2.shipped / t) * 100) || 0;
                     let pctFlight = Math.round((p.b2.flight / t) * 100) || 0;
                     let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
-
-                    let act1 = pctShipped > 0 ? 'active' : ''; 
-                    let act2 = pctFlight > 0 ? 'active' : ''; 
-                    let act3 = pctFlight > 0 ? 'active' : ''; 
-                    let act4 = pctTw > 0 ? 'active' : '';
+                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
 
                     progressHtml += `
                     <div class="progress-wrapper mb-3">
@@ -370,13 +386,14 @@
                 </div>`;
             }
 
+            // 🌟 將 onClick 綁定到 header，實現手風琴效果
             return `
             <div class="card-order">
-                <div class="order-header">
+                <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
                     ${titleHtml}
                     <div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div>
                 </div>
-                <div class="order-content">
+                <div id="${collapseId}" class="order-content">
                     ${noticeHtml}
                     ${progressHtml}
                     ${detailsBoxHtml}
