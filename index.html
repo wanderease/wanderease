@@ -1,216 +1,228 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <title>Wander Ease 會員中心</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  
-  <style>
-    /* 🤎 專屬品牌色系 */
-    :root {
-      --brand-bg: #efe8df;       
-      --brand-charcoal: #2c2c2f; 
-      --brand-brown: #795238;    
-      --brand-brown-hover: #5e3f2b; 
-      --brand-white: #ffffff;    
-      
-      --track-bg: #e0d8d0;
-      --track-active: #795238; 
-      --track-final: #2c2c2f;
-      --track-muted: #b8b0a8;
-    }
-
-    body { background-color: var(--brand-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--brand-charcoal); padding-bottom: 50px; }
+<style>
+    /* =========================================
+       👑 基礎與表單樣式 
+       ========================================= */
+    .cs-card { border-radius: 12px; border: 1px solid var(--theme-secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); background-color: #fff; margin-bottom: 25px; }
+    .cs-input { border: 1px solid var(--theme-primary); border-radius: 6px; font-weight: bold; color: var(--theme-text-primary); }
+    .cs-input:focus { border-color: var(--theme-text-primary); box-shadow: 0 0 0 2px rgba(130, 112, 129, 0.2); }
+    .cs-table-header { background-color: var(--theme-bg-light); color: var(--theme-text-secondary); font-weight: 700; border-bottom: 2px solid var(--theme-secondary); }
     
-    .header-img { width: 100%; height: 160px; background: var(--brand-charcoal); color: var(--brand-white); display: flex; align-items: center; justify-content: center; flex-direction: column; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .header-img-mini { height: 100px; border-radius: 0 0 20px 20px; }
-    
-    .card-custom { border: none; border-radius: 16px; box-shadow: 0 8px 24px rgba(44,44,47,0.06); background: var(--brand-white); padding: 24px; position: relative; }
-    .overlap-top { margin-top: -30px; } 
-    
-    .btn-brand { background-color: var(--brand-brown); color: var(--brand-white); border-radius: 12px; padding: 14px; font-weight: 600; font-size: 16px; border: none; width: 100%; transition: 0.2s; }
-    .btn-brand:hover, .btn-brand:active { background-color: var(--brand-brown-hover); color: var(--brand-white); }
-    .btn-outline-brand { border: 1.5px solid var(--brand-brown); color: var(--brand-brown); border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; background: transparent; transition: 0.2s; }
-    .btn-outline-brand:hover, .btn-outline-brand:active { background-color: var(--brand-brown); color: var(--brand-white); }
-    
-    .form-label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-    .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; width: 100%; }
-    .form-control:focus { border-color: var(--brand-brown); box-shadow: 0 0 0 3px rgba(121,82,56,0.15); background-color: var(--brand-white); }
-    
-    /* 🌟 UX 優化：多樣化載入動畫 */
-    .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; }
-    .spinner-border { color: var(--brand-brown); }
-    
-    .text-carousel { font-size: 14px; font-weight: bold; color: var(--brand-charcoal); margin-top: 15px; min-height: 20px; }
-    
-    .progress-bar-custom { width: 80%; max-width: 250px; height: 6px; background-color: #e0d8d0; border-radius: 10px; margin: 15px auto 0; overflow: hidden; position: relative; }
-    .progress-bar-fill { height: 100%; background-color: var(--brand-brown); width: 0%; transition: width 0.5s ease; animation: loadBar 2s infinite ease-in-out; }
-    @keyframes loadBar { 0% { width: 10%; transform: translateX(-10%); } 50% { width: 50%; transform: translateX(50%); } 100% { width: 10%; transform: translateX(110%); } }
+    #cs-settings-tbody .form-control { font-size: 14px; line-height: 1.5; padding: 10px; resize: vertical; min-height: 80px; }
+    #cs-settings-tbody input.form-control { min-height: 40px; }
 
     /* =========================================
-       🛒 前台專屬：完美移植卡片 UI 
+       🛒 模擬器卡片主體 
        ========================================= */
-    @media (min-width: 768px) { #ordersContainer { max-width: 600px; margin: 0 auto; } }
-
-    .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
+    .sim-card { background: #ffffff; border-radius: 16px; border: 1px solid #EAE6E1; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 600px; margin-left: auto; margin-right: auto; transition: 0.3s; overflow: hidden; text-align: left; }
     
-    .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
-    .order-header:hover { background-color: #f6f0ea; }
+    .sim-card-header { background-color: #FAF8F5; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
+    .sim-card-header:hover { background-color: #F3F0E9; }
     
     /* 🌟 標題絕對換行設計 (強制 block) */
-    .order-title-container { display: block; flex: 1; min-width: 0; }
-    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; }
-    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; }
+    .sim-card-title-container { display: block; flex: 1; min-width: 0; }
+    .sim-card-title-brand { display: block; font-weight: 900; color: #4A3C49; font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; }
+    .sim-card-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; }
     
-    .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
-    .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
+    .sim-status-badge { background-color: #FFF5F5; color: #D08C8C; border: 1px solid #F5E6E6; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
+    .sim-status-done { background-color: #F0FDF4; color: #2B8A3E; border-color: #DCFCE7; }
     
-    .order-content { display: none; border-top: 1px dashed #e0d8d0; padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
-    .order-content.show { display: block; }
+    .sim-card-content { display: none; border-top: 1px dashed #EAE6E1; padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
+    .sim-card-content.show { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
     /* 📢 公告區塊 (深黃色底 + 深褐色字) */
-    .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
+    .sim-notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
     
-    .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
-    .progress-toggle-btn:hover { background-color: #f6f0ea; }
-    .progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-    .progress-content.show { display: block; }
+    /* 🌟 貨況手風琴開關 */
+    .sim-progress-toggle-btn { background-color: #F8F9FA; border: 1px dashed #DEE2E6; color: #4A3C49; padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
+    .sim-progress-toggle-btn:hover { background-color: #EAE6E1; }
+    .sim-progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+    .sim-progress-content.show { display: block; }
 
-    .progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
-    .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
-    .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
-    .tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: var(--track-bg); z-index: 0; }
-    .tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
+    /* 🚀 軌道式貨況進度圖 */
+    .sim-progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #EAE6E1; border-radius: 12px; background-color: #ffffff; }
+    .sim-progress-title { font-size: 14px; font-weight: 800; color: #4A3C49; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+    .sim-tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
+    .sim-tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: #E3DDF2; z-index: 0; }
+    .sim-tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
     
-    .step-dot { width: 32px; height: 32px; border-radius: 50%; background-color: var(--brand-white); border: 3px solid var(--track-muted); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 0 4px var(--brand-white); margin-bottom: 8px; transition: 0.3s; }
-    .step-dot.active { background-color: var(--track-active); border-color: var(--track-active); }
-    .step-dot.final { border-color: var(--track-final); }
-    .step-dot.final.active { background-color: var(--track-final); }
+    .sim-step-dot { width: 32px; height: 32px; border-radius: 50%; background-color: #fff; border: 3px solid #9B8BA7; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 0 4px #fff; margin-bottom: 8px; transition: 0.3s; }
+    .sim-step-dot.active { background-color: #198754; border-color: #198754; }
+    .sim-step-dot.final { border-color: #827081; }
+    .sim-step-dot.final.active { background-color: #827081; }
     
-    .step-label { font-size: 12px; font-weight: bold; color: var(--track-active); text-align: center; margin-bottom: 4px; white-space: nowrap; }
-    .step-label.muted { color: var(--track-muted); }
-    .step-label.final { color: var(--track-final); }
-    .step-pct { font-size: 16px; font-weight: 900; color: var(--brand-charcoal); }
-    .step-pct.muted { color: var(--track-muted); }
+    .sim-step-label { font-size: 12px; font-weight: bold; color: #198754; text-align: center; margin-bottom: 4px; white-space: nowrap; }
+    .sim-step-label.muted { color: #9B8BA7; }
+    .sim-step-label.final { color: #827081; }
+    .sim-step-pct { font-size: 16px; font-weight: 900; color: #4A3C49; }
+    .sim-step-pct.muted { color: #9B8BA7; }
 
-    .details-box { background-color: #fbfaf9; border: 1px solid #e0d8d0; border-radius: 12px; margin: 0 20px 20px 20px; padding: 15px 20px; }
-    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e0d8d0; font-size: 14.5px; color: var(--brand-charcoal); }
-    .item-row:first-child { padding-top: 0; }
-    .item-name { font-weight: 700; line-height: 1.4; }
-    .item-qty { color: #888; margin-left: 8px; font-size: 12px; font-weight: 600; }
+    /* 📦 淺底色明細與總金額框 */
+    .sim-order-details-box { background-color: #FCFCFC; border: 1px solid #EAE6E1; border-radius: 12px; margin: 0 20px 20px 20px; padding: 15px 20px; }
+    .sim-item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #EAE6E1; font-size: 14.5px; color: #555; }
+    .sim-item-row:first-child { padding-top: 0; }
+    .sim-item-name { color: #555; font-weight: 700; line-height: 1.4; }
+    .sim-item-qty { color: #999; margin-left: 8px; font-size: 13px; font-weight: bold; }
     
-    .summary-divider { height: 1px; border-top: 1px dashed #e0d8d0; margin: 15px 0; }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
+    .sim-summary-divider { height: 1px; border-top: 1px dashed #ccc; margin: 15px 0; }
+    .sim-summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #777; font-weight: 500; }
     
-    .last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
-    .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .sim-last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #555; font-weight: 600; }
+    .sim-last5-value { color: #212529; font-weight: 700; display: flex; align-items: center; gap: 8px; }
     
-    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
-    .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
+    .edit-btn { cursor: pointer; color: var(--theme-primary); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #FAF8F5; border-radius: 4px; transition: 0.2s; border: 1px solid #EAE6E1;}
+    .edit-btn:hover { background-color: var(--theme-primary); color: #fff; border-color: var(--theme-primary);}
 
     /* 🌟 應匯款金額強制紅色 */
-    .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
-    .total-price { color: #dc3545; }
+    .sim-total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #EAE6E1; font-size: 1.15rem; font-weight: 900; color: #4A3C49; }
+    .sim-total-price { color: #dc3545; }
     
-    .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
-    .bank-title { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: var(--brand-charcoal); white-space: pre-wrap; line-height: 1.6; }
-    .bank-warning { font-size: 13px; font-weight: bold; color: #a95a52; margin-top: 12px; }
-    .done-note { margin-top: 10px; font-size: 13.5px; font-weight: 700; color: var(--brand-brown); background-color: #f6f0ea; padding: 8px 12px; border-radius: 8px; display: inline-block; }
-  </style>
-</head>
-<body>
+    /* 🏦 銀行匯款與備註資訊區 */
+    .sim-bank-info { background-color: #F8F9FA; border: 1px solid #DEE2E6; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
+    .sim-bank-title { font-size: 14px; color: #4A3C49; font-weight: 900; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .sim-bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: #212529; white-space: pre-wrap; line-height: 1.6; }
+    .sim-bank-warning { font-size: 13px; font-weight: bold; color: #dc3545; margin-top: 12px; }
+    
+    .sim-done-note { margin-top: 10px; font-size: 13.5px; font-weight: 700; color: #E67700; background-color: #FFF3E0; padding: 8px 12px; border-radius: 6px; display: inline-block; }
 
-  <div id="loadingArea" style="display:block;">
-    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
-    <div class="loader-overlay mt-5">
-        <div class="spinner-border mb-3" role="status"></div>
-        <p class="small text-muted fw-bold">🔒 安全驗證中，即將進入您的專屬空間...</p>
+    /* UX 動畫 */
+    .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; }
+    .text-carousel { font-size: 14px; font-weight: bold; color: var(--theme-primary); margin-top: 15px; min-height: 20px; }
+</style>
+
+<div class="container-fluid p-0 pb-5">
+    <div class="d-flex justify-content-center mb-4">
+        <ul class="nav nav-pills nav-pills-custom shadow-sm bg-white p-2" style="border-radius: 12px;" id="cs-pills-tab" role="tablist">
+            <li class="nav-item"><button class="nav-link active" id="cs-tab-list-btn" data-bs-toggle="pill" data-bs-target="#cs-tab-list" type="button" role="tab">👥 客戶列表</button></li>
+            <li class="nav-item"><button class="nav-link" id="cs-tab-settings-btn" data-bs-toggle="pill" data-bs-target="#cs-tab-settings" type="button" role="tab">⚙️ 查單系統管理</button></li>
+            <li class="nav-item"><button class="nav-link" id="cs-tab-sim-btn" data-bs-toggle="pill" data-bs-target="#cs-tab-sim" type="button" role="tab">🛒 查詢系統模擬器</button></li>
+        </ul>
     </div>
-  </div>
 
-  <div id="bindArea" style="display:none;">
-    <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">數位會員中心</p></div>
-    <div class="container">
-      <div class="card card-custom overlap-top">
-        <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
-        <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
-        <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
-        <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在群組裡的名稱'></div>
-        <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="homeArea" style="display:none;">
-    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
-    <div class="container pt-4">
-      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5><p class="small mt-2" style="color: #888;">歡迎來到您的專屬數位空間</p></div>
-      <div id="ordersContainer">
-        <div class="card card-custom p-4 text-center" id="fetchPromptCard">
-          <div class="mb-3" style="font-size: 32px; color: var(--brand-brown);"><i class="bi bi-box2-heart"></i></div>
-          <h6 class="fw-bold mb-2">我的歷史訂單</h6>
-          <p class="small text-muted mb-4">點擊下方按鈕，為您同步最新訂單資訊。</p>
-          <button class="btn-outline-brand" onclick="fetchOldOrders()" id="btnFetch"><i class="bi bi-arrow-clockwise me-1"></i> 載入訂單紀錄</button>
+    <div class="tab-content" id="cs-pills-tabContent">
+        <div class="tab-pane fade show active" id="cs-tab-list" role="tabpanel">
+            <div class="cs-card p-4">
+                <div class="d-flex justify-content-between align-items-center border-bottom border-theme-secondary pb-3 mb-3 flex-wrap gap-2">
+                    <h5 class="mb-0 fw-bold text-theme-primary"><i class="bi bi-people-fill me-2"></i>全域客戶名單</h5>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check form-switch bg-light p-2 rounded shadow-sm border"><input class="form-check-input ms-0 mt-1" type="checkbox" id="cs-toggle-retail" style="transform: scale(1.2);" checked onchange="csFilterCustomers()"><label class="form-check-label fw-bold text-theme-primary ms-2 me-1" for="cs-toggle-retail">過濾無效散客</label></div>
+                        <button class="btn btn-outline-theme fw-bold shadow-sm" onclick="csLoadAllCustomers()"><i class="bi bi-arrow-clockwise"></i> 重新整理</button>
+                    </div>
+                </div>
+                <input type="text" id="cs-search-input" class="form-control form-control-lg bg-light border-0 mb-3 fw-bold text-theme-primary" placeholder="🔍 即時過濾：輸入手機、Email 或名稱..." onkeyup="csFilterCustomers()">
+                <div id="cs-loading-customers" class="text-center py-5 text-theme-secondary fw-bold" style="display:none;"><div class="spinner-border text-theme-primary mb-2"></div><p>載入中...</p></div>
+                <div class="table-responsive"><table class="table table-hover align-middle"><thead class="cs-table-header" style="white-space: nowrap;"><tr><th>最新社群名稱</th><th>手機號碼</th><th>電子信箱</th><th>歷史名稱</th><th>歷史信箱</th><th class="text-center">會員狀態</th><th class="text-center">操作</th></tr></thead><tbody id="cs-customer-tbody"></tbody></table></div>
+            </div>
         </div>
-      </div>
+
+        <div class="tab-pane fade" id="cs-tab-settings" role="tabpanel">
+            <div class="cs-card p-4" style="border-left: 5px solid var(--theme-primary);">
+                <h5 class="fw-bold mb-4 text-theme-primary">➕ 建立或覆寫開團顯示設定</h5>
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label small fw-bold text-theme-secondary">選擇品牌</label><select id="cs-set-brand" class="form-select cs-input" onchange="csUpdateSeriesDropdown()"></select></div>
+                    <div class="col-md-3"><label class="form-label small fw-bold text-theme-secondary">選擇系列</label><select id="cs-set-series" class="form-select cs-input"></select></div>
+                    <div class="col-md-6"><label class="form-label small fw-bold text-theme-secondary">✨ 自訂前端顯示名稱 (格式建議：品牌 | 系列)</label><input type="text" id="cs-set-title" class="form-control cs-input" placeholder="例如：Always Wonder | IN THE MOOD..."></div>
+                    
+                    <div class="col-md-3"><label class="form-label small fw-bold text-theme-secondary">💰 匯款帳號資訊</label><textarea id="cs-set-bank" class="form-control cs-input" rows="2"></textarea></div>
+                    <div class="col-md-2"><label class="form-label small fw-bold text-theme-secondary">⏰ 匯款期限</label><textarea id="cs-set-deadline" class="form-control cs-input" rows="2" placeholder="例如：4/20 23:59前"></textarea></div>
+                    <div class="col-md-4"><label class="form-label small fw-bold text-theme-secondary">📣 對帳公告 / 📝 備註 (換行區隔)</label><textarea id="cs-set-notice" class="form-control cs-input" rows="2"></textarea></div>
+                    
+                    <div class="col-md-3 d-flex flex-column justify-content-end pb-1">
+                        <div class="form-check form-switch mb-3 p-2 bg-light rounded shadow-sm border"><input class="form-check-input mt-1" type="checkbox" id="cs-set-visible" style="transform: scale(1.3); margin-left: 0.5rem;" checked><label class="form-check-label fw-bold text-danger ms-2" for="cs-set-visible">👁️ 開放客戶前台查詢</label></div>
+                        <button class="btn btn-theme fw-bold w-100 shadow-sm" onclick="csCreateOrUpdateSetting()">💾 儲存寫入設定</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cs-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="fw-bold m-0 text-theme-primary">📋 現有開團設定總覽</h5><button class="btn btn-sm btn-outline-theme fw-bold shadow-sm" onclick="csLoadAllSettings()"><i class="bi bi-arrow-clockwise"></i> 更新列表</button></div>
+                <div id="cs-loading-settings" class="text-center py-3 text-theme-secondary fw-bold" style="display:none;">載入中...</div>
+                <div class="table-responsive"><table class="table table-hover align-middle"><thead class="cs-table-header"><tr><th style="width: 15%">開團標識</th><th style="width: 22%">前端名稱/期限</th><th style="width: 21%">匯款資訊</th><th style="width: 22%">公告與備註</th><th style="width: 10%" class="text-center">開放客查</th><th style="width: 10%" class="text-center">操作</th></tr></thead><tbody id="cs-settings-tbody"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="cs-tab-sim" role="tabpanel">
+            <div class="cs-card p-4 text-center" style="background-color: #F8F9FA;">
+                <h4 class="fw-bold mb-2 text-theme-primary" id="cs-sim-header">🛒 請從「客戶列表」點擊放大鏡進入</h4>
+                <p class="text-muted fw-bold mb-4">本頁面 100% 同步客人在手機上看到的圓角明細卡片</p>
+                <input type="hidden" id="cs-sim-input">
+                <div id="cs-sim-container" class="mt-2 text-center" style="min-height: 300px;"><div class="p-5 rounded border border-2 border-theme-secondary border-dashed text-theme-secondary fw-bold bg-white shadow-sm">等待資料載入中... </div></div>
+            </div>
+        </div>
     </div>
-  </div>
+</div>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  
-  <script>
-    // ⚠️ 這裡請換回你「前台系統」真實部署的 Web App URL
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
-    const LIFF_ID = "2009208139-8lZaYbbd"; 
+<div class="modal fade" id="mergeCustomerModal" data-bs-backdrop="static" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content shadow-lg border-0"><div class="modal-header bg-theme-primary text-white border-0"><h5 class="modal-title fw-bold"><i class="bi bi-diagram-3-fill me-2"></i>合併會員資料</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light p-4"><div class="alert alert-warning border-warning fw-bold small shadow-sm"><i class="bi bi-exclamation-triangle-fill"></i> 系統將會把「散客來源」的歷史訂單全部灌注到「目標主帳號」中，並刪除散客資料。</div><div class="mb-3"><label class="fw-bold text-theme-secondary small mb-1">【 目標主帳號 (留存) 】</label><div class="p-2 bg-white border border-success rounded text-success fw-bold shadow-sm" id="mergeTargetName"></div><input type="hidden" id="mergeTargetId"></div><div class="mb-3"><label class="fw-bold text-theme-secondary small mb-1">【 搜尋並選擇散客來源 (將被整併消滅) 】</label><select id="mergeSourceSelect" class="form-select cs-input fw-bold shadow-sm"></select></div></div><div class="modal-footer border-0 bg-white justify-content-between"><button type="button" class="btn btn-outline-theme fw-bold px-4" data-bs-dismiss="modal">取消</button><button type="button" class="btn btn-danger fw-bold px-4 shadow" id="btnConfirmMerge" onclick="executeMergeCustomer()">確認執行合併</button></div></div></div></div>
 
-    let currentLineUid = "";
+<script>
+    let csAllCustomers = []; let csAllSettings = []; let csSeriesMap = {};
 
-    window.onload = async function() {
-        try {
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); } 
-            else {
-                const profile = await liff.getProfile(); currentLineUid = profile.userId;
-                checkMemberStatus(); 
-            }
-        } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
-    };
+    document.querySelector('button[data-bs-target="#tab_customer_service"]').addEventListener('shown.bs.tab', function (e) {
+        if(csAllCustomers.length === 0) csLoadAllCustomers();
+        if(csAllSettings.length === 0) csLoadAllSettings();
+        csPopulateSettingsDropdowns();
+    });
 
-    async function checkMemberStatus() {
-        try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-            const serverData = await res.json();
-            document.getElementById('loadingArea').style.display = 'none';
-            if (serverData.status === "BOUND") {
-                document.getElementById('homeArea').style.display = 'block';
-                document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
-            } else { document.getElementById('bindArea').style.display = 'block'; }
-        } catch (err) { document.getElementById('loadingArea').style.display = 'none'; alert("系統連線異常，請稍後再試。"); }
+    function csLoadAllCustomers() {
+        document.getElementById('cs-loading-customers').style.display = 'block'; document.getElementById('cs-customer-tbody').innerHTML = '';
+        google.script.run.withSuccessHandler(res => { document.getElementById('cs-loading-customers').style.display = 'none'; if(res.status === "SUCCESS") { csAllCustomers = res.data; csFilterCustomers(); } else alert("載入失敗：" + res.message); }).api_cs_getAllCustomers();
     }
 
-    async function executeBind() {
-      const phone = document.getElementById('bindPhone').value.trim(); const email = document.getElementById('bindEmail').value.trim(); const name = document.getElementById('bindName').value.trim();
-      if(!phone || !email || !name) return alert("手機號碼、Email 與社群名稱皆為必填欄位！");
-      const btn = document.getElementById('btnBind'); btn.innerText = "資料寫入中..."; btn.disabled = true;
-
-      try {
-          const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name }) });
-          const data = await res.json();
-          if(data.status === "SUCCESS") {
-             document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
-             document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-          } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
-      } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
+    function csFilterCustomers() {
+        let kw = document.getElementById('cs-search-input').value.toLowerCase(); let hideRetail = document.getElementById('cs-toggle-retail').checked;
+        let filtered = csAllCustomers.filter(c => { if (hideRetail && !c.status.includes("綁定") && !c.status.includes("影子")) return false; if(kw) { return (c.phone && c.phone.toLowerCase().includes(kw)) || (c.emailNew && c.emailNew.toLowerCase().includes(kw)) || (c.emailOld && c.emailOld.toLowerCase().includes(kw)) || (c.nameNew && c.nameNew.toLowerCase().includes(kw)) || (c.nameOld && c.nameOld.toLowerCase().includes(kw)); } return true; });
+        csRenderCustomers(filtered);
     }
 
-    // 🌟 動畫：文字輪播 (降低撈訂單的體感時間)
+    function csRenderCustomers(data) {
+        const tbody = document.getElementById('cs-customer-tbody'); if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 fw-bold text-theme-secondary bg-white border">無符合資料</td></tr>'; return; }
+        tbody.innerHTML = data.map(r => {
+            let memberClass = r.status.includes('綁定') ? 'text-success fw-bold' : (r.status.includes('影子') ? 'text-primary fw-bold' : 'text-muted'); let safeName = escHTML(r.nameNew || r.nameOld || '未知');
+            return `<tr class="bg-white"><td class="fw-bold text-theme-primary">${r.nameNew || '-'}</td><td class="fw-bold text-dark">${r.phone || '-'}</td><td>${r.emailNew || '-'}</td><td class="text-muted small">${r.nameOld || '-'}</td><td class="text-muted small">${r.emailOld || '-'}</td><td class="text-center ${memberClass} small">${r.status}</td><td class="text-center text-nowrap"><button class="btn btn-sm btn-outline-theme fw-bold shadow-sm rounded-circle me-1" style="width:32px; height:32px; padding:0;" title="模擬查單" onclick="csJumpToSim('${r.id}', '${escapeQuotes(safeName)}')">🔍</button><button class="btn btn-sm btn-theme fw-bold shadow-sm rounded-pill px-3" title="合併散客" onclick="openMergeModal('${r.id}', '${escapeQuotes(safeName)}')">合併</button></td></tr>`;
+        }).join('');
+    }
+
+    function openMergeModal(targetId, targetName) { document.getElementById('mergeTargetId').value = targetId; document.getElementById('mergeTargetName').innerHTML = `✅ ${targetName}`; let select = document.getElementById('mergeSourceSelect'); select.innerHTML = '<option value="">-- 請選擇要消滅的散客資料 --</option>'; let sourceOptions = csAllCustomers.filter(c => c.id !== targetId); sourceOptions.sort((a,b) => { if(!a.lineUid && b.lineUid) return -1; if(a.lineUid && !b.lineUid) return 1; return 0; }); sourceOptions.forEach(c => { select.add(new Option(`❌ ${c.status} - ${c.nameNew || c.nameOld} (${c.phone || c.emailNew || ''})`, c.id)); }); new bootstrap.Modal(document.getElementById('mergeCustomerModal')).show(); }
+    function executeMergeCustomer() { let tId = document.getElementById('mergeTargetId').value; let sId = document.getElementById('mergeSourceSelect').value; if(!sId) return alert("請選擇來源散客資料！"); if(!confirm("確定執行合併？")) return; let btn = document.getElementById('btnConfirmMerge'); btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> 處理中...`; google.script.run.withSuccessHandler(res => { btn.disabled = false; btn.innerHTML = `確認執行合併`; bootstrap.Modal.getInstance(document.getElementById('mergeCustomerModal')).hide(); if(res.status === "SUCCESS") { alert("合併成功！"); csLoadAllCustomers(); } else alert("合併失敗：" + res.message); }).api_cs_mergeCustomers(tId, sId); }
+
+    function csPopulateSettingsDropdowns() { const bSelect = document.getElementById('cs-set-brand'); bSelect.innerHTML = '<option value="">⏳ 載入中...</option>'; google.script.run.withSuccessHandler(res => { if(res.status === "SUCCESS") { csSeriesMap = res.seriesMap; bSelect.innerHTML = '<option value="">請選擇品牌...</option>'; res.brands.forEach(b => bSelect.add(new Option(b, b))); } }).api_cs_getBrandsAndSeries(); }
+    function csUpdateSeriesDropdown() { const brand = document.getElementById('cs-set-brand').value; const sSelect = document.getElementById('cs-set-series'); sSelect.innerHTML = '<option value="">請選擇系列...</option>'; if(brand && csSeriesMap[brand]) csSeriesMap[brand].forEach(s => sSelect.add(new Option(s, s))); }
+    function csLoadAllSettings() { document.getElementById('cs-loading-settings').style.display = 'block'; google.script.run.withSuccessHandler(res => { document.getElementById('cs-loading-settings').style.display = 'none'; if(res.status === "SUCCESS") { csAllSettings = res.data; csRenderSettingsTable(); } }).api_cs_getAllSettings(); }
+    function csRenderSettingsTable() { 
+        const tbody = document.getElementById('cs-settings-tbody'); 
+        if(csAllSettings.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">尚未建立設定</td></tr>'; return; } 
+        tbody.innerHTML = csAllSettings.map(s => `
+            <tr id="set-row-${s.id}" class="bg-white">
+                <td class="fw-bold text-theme-primary">${s.brandName}</td>
+                <td>
+                    <input type="text" class="form-control form-control-sm cs-input mb-2" id="rtitle_${s.id}" value="${s.displayTitle}" placeholder="顯示名稱">
+                    <input type="text" class="form-control form-control-sm cs-input" id="rdeadline_${s.id}" value="${s.deadline || ''}" placeholder="匯款期限">
+                </td>
+                <td><textarea class="form-control form-control-sm cs-input" id="rbank_${s.id}" rows="3">${s.bankInfo}</textarea></td>
+                <td><textarea class="form-control form-control-sm cs-input" id="rnote_${s.id}" rows="3">${s.notice}${s.memo ? '\\n' + s.memo : ''}</textarea></td>
+                <td class="text-center"><input class="form-check-input" type="checkbox" id="rvis_${s.id}" style="transform:scale(1.3)" ${s.isVisible ? 'checked' : ''}></td>
+                <td class="text-center"><button class="btn btn-sm btn-theme fw-bold shadow-sm" onclick="csSaveRowSetting('${s.id}', '${s.brandName}')">💾</button></td>
+            </tr>
+        `).join(''); 
+    }
+    function csCreateOrUpdateSetting() { 
+        let brand = document.getElementById('cs-set-brand').value; let series = document.getElementById('cs-set-series').value; if(!brand || !series) return alert("請選擇品牌與系列！"); 
+        let combinedBrandName = `${brand}-${series}`; let rawNotice = document.getElementById('cs-set-notice').value.split('\n'); 
+        let payload = { recordId: "", brandName: combinedBrandName, displayTitle: document.getElementById('cs-set-title').value, isVisible: document.getElementById('cs-set-visible').checked, bankInfo: document.getElementById('cs-set-bank').value, notice: rawNotice[0] || "", memo: rawNotice[1] || "", deadline: document.getElementById('cs-set-deadline').value }; 
+        let existing = csAllSettings.find(s => s.brandName === combinedBrandName); if(existing) payload.recordId = existing.id; 
+        google.script.run.withSuccessHandler(res => { if(res.status === "SUCCESS") { alert(`✅ 設定寫入成功！`); csLoadAllSettings(); } else alert("儲存失敗：" + res.message); }).api_cs_saveSettings(payload); 
+    }
+    function csSaveRowSetting(recordId, brandName) { 
+        let rawNotice = document.getElementById(`rnote_${recordId}`).value.split('\n'); 
+        let payload = { recordId: recordId, brandName: brandName, displayTitle: document.getElementById(`rtitle_${recordId}`).value, isVisible: document.getElementById(`rvis_${recordId}`).checked, bankInfo: document.getElementById(`rbank_${recordId}`).value, notice: rawNotice[0] || "", memo: rawNotice[1] || "", deadline: document.getElementById(`rdeadline_${recordId}`).value }; 
+        let btn = document.querySelector(`#set-row-${recordId} button`); btn.innerText = "⏳"; 
+        google.script.run.withSuccessHandler(res => { btn.innerText = "💾"; if(res.status === "SUCCESS") { let idx = csAllSettings.findIndex(s => s.id === recordId); if(idx > -1) csAllSettings[idx] = payload; } else alert("更新失敗：" + res.message); }).api_cs_saveSettings(payload); 
+    }
+
+    // 🌟 動畫：文字輪播
     let fetchInterval;
     function startFetchAnimation() {
-        const texts = ["專屬資料載入中...", "正在載入訂單紀錄...", "更新最新貨況進度...", "即將完成，再一下下...", "Mini Orm：0+5 = 1..2..3..4."];
+        const texts = ["專屬資料載入中...", "努力為您撈取最新進度...", "快好了，再等我一下下...", "Mini Orm：汪汪汪！🐾"];
         let i = 0;
         document.getElementById('carouselText').innerText = texts[0];
         fetchInterval = setInterval(() => {
@@ -219,54 +231,177 @@
         }, 1500);
     }
 
-    async function fetchOldOrders() {
-      const container = document.getElementById('ordersContainer');
-      container.innerHTML = `
-        <div class="loader-overlay">
-            <div class="spinner-border mb-3" role="status"></div>
-            <div id="carouselText" class="text-carousel">訂單紀錄載入完成...</div>
-        </div>`;
-      
-      startFetchAnimation();
+    function csJumpToSim(id, name) { let simTabBtn = new bootstrap.Tab(document.getElementById('cs-tab-sim-btn')); simTabBtn.show(); document.getElementById('cs-sim-input').value = id; document.getElementById('cs-sim-header').innerHTML = `🛒 正在模擬 <span class="text-success">${name}</span> 的查單畫面`; csRunSim(); }
 
-      try {
-          const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-          const data = await res.json();
-          clearInterval(fetchInterval);
-          renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
-      } catch(err) { 
-          clearInterval(fetchInterval);
-          container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; 
-      }
-    }
-
-    async function promptEditLast5(orderId, currentLast5) {
-        if (event) { event.stopPropagation(); }
-        let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
-        if (newLast5 === null) return; 
-        newLast5 = newLast5.trim();
-        if (newLast5.length !== 5 || isNaN(newLast5)) return alert("請輸入正確的 5 位數字！");
-
-        const container = document.getElementById('ordersContainer');
-        // 🌟 動畫：修改後五碼專用的進度條動畫
+    function csRunSim() {
+        let id = document.getElementById('cs-sim-input').value.trim();
+        if(!id) return alert("請先從客戶列表點擊放大鏡進入");
+        let container = document.getElementById('cs-sim-container');
         container.innerHTML = `
             <div class="loader-overlay">
-                <div class="progress-bar-custom"><div class="progress-bar-fill"></div></div>
-                <div class="text-carousel">📡 正在加密傳輸您的帳號資訊...</div>
+                <div class="spinner-border mb-3" role="status"></div>
+                <div id="carouselText" class="text-carousel">模擬資料載入中...</div>
             </div>`;
+        startFetchAnimation();
+        
+        google.script.run.withSuccessHandler(res => {
+            clearInterval(fetchInterval);
+            if(res.status === "SUCCESS") {
+                if(res.data.orders.length === 0) { container.innerHTML = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm"><h5 class="text-danger fw-bold m-0">❌ 該客戶目前沒有符合顯示條件的訂單紀錄</h5></div>`; return; }
+                
+                let cardsHtml = res.data.orders.map((order, idx) => {
+                    let collapseId = `sim-collapse-${idx}`;
+                    let progressCollapseId = `sim-progress-collapse-${idx}`;
 
-        try {
-            const res = await fetch(GAS_WEB_APP_URL, {
-                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ action: 'updateLast5', orderId: orderId, newLast5: newLast5, lineUid: currentLineUid })
-            });
-            const data = await res.json();
-            if (data.status === "SUCCESS") { alert("✅ 帳號修改成功！"); fetchOldOrders(); } 
-            else { alert("修改失敗：" + data.message); fetchOldOrders(); }
-        } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
+                    let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
+                    let badgeClass = isPaid ? 'sim-status-done' : 'sim-status-badge';
+                    let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
+
+                    // 🌟 絕對換行的標題設計 (支援全形和半形 | )
+                    let titleText = escHTML(order.label);
+                    let titleHtml = `<div class="sim-card-title-container"><span class="sim-card-title-brand">${titleText}</span></div>`;
+                    if (/\||｜/.test(titleText)) {
+                        let parts = titleText.split(/\||｜/);
+                        titleHtml = `
+                        <div class="sim-card-title-container">
+                            <span class="sim-card-title-brand">${parts[0].trim()}</span>
+                            <span class="sim-card-title-series">${parts[1].trim()}</span>
+                        </div>`;
+                    }
+
+                    // 📢 1. 置頂公告區塊 (深黃色版)
+                    let noticeHtml = '';
+                    if (order.groupNotice || order.groupMemo) {
+                        noticeHtml = `<div class="sim-notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
+                    }
+
+                    // 🌟 2. 雙軌貨況進度圖
+                    let progressHtml = '';
+                    let progressContentHtml = '';
+
+                    if (order.progress) {
+                        let p = order.progress;
+                        
+                        if (p.b1 && p.b1.totalPurchased > 0) {
+                            let t = p.b1.totalPurchased;
+                            let pctTw = Math.round((p.b1.twArrived / t) * 100) || 0;
+                            let pctShipped = Math.round((p.b1.shipped / t) * 100) || 0;
+                            let pctFlight = 0; 
+                            
+                            let act1 = pctShipped > 0 ? 'active' : ''; let act2 = ''; let act3 = ''; let act4 = pctTw > 0 ? 'active' : '';
+
+                            progressContentHtml += `
+                            <div class="sim-progress-wrapper mb-3">
+                                <div class="sim-progress-title"><span>📦 [非預購款] 貨況</span></div>
+                                <div class="sim-tracker-container">
+                                    <div class="sim-tracker-line"></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act1}"></div><div class="sim-step-label ${act1?'':'muted'}">官方出貨</div><div class="sim-step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act2}"></div><div class="sim-step-label ${act2?'':'muted'}">泰國到貨</div><div class="sim-step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act3}"></div><div class="sim-step-label ${act3?'':'muted'}">海關查驗</div><div class="sim-step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot final ${act4}"></div><div class="sim-step-label final ${act4?'':'muted'}">台灣到貨</div><div class="sim-step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
+                                </div>
+                            </div>`;
+                        }
+                        
+                        if (p.b2 && p.b2.totalPurchased > 0) {
+                            let t = p.b2.totalPurchased;
+                            let pctShipped = Math.round((p.b2.shipped / t) * 100) || 0;
+                            let pctFlight = Math.round((p.b2.flight / t) * 100) || 0;
+                            let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
+
+                            let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
+
+                            progressContentHtml += `
+                            <div class="sim-progress-wrapper mb-3">
+                                <div class="sim-progress-title"><span>🚚 [預購款] 貨況</span></div>
+                                <div class="sim-tracker-container">
+                                    <div class="sim-tracker-line"></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act1}"></div><div class="sim-step-label ${act1?'':'muted'}">官方出貨</div><div class="sim-step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act2}"></div><div class="sim-step-label ${act2?'':'muted'}">泰國到貨</div><div class="sim-step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot ${act3}"></div><div class="sim-step-label ${act3?'':'muted'}">海關查驗</div><div class="sim-step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
+                                    <div class="sim-tracker-step"><div class="sim-step-dot final ${act4}"></div><div class="sim-step-label final ${act4?'':'muted'}">台灣到貨</div><div class="sim-step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
+                                </div>
+                            </div>`;
+                        }
+
+                        if (progressContentHtml !== '') {
+                            progressHtml = `
+                            <div id="${progressCollapseId}-btn" class="sim-progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">
+                                🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>
+                            </div>
+                            <div id="${progressCollapseId}" class="sim-progress-content">
+                                ${progressContentHtml}
+                            </div>`;
+                        }
+                    }
+
+                    // 📦 3. 明細與總金額外框
+                    let itemsHtml = order.items.map(i => `
+                        <div class="sim-item-row">
+                            <div><span class="sim-item-name">${escHTML(i.name)}</span><span class="sim-item-qty">x${i.qty}</span></div>
+                            <div class="fw-bold">$${i.amount}</div>
+                        </div>
+                    `).join('');
+
+                    let editBtn = !isPaid ? `<span class="edit-btn" onclick="alert('請前往前台客戶系統進行實際修改')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
+                    let last5ValueHtml = order.last5 ? `<span class="sim-last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
+                    let last5Html = `<div class="sim-last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
+
+                    let detailsBoxHtml = `
+                    <div class="sim-order-details-box shadow-sm mb-3">
+                        ${itemsHtml}
+                        <div class="sim-summary-divider"></div>
+                        <div class="sim-summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
+                        <div class="sim-summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>
+                        ${last5Html}
+                        <div class="sim-total-row"><span>應匯款金額</span><span class="sim-total-price">$${order.due}</span></div>
+                    </div>`;
+
+                    // 🏦 4. 銀行匯款資訊
+                    let bankHtml = '';
+                    if (isPaid) {
+                        let noteHtml = order.personalNote ? `<div class="sim-done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
+                        bankHtml = `
+                        <div class="sim-bank-info text-center shadow-sm">
+                            <div class="fw-bold fs-5" style="color: #436b46;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>
+                            ${noteHtml}
+                        </div>`;
+                    } else if (order.groupBankInfo) {
+                        let deadlineHtml = order.groupDeadline ? `<span class="text-danger" style="font-size:13px; font-weight:800;">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
+                        bankHtml = `
+                        <div class="sim-bank-info shadow-sm">
+                            <div class="sim-bank-title d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-credit-card-fill me-1"></i> 專屬匯款資訊</span>
+                                ${deadlineHtml}
+                            </div>
+                            <div class="sim-bank-text">${escHTML(order.groupBankInfo)}</div>
+                            <div class="sim-bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div>
+                        </div>`;
+                    }
+
+                    return `
+                    <div class="sim-card">
+                        <div class="sim-card-header" onclick="toggleSimCard('${collapseId}')">
+                            ${titleHtml}
+                            <div class="sim-status-badge ${badgeClass}">${escHTML(order.payStatus)}</div>
+                        </div>
+                        <div id="${collapseId}" class="sim-card-content">
+                            ${noticeHtml}
+                            ${progressHtml}
+                            ${detailsBoxHtml}
+                            ${bankHtml}
+                        </div>
+                    </div>`;
+                }).join('');
+
+                container.innerHTML = cardsHtml;
+            } else {
+                container.innerHTML = `<div class="p-5 rounded border border-2 border-danger border-dashed bg-white shadow-sm"><h5 class="text-danger fw-bold m-0">❌ 查詢失敗：${res.message}</h5></div>`;
+            }
+        }).api_cs_getMyOrdersForSim(id); 
     }
 
-    function toggleOrderCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
+    function toggleSimCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
     
     function toggleProgressCard(id) { 
         if (event) { event.stopPropagation(); }
@@ -281,158 +416,6 @@
         }
     }
 
-    function renderOrders(res) {
-        const container = document.getElementById('ordersContainer');
-        if (res.status === "ERROR") { container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold mb-2">😅 哎呀</h6><p class="small text-muted mb-0">${res.message}</p></div>`; return; }
-        const orders = res.data.orders;
-        if (!orders || orders.length === 0) { container.innerHTML = `<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有進行中的訂單紀錄</h6></div>`; return; }
-
-        let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
-        
-        let cardsHtml = orders.map((order, idx) => {
-            let collapseId = `order-collapse-${idx}`; 
-            let progressCollapseId = `progress-collapse-${idx}`; 
-            
-            let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
-            let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
-            let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
-
-            // 🌟 強制換行的標題設計
-            let titleText = escHTML(order.label);
-            let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
-            if (titleText.includes('|')) {
-                let parts = titleText.split('|');
-                titleHtml = `
-                <div class="order-title-container">
-                    <span class="order-title-brand">${parts[0].trim()}</span>
-                    <span class="order-title-series">${parts[1].trim()}</span>
-                </div>`;
-            }
-
-            let noticeHtml = '';
-            if (order.groupNotice || order.groupMemo) {
-                noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
-            }
-
-            let progressHtml = '';
-            let progressContentHtml = '';
-            if (order.progress) {
-                let p = order.progress;
-                
-                if (p.b1 && p.b1.totalPurchased > 0) {
-                    let t = p.b1.totalPurchased;
-                    let pctTw = Math.round((p.b1.twArrived / t) * 100) || 0;
-                    let pctShipped = Math.round((p.b1.shipped / t) * 100) || 0;
-                    let pctFlight = 0; 
-                    
-                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = ''; let act3 = ''; let act4 = pctTw > 0 ? 'active' : '';
-
-                    progressContentHtml += `
-                    <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>📦 [非預購款] 貨況</span></div>
-                        <div class="tracker-container">
-                            <div class="tracker-line"></div>
-                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
-                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
-                        </div>
-                    </div>`;
-                }
-                
-                if (p.b2 && p.b2.totalPurchased > 0) {
-                    let t = p.b2.totalPurchased;
-                    let pctShipped = Math.round((p.b2.shipped / t) * 100) || 0;
-                    let pctFlight = Math.round((p.b2.flight / t) * 100) || 0;
-                    let pctTw = Math.round((p.b2.twArrived / t) * 100) || 0;
-                    let act1 = pctShipped > 0 ? 'active' : ''; let act2 = pctFlight > 0 ? 'active' : ''; let act3 = pctFlight > 0 ? 'active' : ''; let act4 = pctTw > 0 ? 'active' : '';
-
-                    progressContentHtml += `
-                    <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>🚚 [預購款] 貨況</span></div>
-                        <div class="tracker-container">
-                            <div class="tracker-line"></div>
-                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctShipped}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctFlight}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctFlight}%</div></div>
-                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctTw}%</div></div>
-                        </div>
-                    </div>`;
-                }
-
-                if (progressContentHtml !== '') {
-                    progressHtml = `
-                    <div id="${progressCollapseId}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">
-                        🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>
-                    </div>
-                    <div id="${progressCollapseId}" class="progress-content">
-                        ${progressContentHtml}
-                    </div>`;
-                }
-            }
-
-            let itemsHtml = order.items.map(i => `
-                <div class="item-row">
-                    <div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div>
-                    <div class="fw-bold">$${i.amount}</div>
-                </div>
-            `).join('');
-
-            let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
-            let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
-            let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
-
-            let detailsBoxHtml = `
-            <div class="details-box shadow-sm mb-3">
-                ${itemsHtml}
-                <div class="summary-divider"></div>
-                <div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
-                <div class="summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>
-                ${last5Html}
-                <div class="total-row"><span>應匯款金額</span><span class="total-price">$${order.due}</span></div>
-            </div>`;
-
-            let bankHtml = '';
-            if (isPaid) {
-                let noteHtml = order.personalNote ? `<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
-                bankHtml = `
-                <div class="bank-info text-center shadow-sm">
-                    <div class="fw-bold fs-5" style="color: #436b46;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>
-                    ${noteHtml}
-                </div>`;
-            } else if (order.groupBankInfo) {
-                let deadlineHtml = order.groupDeadline ? `<span class="text-danger" style="font-size:13px; font-weight:800;">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
-                bankHtml = `
-                <div class="bank-info shadow-sm">
-                    <div class="bank-title">
-                        <span><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>
-                        ${deadlineHtml}
-                    </div>
-                    <div class="bank-text">${escHTML(order.groupBankInfo)}</div>
-                    <div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div>
-                </div>`;
-            }
-
-            return `
-            <div class="card-order">
-                <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
-                    ${titleHtml}
-                    <div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div>
-                </div>
-                <div id="${collapseId}" class="order-content">
-                    ${noticeHtml}
-                    ${progressHtml}
-                    ${detailsBoxHtml}
-                    ${bankHtml}
-                </div>
-            </div>`;
-        }).join('');
-
-        html += cardsHtml;
-        container.innerHTML = html;
-    }
-
     function escHTML(str) { return String(str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
-  </script>
-</body>
-</html>
+    function escapeQuotes(str) { return String(str||'').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, "&quot;"); }
+</script>
