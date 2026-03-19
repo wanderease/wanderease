@@ -108,7 +108,6 @@
     
     .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
     
-    /* 🌟 修改：讓匯款標題與期限在手機上能彈性換行，不再擠壓 */
     .bank-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
     .bank-title-text { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; display: flex; align-items: center; }
     .bank-deadline { font-size: 13px; font-weight: 800; color: #dc3545; }
@@ -120,6 +119,14 @@
 </head>
 <body>
 
+  <div id="maintenanceArea" style="display:none; text-align: center; padding: 80px 20px; background-color: var(--brand-bg); height: 100vh;">
+    <div style="font-size: 70px; margin-bottom: 20px;">🛠️</div>
+    <h3 class="fw-bold text-danger mb-4" style="letter-spacing: 2px;">系統升級維護中</h3>
+    <div class="card-custom mx-auto" style="max-width: 400px; background-color: var(--brand-white);">
+        <p id="maintenanceMsg" class="fw-bold mb-0" style="color: var(--brand-charcoal); line-height: 1.8; font-size: 16px;"></p>
+    </div>
+  </div>
+
   <div id="loadingArea" style="display:block;">
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
     <div class="loader-overlay mt-5">
@@ -129,7 +136,7 @@
   </div>
 
   <div id="bindArea" style="display:none;">
-    <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">數位會員中心</p></div>
+    <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">會員中心</p></div>
     <div class="container">
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
@@ -183,9 +190,17 @@
             
             let serverData;
             try { serverData = JSON.parse(text); } 
-            catch(e) { throw new Error("API 網址可能未更新或權限設定錯誤。請檢查 GAS_WEB_APP_URL。伺服器回傳：\n" + text.substring(0, 100)); }
+            catch(e) { throw new Error("API 網址可能未更新或權限設定錯誤。"); }
 
             document.getElementById('loadingArea').style.display = 'none';
+            
+            // 🌟 攔截：如果伺服器說維修中，直接顯示維修畫面並停止後續動作
+            if (serverData.status === "MAINTENANCE") {
+                document.getElementById('maintenanceArea').style.display = 'block';
+                document.getElementById('maintenanceMsg').innerText = serverData.message;
+                return; 
+            }
+
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
@@ -240,6 +255,16 @@
           catch(e) { throw new Error("資料解析失敗，請確認 API 網址是否正確。"); }
 
           clearInterval(fetchInterval);
+
+          // 🌟 攔截：如果在按下載入訂單的瞬間，後台剛好開啟了維修模式
+          if (data.status === "MAINTENANCE") {
+              document.getElementById('ordersContainer').innerHTML = ''; // 清空訂單區
+              document.getElementById('homeArea').style.display = 'none'; // 隱藏首頁
+              document.getElementById('maintenanceArea').style.display = 'block'; // 叫出維修畫面
+              document.getElementById('maintenanceMsg').innerText = data.message;
+              return;
+          }
+
           renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
       } catch(err) { 
           clearInterval(fetchInterval);
@@ -406,7 +431,6 @@
                     ${noteHtml}
                 </div>`;
             } else if (order.groupBankInfo) {
-                // 🌟 修正：讓匯款資訊跟期限可以自動換行折疊
                 let deadlineHtml = order.groupDeadline ? `<span class="bank-deadline">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
                 bankHtml = `
                 <div class="bank-info shadow-sm">
