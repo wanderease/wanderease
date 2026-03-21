@@ -347,7 +347,8 @@
             }
 
 // ==========================================
-            // 🌟 核心升級：兼容舊資料 + 尚未出貨提示
+            // ==========================================
+            // 🌟 核心升級：戰情室瀑布流算法 (前台版)
             // ==========================================
             let progressHtml = '';
             let progressContentHtml = '';
@@ -355,20 +356,29 @@
             if (order.progress) {
                 let p = order.progress;
                 
-                // 📦 繪製非預購款 (b1) (加入相容機制)
+                // 📦 繪製非預購款 (b1)
                 if (p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0)) {
                     let t = p.b1.purchased || p.b1.totalPurchased;
-                    let pctStep1 = Math.round(((p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0)) / t) * 100) || 0;
-                    let pctStep2 = Math.round(((p.b1.step2 || 0) / t) * 100) || 0;
-                    let pctStep3 = Math.round(((p.b1.step3 || 0) / t) * 100) || 0;
-                    let pctStep4 = Math.round(((p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0)) / t) * 100) || 0;
                     
-                    let act1 = pctStep1 > 0 ? 'active' : ''; 
-                    let act2 = pctStep2 > 0 ? 'active' : ''; 
-                    let act3 = pctStep3 > 0 ? 'active' : ''; 
-                    let act4 = pctStep4 > 0 ? 'active' : '';
+                    // 1. 抓取歷史累加數據 (燈號用，兼容舊資料)
+                    let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
+                    let rawStep2 = p.b1.step2 || 0;
+                    let rawStep3 = p.b1.step3 || 0;
+                    let rawStep4 = p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0);
+                    
+                    // 2. 扣減出「當下停留」數量，再轉 % 數 (數字用)
+                    let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
+                    let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
+                    let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
+                    let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
+                    
+                    // 3. 燈號判定：只要曾經通過 (數量>0)，燈就保持亮著
+                    let act1 = rawStep1 > 0 ? 'active' : ''; 
+                    let act2 = rawStep2 > 0 ? 'active' : ''; 
+                    let act3 = rawStep3 > 0 ? 'active' : ''; 
+                    let act4 = rawStep4 > 0 ? 'active' : '';
 
-                    let notShippedMsg = (pctStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+                    let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
 
                     progressContentHtml += `
                     <div class="progress-wrapper mb-3">
@@ -384,20 +394,26 @@
                     </div>`;
                 }
                 
-                // 🚚 繪製預購款 (b2) (加入相容機制)
+                // 🚚 繪製預購款 (b2)
                 if (p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0)) {
                     let t = p.b2.purchased || p.b2.totalPurchased;
-                    let pctStep1 = Math.round(((p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0)) / t) * 100) || 0;
-                    let pctStep2 = Math.round(((p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0)) / t) * 100) || 0;
-                    let pctStep3 = Math.round(((p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0)) / t) * 100) || 0;
-                    let pctStep4 = Math.round(((p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0)) / t) * 100) || 0;
+                    
+                    let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0);
+                    let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0);
+                    let rawStep3 = p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0);
+                    let rawStep4 = p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0);
 
-                    let act1 = pctStep1 > 0 ? 'active' : ''; 
-                    let act2 = pctStep2 > 0 ? 'active' : ''; 
-                    let act3 = pctStep3 > 0 ? 'active' : ''; 
-                    let act4 = pctStep4 > 0 ? 'active' : '';
+                    let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
+                    let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
+                    let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
+                    let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
 
-                    let notShippedMsg = (pctStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+                    let act1 = rawStep1 > 0 ? 'active' : ''; 
+                    let act2 = rawStep2 > 0 ? 'active' : ''; 
+                    let act3 = rawStep3 > 0 ? 'active' : ''; 
+                    let act4 = rawStep4 > 0 ? 'active' : '';
+
+                    let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
 
                     progressContentHtml += `
                     <div class="progress-wrapper mb-3">
