@@ -149,16 +149,16 @@
       
       <div id="adminArea" style="display:none;" class="mb-4">
           <div class="card card-custom p-4" style="border: 2px solid var(--brand-brown); background-color: #fffaf5;">
-              <h6 class="fw-bold mb-3" style="color: var(--brand-brown);"><i class="bi bi-incognito me-2"></i>👑 上帝視角模式 (代查訂單)</h6>
+              <h6 class="fw-bold mb-3" style="color: var(--brand-brown);"><i class="bi bi-search me-2"></i>🔍 查詢客戶訂單</h6>
               <div class="input-group mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                  <select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width: 110px; border: 1px solid var(--brand-brown); color: #555;">
+                  <select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width: 130px; border: 1px solid var(--brand-brown); color: #555;">
                       <option value="name">社群名稱</option>
                       <option value="phone">手機號碼</option>
                       <option value="email">Email</option>
                   </select>
                   <input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border: 1px solid var(--brand-brown);" placeholder="請輸入關鍵字...">
               </div>
-              <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-search me-1"></i> 調閱客人的單</button>
+              <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-file-earmark-text me-1"></i> 調閱客人的單</button>
           </div>
       </div>
 
@@ -214,7 +214,7 @@
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
                 
-                // 👑 解鎖上帝視角介面
+                // 👑 解鎖專屬查詢介面
                 if (serverData.isAdmin) {
                     document.getElementById('adminArea').style.display = 'block';
                 }
@@ -236,7 +236,6 @@
           if(data.status === "SUCCESS") {
              document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-             // 綁定後重新檢查是否為管理員
              checkMemberStatus();
           } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
@@ -253,7 +252,7 @@
         }, 1500);
     }
 
-    // 👑 上帝專屬搜尋功能
+    // 👑 專屬搜尋功能
     async function executeAdminSearch() {
         const type = document.getElementById('adminSearchType').value;
         const kw = document.getElementById('adminSearchKeyword').value.trim();
@@ -263,7 +262,7 @@
         container.innerHTML = `
             <div class="loader-overlay">
                 <div class="spinner-border mb-3" role="status"></div>
-                <div id="carouselText" class="text-carousel">👑 正在切換上帝視角調閱資料...</div>
+                <div id="carouselText" class="text-carousel">🔍 正在調閱客戶資料...</div>
             </div>`;
             
         startFetchAnimation("正在大海撈針尋找客人...");
@@ -315,7 +314,7 @@
               return;
           }
 
-          window.lastAdminSearchText = ""; // 正常查詢，清空標題
+          window.lastAdminSearchText = ""; 
           renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
       } catch(err) { 
           clearInterval(fetchInterval);
@@ -370,7 +369,8 @@
         
         let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         if (window.lastAdminSearchText) {
-            titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: #a95a52;"><i class="bi bi-shield-lock-fill me-2"></i>上帝視角：${window.lastAdminSearchText}</h6>`;
+            // 🌟 標題更新為「客戶：XXX」
+            titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: #a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
         }
         
         if (!orders || orders.length === 0) { container.innerHTML = `${titleHtmlStr}<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有進行中的訂單紀錄</h6></div>`; return; }
@@ -404,10 +404,18 @@
             let progressHtml = '';
             let progressContentHtml = '';
             
+            // ==========================================
+            // 🌟 動態判斷貨況標題邏輯
+            // ==========================================
             if (order.progress) {
                 let p = order.progress;
+                let hasB1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
+                let hasB2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
+
+                let titleB1 = (hasB1 && hasB2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
+                let titleB2 = (hasB1 && hasB2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
                 
-                if (p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0)) {
+                if (hasB1) {
                     let t = p.b1.purchased || p.b1.totalPurchased;
                     let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
                     let rawStep2 = p.b1.step2 || 0;
@@ -424,7 +432,7 @@
 
                     progressContentHtml += `
                     <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>📦 [非預購款] 貨況</span></div>
+                        <div class="progress-title"><span>${titleB1}</span></div>
                         <div class="tracker-container">
                             <div class="tracker-line"></div>
                             <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
@@ -436,7 +444,7 @@
                     </div>`;
                 }
                 
-                if (p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0)) {
+                if (hasB2) {
                     let t = p.b2.purchased || p.b2.totalPurchased;
                     let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0);
                     let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0);
@@ -453,7 +461,7 @@
 
                     progressContentHtml += `
                     <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>🚚 [預購款] 貨況</span></div>
+                        <div class="progress-title"><span>${titleB2}</span></div>
                         <div class="tracker-container">
                             <div class="tracker-line"></div>
                             <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
@@ -483,7 +491,6 @@
                 </div>
             `).join('');
 
-            // 👑 上帝視角下，你也可以幫客人修改帳號後五碼！
             let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
             let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
