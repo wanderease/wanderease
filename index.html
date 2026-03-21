@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
   <style>
-    /* 🤎 專屬品牌色系 */
     :root {
       --brand-bg: #efe8df;       
       --brand-charcoal: #2c2c2f; 
@@ -46,13 +45,11 @@
     .progress-bar-fill { height: 100%; background-color: var(--brand-brown); width: 0%; transition: width 0.5s ease; animation: loadBar 2s infinite ease-in-out; }
     @keyframes loadBar { 0% { width: 10%; transform: translateX(-10%); } 50% { width: 50%; transform: translateX(50%); } 100% { width: 10%; transform: translateX(110%); } }
 
-    @media (min-width: 768px) { #ordersContainer { max-width: 600px; margin: 0 auto; } }
+    @media (min-width: 768px) { #ordersContainer, #adminArea { max-width: 600px; margin: 0 auto; } }
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
-    
     .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
     .order-header:hover { background-color: #f6f0ea; }
-    
     .order-title-container { display: block; flex: 1; min-width: 0; }
     .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
     .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -65,7 +62,6 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     
     .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
-    
     .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
     .progress-toggle-btn:hover { background-color: #f6f0ea; }
     .progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
@@ -76,12 +72,10 @@
     .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
     .tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: var(--track-bg); z-index: 0; }
     .tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
-    
     .step-dot { width: 32px; height: 32px; border-radius: 50%; background-color: var(--brand-white); border: 3px solid var(--track-muted); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 0 4px var(--brand-white); margin-bottom: 8px; transition: 0.3s; }
     .step-dot.active { background-color: var(--track-active); border-color: var(--track-active); }
     .step-dot.final { border-color: var(--track-final); }
     .step-dot.final.active { background-color: var(--track-final); }
-    
     .step-label { font-size: 12px; font-weight: bold; color: var(--track-active); text-align: center; margin-bottom: 4px; white-space: nowrap; }
     .step-label.muted { color: var(--track-muted); }
     .step-label.final { color: var(--track-final); }
@@ -93,13 +87,10 @@
     .item-row:first-child { padding-top: 0; }
     .item-name { font-weight: 700; line-height: 1.4; }
     .item-qty { color: #888; margin-left: 8px; font-size: 12px; font-weight: 600; }
-    
     .summary-divider { height: 1px; border-top: 1px dashed #e0d8d0; margin: 15px 0; }
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
-    
     .last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
     .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    
     .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
     .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
@@ -107,11 +98,9 @@
     .total-price { color: #dc3545; }
     
     .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
-    
     .bank-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
     .bank-title-text { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; display: flex; align-items: center; }
     .bank-deadline { font-size: 13px; font-weight: 800; color: #dc3545; }
-    
     .bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: var(--brand-charcoal); white-space: pre-wrap; line-height: 1.6; }
     .bank-warning { font-size: 13px; font-weight: bold; color: #a95a52; margin-top: 12px; }
     .done-note { margin-top: 10px; font-size: 13.5px; font-weight: 700; color: var(--brand-brown); background-color: #f6f0ea; padding: 8px 12px; border-radius: 8px; display: inline-block; }
@@ -142,11 +131,9 @@
     <div class="container">
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
-        
         <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
             <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，可以慢慢輸入不要急~
         </div>
-
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
         <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在群組裡的名稱'></div>
@@ -159,6 +146,22 @@
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
     <div class="container pt-4">
       <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5><p class="small mt-2" style="color: #888;">歡迎來到您的專屬空間</p></div>
+      
+      <div id="adminArea" style="display:none;" class="mb-4">
+          <div class="card card-custom p-4" style="border: 2px solid var(--brand-brown); background-color: #fffaf5;">
+              <h6 class="fw-bold mb-3" style="color: var(--brand-brown);"><i class="bi bi-incognito me-2"></i>👑 上帝視角模式 (代查訂單)</h6>
+              <div class="input-group mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
+                  <select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width: 110px; border: 1px solid var(--brand-brown); color: #555;">
+                      <option value="name">社群名稱</option>
+                      <option value="phone">手機號碼</option>
+                      <option value="email">Email</option>
+                  </select>
+                  <input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border: 1px solid var(--brand-brown);" placeholder="請輸入關鍵字...">
+              </div>
+              <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-search me-1"></i> 調閱客人的單</button>
+          </div>
+      </div>
+
       <div id="ordersContainer">
         <div class="card card-custom p-4 text-center" id="fetchPromptCard">
           <div class="mb-3" style="font-size: 32px; color: var(--brand-brown);"><i class="bi bi-box2-heart"></i></div>
@@ -174,7 +177,7 @@
   
   <script>
     // ⚠️ 部署完成後，請務必將下方的網址替換為你「最新的網頁應用程式網址」！
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxr2BKxs_6LAor4zvuvVIjYTbLVBiKkGTrwExnPeiqaS5FS9i_D_ZjFKfQpvblngz-U/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
     let currentLineUid = "";
@@ -201,7 +204,6 @@
 
             document.getElementById('loadingArea').style.display = 'none';
             
-            // 🌟 攔截：如果伺服器說維修中，直接顯示維修畫面並停止後續動作
             if (serverData.status === "MAINTENANCE") {
                 document.getElementById('maintenanceArea').style.display = 'block';
                 document.getElementById('maintenanceMsg').innerText = serverData.message;
@@ -211,6 +213,11 @@
             if (serverData.status === "BOUND") {
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
+                
+                // 👑 解鎖上帝視角介面
+                if (serverData.isAdmin) {
+                    document.getElementById('adminArea').style.display = 'block';
+                }
             } else { document.getElementById('bindArea').style.display = 'block'; }
         } catch (err) { 
             document.getElementById('loadingArea').style.display = 'none'; 
@@ -229,19 +236,56 @@
           if(data.status === "SUCCESS") {
              document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
+             // 綁定後重新檢查是否為管理員
+             checkMemberStatus();
           } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
 
     let fetchInterval;
-    function startFetchAnimation() {
-        const texts = ["專屬資料載入中...", "努力為您撈取最新進度...", "快好了，再等我一下下...", "連線進行中..."];
+    function startFetchAnimation(customText) {
+        const texts = customText ? [customText, "跨海連線中...", "快好了，再等我一下下..."] : ["專屬資料載入中...", "努力為您撈取最新進度...", "連線進行中..."];
         let i = 0;
         document.getElementById('carouselText').innerText = texts[0];
         fetchInterval = setInterval(() => {
             i = (i + 1) % texts.length;
             document.getElementById('carouselText').innerText = texts[i];
         }, 1500);
+    }
+
+    // 👑 上帝專屬搜尋功能
+    async function executeAdminSearch() {
+        const type = document.getElementById('adminSearchType').value;
+        const kw = document.getElementById('adminSearchKeyword').value.trim();
+        if (!kw) return alert("請輸入查詢關鍵字！");
+        
+        const container = document.getElementById('ordersContainer');
+        container.innerHTML = `
+            <div class="loader-overlay">
+                <div class="spinner-border mb-3" role="status"></div>
+                <div id="carouselText" class="text-carousel">👑 正在切換上帝視角調閱資料...</div>
+            </div>`;
+            
+        startFetchAnimation("正在大海撈針尋找客人...");
+            
+        try {
+            const res = await fetch(GAS_WEB_APP_URL, {
+                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ action: 'adminSearch', lineUid: currentLineUid, searchType: type, keyword: kw })
+            });
+            const data = await res.json();
+            clearInterval(fetchInterval);
+            
+            if (data.status === "SUCCESS") {
+                window.lastAdminSearchText = `【${kw}】的訂單`;
+                renderOrders(data);
+            } else {
+                container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space: pre-wrap;">${data.message}</p></div>`;
+            }
+        } catch(err) {
+            clearInterval(fetchInterval);
+            container.innerHTML = `<div class="alert alert-danger text-center">網路連線錯誤，請重試</div>`;
+        }
     }
 
     async function fetchOldOrders() {
@@ -263,15 +307,15 @@
 
           clearInterval(fetchInterval);
 
-          // 🌟 攔截：如果在按下載入訂單的瞬間，後台剛好開啟了維修模式
           if (data.status === "MAINTENANCE") {
-              document.getElementById('ordersContainer').innerHTML = ''; // 清空訂單區
-              document.getElementById('homeArea').style.display = 'none'; // 隱藏首頁
-              document.getElementById('maintenanceArea').style.display = 'block'; // 叫出維修畫面
+              document.getElementById('ordersContainer').innerHTML = ''; 
+              document.getElementById('homeArea').style.display = 'none'; 
+              document.getElementById('maintenanceArea').style.display = 'block'; 
               document.getElementById('maintenanceMsg').innerText = data.message;
               return;
           }
 
+          window.lastAdminSearchText = ""; // 正常查詢，清空標題
           renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
       } catch(err) { 
           clearInterval(fetchInterval);
@@ -323,9 +367,15 @@
         const container = document.getElementById('ordersContainer');
         if (res.status === "ERROR") { container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold mb-2">😅 哎呀</h6><p class="small text-muted mb-0">${res.message}</p></div>`; return; }
         const orders = res.data.orders;
-        if (!orders || orders.length === 0) { container.innerHTML = `<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有進行中的訂單紀錄</h6></div>`; return; }
+        
+        let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
+        if (window.lastAdminSearchText) {
+            titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: #a95a52;"><i class="bi bi-shield-lock-fill me-2"></i>上帝視角：${window.lastAdminSearchText}</h6>`;
+        }
+        
+        if (!orders || orders.length === 0) { container.innerHTML = `${titleHtmlStr}<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有進行中的訂單紀錄</h6></div>`; return; }
 
-        let html = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
+        let html = titleHtmlStr;
         
         let cardsHtml = orders.map((order, idx) => {
             let collapseId = `order-collapse-${idx}`; 
@@ -351,19 +401,14 @@
                 noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
             }
 
-            // ==========================================
-            // 🌟 核心升級：戰情室瀑布流算法 (前台版)
-            // ==========================================
             let progressHtml = '';
             let progressContentHtml = '';
             
             if (order.progress) {
                 let p = order.progress;
                 
-                // 📦 繪製非預購款 (b1)
                 if (p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0)) {
                     let t = p.b1.purchased || p.b1.totalPurchased;
-                    
                     let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
                     let rawStep2 = p.b1.step2 || 0;
                     let rawStep3 = p.b1.step3 || 0;
@@ -374,11 +419,7 @@
                     let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
                     let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
                     
-                    let act1 = rawStep1 > 0 ? 'active' : ''; 
-                    let act2 = rawStep2 > 0 ? 'active' : ''; 
-                    let act3 = rawStep3 > 0 ? 'active' : ''; 
-                    let act4 = rawStep4 > 0 ? 'active' : '';
-
+                    let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
                     let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
 
                     progressContentHtml += `
@@ -395,10 +436,8 @@
                     </div>`;
                 }
                 
-                // 🚚 繪製預購款 (b2)
                 if (p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0)) {
                     let t = p.b2.purchased || p.b2.totalPurchased;
-                    
                     let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0);
                     let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0);
                     let rawStep3 = p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0);
@@ -409,11 +448,7 @@
                     let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
                     let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
 
-                    let act1 = rawStep1 > 0 ? 'active' : ''; 
-                    let act2 = rawStep2 > 0 ? 'active' : ''; 
-                    let act3 = rawStep3 > 0 ? 'active' : ''; 
-                    let act4 = rawStep4 > 0 ? 'active' : '';
-
+                    let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
                     let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
 
                     progressContentHtml += `
@@ -440,7 +475,6 @@
                     </div>`;
                 }
             }
-            // ==========================================
 
             let itemsHtml = order.items.map(i => `
                 <div class="item-row">
@@ -449,6 +483,7 @@
                 </div>
             `).join('');
 
+            // 👑 上帝視角下，你也可以幫客人修改帳號後五碼！
             let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
             let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
