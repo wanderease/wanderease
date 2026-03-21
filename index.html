@@ -141,7 +141,12 @@
     <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">會員中心</p></div>
     <div class="container">
       <div class="card card-custom overlap-top">
-        <h5 class="fw-bold mb-4 text-center">👋 歡迎加入！初次綁定</h5>
+        <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
+        
+        <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
+            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，可以慢慢輸入不要急~
+        </div>
+
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
         <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在群組裡的名稱'></div>
@@ -169,7 +174,7 @@
   
   <script>
     // ⚠️ 部署完成後，請務必將下方的網址替換為你「最新的網頁應用程式網址」！
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxr2BKxs_6LAor4zvuvVIjYTbLVBiKkGTrwExnPeiqaS5FS9i_D_ZjFKfQpvblngz-U/exec"; 
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
     let currentLineUid = "";
@@ -346,7 +351,6 @@
                 noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
             }
 
-// ==========================================
             // ==========================================
             // 🌟 核心升級：戰情室瀑布流算法 (前台版)
             // ==========================================
@@ -360,19 +364,16 @@
                 if (p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0)) {
                     let t = p.b1.purchased || p.b1.totalPurchased;
                     
-                    // 1. 抓取歷史累加數據 (燈號用，兼容舊資料)
                     let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
                     let rawStep2 = p.b1.step2 || 0;
                     let rawStep3 = p.b1.step3 || 0;
                     let rawStep4 = p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0);
                     
-                    // 2. 扣減出「當下停留」數量，再轉 % 數 (數字用)
                     let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
                     let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
                     let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
                     let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
                     
-                    // 3. 燈號判定：只要曾經通過 (數量>0)，燈就保持亮著
                     let act1 = rawStep1 > 0 ? 'active' : ''; 
                     let act2 = rawStep2 > 0 ? 'active' : ''; 
                     let act3 = rawStep3 > 0 ? 'active' : ''; 
