@@ -47,12 +47,10 @@
 
     @media (min-width: 768px) { #ordersContainer, #adminArea { max-width: 600px; margin: 0 auto; } }
 
-    /* 🌟 升級版：前台專屬的 2x2 質感網格分頁 */
     .sim-nav-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; background: transparent; border: none; padding: 0; }
     .sim-nav-pills .nav-link { border-radius: 12px; font-weight: 800; font-size: 14px; padding: 12px 5px; color: #7a6c5d; border: 1.5px solid #e8d5c4; background: #fff; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); margin: 0; width: 100%;}
     .sim-nav-pills .nav-link.active { background: #e8d5c4; color: #4A3C49; border-color: #e8d5c4; box-shadow: inset 0 0 0 1px #e8d5c4; }
     
-    /* 🌟 升級版：獨立滿版 LINE 聯絡我們按鈕 */
     .btn-contact-line { display: block; width: 100%; background-color: #fff; border: 1.5px solid #e8d5c4; color: #7a6c5d; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 14px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;}
     .btn-contact-line:hover { background: #faf5f0; color: #4A3C49; text-decoration: none;}
 
@@ -200,7 +198,6 @@
         } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
     };
 
-    // 🌟 原生純 JS 分頁切換引擎
     window.switchFrontTab = function(tabId, btnEl) {
         document.querySelectorAll('#innerSimTabs .nav-link').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
@@ -355,7 +352,6 @@
     function renderOrders(orders, promos, globalPages) {
         const container = document.getElementById('ordersContainer');
         
-        // 1. 導購 (解法A: 水平並排 + 垂直置中對齊)
         let promosHtml = '';
         if (promos && promos.length > 0) {
             let pCards = promos.map(p => `
@@ -374,7 +370,6 @@
             promosHtml = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
         }
 
-        // 2. 訂單
         let ordersHtml = '';
         let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         if (window.lastAdminSearchText) {
@@ -432,7 +427,9 @@
                         let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
                         
                         let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+                        
+                        // 🌟 升級版：官方尚未出貨的黃色安撫提醒區塊
+                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
 
                         progressContentHtml += `
                         <div class="progress-wrapper mb-3">
@@ -461,7 +458,9 @@
                         let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
 
                         let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+                        
+                        // 🌟 升級版：官方尚未出貨的黃色安撫提醒區塊
+                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
 
                         progressContentHtml += `
                         <div class="progress-wrapper mb-3">
@@ -548,7 +547,6 @@
             ordersHtml = `<div class="text-start">${titleHtmlStr}${cardsHtml}</div>`;
         }
 
-        // 3. 渲染現貨賣場與代購規則 (恢復左右排版)
         let instockArr = globalPages.instock;
         let instockHtml = '';
         if (instockArr && instockArr.length > 0) {
@@ -574,7 +572,6 @@
             </div>
         `;
 
-        // 4. 組合最終版 Tabs 介面 (拔除超連結改用 button onclick)
         let finalHtml = `
             <div class="sim-nav-pills" id="innerSimTabs" role="tablist">
                 <button class="nav-link active" onclick="switchFrontTab('sim-orders', this)">📦 訂單與貨況</button>
@@ -583,9 +580,9 @@
                 <button class="nav-link" onclick="switchFrontTab('sim-rules', this)">📝 代購規則</button>
             </div>
             
-            <button class="btn-contact-line" onclick="window.open('https://lin.ee/mty4uxj', '_blank')">
+            <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line">
                 <i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)
-            </button>
+            </a>
             
             <div class="tab-content mt-2 text-center" id="innerSimTabsContent">
                 <div class="tab-pane fade show active" id="sim-orders" role="tabpanel">${ordersHtml}</div>
