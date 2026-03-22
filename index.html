@@ -47,10 +47,14 @@
 
     @media (min-width: 768px) { #ordersContainer, #adminArea { max-width: 600px; margin: 0 auto; } }
 
-    /* 🌟 前台專屬的 Tabs 分頁樣式 */
-    .sim-nav-pills { background: #fbfaf9; border-radius: 12px; padding: 4px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 4px; border: 1px solid #e0d8d0;}
-    .sim-nav-pills .nav-link { border-radius: 8px; font-weight: 800; font-size: 13.5px; padding: 10px 0; color: #6c757d; border: none; background: transparent; flex: 1 1 45%; min-width: 110px; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap;}
-    .sim-nav-pills .nav-link.active { background: #fff; color: var(--brand-brown); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+    /* 🌟 升級版：前台專屬的 2x2 質感網格分頁 */
+    .sim-nav-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; background: transparent; border: none; padding: 0; }
+    .sim-nav-pills .nav-link { border-radius: 12px; font-weight: 800; font-size: 14px; padding: 12px 5px; color: #7a6c5d; border: 1.5px solid #e8d5c4; background: #fff; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+    .sim-nav-pills .nav-link.active { background: #e8d5c4; color: #4A3C49; border-color: #e8d5c4; box-shadow: inset 0 0 0 1px #e8d5c4; }
+    
+    /* 🌟 升級版：獨立滿版 LINE 聯絡我們按鈕 */
+    .btn-contact-line { display: block; width: 100%; background-color: #fff; border: 1.5px solid #e8d5c4; color: #7a6c5d; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 14px; text-align: center; text-decoration: none; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: 0.2s; }
+    .btn-contact-line:hover { background: #faf5f0; color: #4A3C49; text-decoration: none;}
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
     .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
@@ -173,14 +177,7 @@
           </div>
       </div>
 
-      <div id="ordersContainer">
-        <div class="card card-custom p-4 text-center" id="fetchPromptCard">
-          <div class="mb-3" style="font-size: 32px; color: var(--brand-brown);"><i class="bi bi-box2-heart"></i></div>
-          <h6 class="fw-bold mb-2">我的歷史訂單</h6>
-          <p class="small text-muted mb-4">點擊下方按鈕，為您同步最新訂單資訊。</p>
-          <button class="btn-outline-brand" onclick="fetchOldOrders()" id="btnFetch"><i class="bi bi-arrow-clockwise me-1"></i> 載入訂單紀錄</button>
-        </div>
-      </div>
+      <div id="ordersContainer"></div>
     </div>
   </div>
 
@@ -205,6 +202,7 @@
         } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
     };
 
+    // 🌟 升級版：登入即載入，無縫銜接
     async function checkMemberStatus() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
@@ -226,13 +224,17 @@
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
                 
-                // 👑 顯示上帝專屬畫面與紅燈警告
                 if (serverData.isAdmin) {
                     document.getElementById('adminArea').style.display = 'block';
                     if (serverData.isUnderMaintenance) {
                         document.getElementById('adminMaintenanceAlert').style.display = 'block';
                     }
                 }
+
+                // 🚀 直接將後台送來的所有資料傳給渲染引擎，實現進站秒開
+                window.lastAdminSearchText = ""; 
+                renderOrders(serverData.orders || [], serverData.promos || [], serverData.globalPages || {rules:{content:''}, instock:[]});
+
             } else { document.getElementById('bindArea').style.display = 'block'; }
         } catch (err) { 
             document.getElementById('loadingArea').style.display = 'none'; 
@@ -251,7 +253,7 @@
           if(data.status === "SUCCESS") {
              document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-             checkMemberStatus();
+             checkMemberStatus(); // 綁定成功後也會重新觸發秒開機制
           } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
@@ -302,42 +304,7 @@
         }
     }
 
-    async function fetchOldOrders() {
-      const container = document.getElementById('ordersContainer');
-      container.innerHTML = `
-        <div class="loader-overlay">
-            <div class="spinner-border mb-3" role="status"></div>
-            <div id="carouselText" class="text-carousel">連線至雲端資料庫...</div>
-        </div>`;
-      
-      startFetchAnimation();
-
-      try {
-          const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-          const text = await res.text();
-          let data;
-          try { data = JSON.parse(text); } 
-          catch(e) { throw new Error("資料解析失敗，請確認 API 網址是否正確。"); }
-
-          clearInterval(fetchInterval);
-
-          if (data.status === "MAINTENANCE") {
-              document.getElementById('ordersContainer').innerHTML = ''; 
-              document.getElementById('homeArea').style.display = 'none'; 
-              document.getElementById('maintenanceArea').style.display = 'block'; 
-              document.getElementById('maintenanceMsg').innerText = data.message;
-              return;
-          }
-
-          window.lastAdminSearchText = ""; 
-          // 🌟 傳入分頁資訊進行渲染
-          renderOrders(data.orders || [], data.promos || [], data.globalPages || {rules:{content:''}, instock:[]});
-      } catch(err) { 
-          clearInterval(fetchInterval);
-          container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; 
-      }
-    }
-
+    // 🌟 更新後五碼後，重新背景抓取並渲染
     async function promptEditLast5(orderId, currentLast5) {
         if (event) { event.stopPropagation(); }
         let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
@@ -358,9 +325,13 @@
                 body: new URLSearchParams({ action: 'updateLast5', orderId: orderId, newLast5: newLast5, lineUid: currentLineUid })
             });
             const data = await res.json();
-            if (data.status === "SUCCESS") { alert("✅ 帳號修改成功！"); fetchOldOrders(); } 
-            else { alert("修改失敗：" + data.message); fetchOldOrders(); }
-        } catch(err) { alert("網路連線錯誤，請稍後再試。"); fetchOldOrders(); }
+            if (data.status === "SUCCESS") { 
+                alert("✅ 帳號修改成功！"); 
+                // 修改成功後背景重新觸發資料讀取
+                checkMemberStatus(); 
+            } 
+            else { alert("修改失敗：" + data.message); checkMemberStatus(); }
+        } catch(err) { alert("網路連線錯誤，請稍後再試。"); checkMemberStatus(); }
     }
 
     function toggleOrderCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
@@ -382,21 +353,23 @@
     function renderOrders(orders, promos, globalPages) {
         const container = document.getElementById('ordersContainer');
         
-        // 1. 產生導購區塊 (Promos) - Flexbox 靠右按鈕排版
+        // 1. 產生導購區塊 (Promos) - 滿版標題與右下角按鈕
         let promosHtml = '';
         if (promos && promos.length > 0) {
             let pCards = promos.map(p => `
-                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:12px 15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:10px;">
-                    <div style="flex:1; min-width:0;">
-                        <h6 style="font-weight:bold; color:var(--brand-brown); margin-bottom:${p.exp ? '4px' : '0'}; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">👑 ${escHTML(p.title)}</h6>
-                        ${p.exp ? `<div style="font-size:12px; color:#dc3545; font-weight:bold; margin-bottom:0;">⏰ 結單：${escHTML(p.exp)}</div>` : ''}
+                <div style="background:#fffaf5; border:1px solid #e8d5c4; border-radius:12px; padding:16px; margin-bottom:12px; text-align:left; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <div style="margin-bottom: 12px;">
+                        <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:0;">👑 ${escHTML(p.title)}</h6>
                     </div>
-                    <button class="shadow-sm" style="background-color:var(--brand-brown); color:#fff; border:none; padding:8px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold;" onclick="window.open('${p.url}', '_blank')">👉 前往填單</button>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div style="font-size:13px; color:#dc3545; font-weight:bold;">${p.exp ? `⏰ 結單: ${escHTML(p.exp)}` : ''}</div>
+                        <button class="shadow-sm" style="background-color:var(--brand-brown); color:#fff; border:none; padding:8px 20px; font-size:14px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.open('${p.url}', '_blank')">👉 前往填單</button>
+                    </div>
                 </div>
             `).join('');
-            promosHtml = `<div class="text-start mt-2">${pCards}</div>`;
+            promosHtml = `<div class="text-start">${pCards}</div>`;
         } else {
-            promosHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="text-secondary fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
+            promosHtml = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
         }
 
         // 2. 產生訂單區塊 (Orders)
@@ -407,7 +380,7 @@
         }
         
         if (!orders || orders.length === 0) { 
-            ordersHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">📦 您目前沒有進行中的訂單</h6></div>`; 
+            ordersHtml = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">📦 您目前沒有進行中的訂單</h6></div>`; 
         } else {
             let cardsHtml = orders.map((order, idx) => {
                 let collapseId = `order-collapse-${idx}`; 
@@ -556,7 +529,7 @@
                 }
 
                 return `
-                <div class="card-order mt-2">
+                <div class="card-order mb-4">
                     <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
                         ${titleHtml}
                         <div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div>
@@ -573,48 +546,46 @@
             ordersHtml = `<div class="text-start">${titleHtmlStr}${cardsHtml}</div>`;
         }
 
-        // 3. 渲染現貨賣場與代購規則
+        // 3. 渲染現貨賣場與代購規則 (滿版標題與右側按鈕)
         let instockArr = globalPages.instock;
         let instockHtml = '';
         if (instockArr && instockArr.length > 0) {
             instockHtml = instockArr.map(store => `
-                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-top:8px;">
-                    <div style="flex:1; min-width:0;">
-                        <h6 style="font-weight:bold; color:var(--brand-charcoal); margin-bottom:${store.content ? '6px' : '0'};"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
-                        ${store.content ? `<div class="text-muted small" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
+                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:16px; margin-bottom:12px; text-align:left; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <div style="margin-bottom: 12px;">
+                        <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:0;"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
                     </div>
-                    ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:10px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
+                    ${store.content ? `<div class="text-muted small mb-3" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
+                    <div style="display:flex; justify-content:flex-end;">
+                        ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:8px 20px; font-size:14px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
+                    </div>
                 </div>
             `).join('');
-            instockHtml = `<div class="text-start mt-2">${instockHtml}</div>`;
+            instockHtml = `<div class="text-start">${instockHtml}</div>`;
         } else {
-            instockHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前尚未開放現貨賣場喔！</h6></div>`;
+            instockHtml = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前尚未開放現貨賣場喔！</h6></div>`;
         }
 
         let rulesData = globalPages.rules;
         let rulesHtml = `
-            <div class="card-order p-4 text-start shadow-sm mt-2">
+            <div class="card-order p-4 text-start shadow-sm mt-0">
                 <h6 class="fw-bold mb-3" style="color: var(--brand-charcoal);"><i class="bi bi-book me-2"></i>Wander Ease 代購與服務規則</h6>
                 <div class="text-muted small" style="line-height: 1.8; white-space: pre-wrap;">${escHTML(rulesData.content || '尚無公告規則。')}</div>
             </div>
         `;
 
-        // 4. 組合最終版 Tabs 介面
+        // 4. 組合最終版 Tabs 介面 (加入聯絡我們獨立滿版按鈕)
         let finalHtml = `
-            <ul class="nav nav-pills sim-nav-pills shadow-sm flex-wrap" id="innerSimTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active w-100" data-bs-toggle="pill" data-bs-target="#sim-orders" type="button" role="tab">📦 我的訂單與貨況</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-promos" type="button" role="tab">🔥 最新開團</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-instock" type="button" role="tab">🛍️ 現貨賣場</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-rules" type="button" role="tab">📝 代購規則</button>
-                </li>
-            </ul>
+            <div class="sim-nav-pills" id="innerSimTabs" role="tablist">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#sim-orders" type="button" role="tab">📦 訂單與貨況</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-promos" type="button" role="tab">🔥 最新開團</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-instock" type="button" role="tab">🛍️ 現貨賣場</button>
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-rules" type="button" role="tab">📝 代購規則</button>
+            </div>
+            
+            <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line">
+                <i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)
+            </a>
             
             <div class="tab-content mt-2 text-center" id="innerSimTabsContent">
                 <div class="tab-pane fade show active" id="sim-orders" role="tabpanel">${ordersHtml}</div>
