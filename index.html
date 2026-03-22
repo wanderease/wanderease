@@ -49,11 +49,11 @@
 
     /* 🌟 升級版：前台專屬的 2x2 質感網格分頁 */
     .sim-nav-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; background: transparent; border: none; padding: 0; }
-    .sim-nav-pills .nav-link { border-radius: 12px; font-weight: 800; font-size: 14px; padding: 12px 5px; color: #7a6c5d; border: 1.5px solid #e8d5c4; background: #fff; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+    .sim-nav-pills .nav-link { border-radius: 12px; font-weight: 800; font-size: 14px; padding: 12px 5px; color: #7a6c5d; border: 1.5px solid #e8d5c4; background: #fff; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.02); margin: 0; width: 100%;}
     .sim-nav-pills .nav-link.active { background: #e8d5c4; color: #4A3C49; border-color: #e8d5c4; box-shadow: inset 0 0 0 1px #e8d5c4; }
     
     /* 🌟 升級版：獨立滿版 LINE 聯絡我們按鈕 */
-    .btn-contact-line { display: block; width: 100%; background-color: #fff; border: 1.5px solid #e8d5c4; color: #7a6c5d; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 14px; text-align: center; text-decoration: none; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: 0.2s; }
+    .btn-contact-line { display: block; width: 100%; background-color: #fff; border: 1.5px solid #e8d5c4; color: #7a6c5d; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 14px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;}
     .btn-contact-line:hover { background: #faf5f0; color: #4A3C49; text-decoration: none;}
 
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
@@ -182,10 +182,8 @@
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    // ⚠️ 部署完成後，請務必將下方的網址替換為你「最新的網頁應用程式網址」！
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
     const LIFF_ID = "2009208139-8lZaYbbd"; 
 
@@ -202,7 +200,16 @@
         } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
     };
 
-    // 🌟 升級版：登入即載入，無縫銜接
+    // 🌟 原生純 JS 分頁切換引擎
+    window.switchFrontTab = function(tabId, btnEl) {
+        document.querySelectorAll('#innerSimTabs .nav-link').forEach(b => b.classList.remove('active'));
+        btnEl.classList.add('active');
+        document.querySelectorAll('#innerSimTabsContent .tab-pane').forEach(p => {
+            p.classList.remove('show', 'active');
+        });
+        document.getElementById(tabId).classList.add('show', 'active');
+    };
+
     async function checkMemberStatus() {
         try {
             const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
@@ -231,7 +238,6 @@
                     }
                 }
 
-                // 🚀 直接將後台送來的所有資料傳給渲染引擎，實現進站秒開
                 window.lastAdminSearchText = ""; 
                 renderOrders(serverData.orders || [], serverData.promos || [], serverData.globalPages || {rules:{content:''}, instock:[]});
 
@@ -253,7 +259,7 @@
           if(data.status === "SUCCESS") {
              document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
              document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-             checkMemberStatus(); // 綁定成功後也會重新觸發秒開機制
+             checkMemberStatus(); 
           } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
       } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
     }
@@ -269,7 +275,6 @@
         }, 1500);
     }
 
-    // 👑 專屬搜尋功能
     async function executeAdminSearch() {
         const type = document.getElementById('adminSearchType').value;
         const kw = document.getElementById('adminSearchKeyword').value.trim();
@@ -304,7 +309,6 @@
         }
     }
 
-    // 🌟 更新後五碼後，重新背景抓取並渲染
     async function promptEditLast5(orderId, currentLast5) {
         if (event) { event.stopPropagation(); }
         let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
@@ -327,7 +331,6 @@
             const data = await res.json();
             if (data.status === "SUCCESS") { 
                 alert("✅ 帳號修改成功！"); 
-                // 修改成功後背景重新觸發資料讀取
                 checkMemberStatus(); 
             } 
             else { alert("修改失敗：" + data.message); checkMemberStatus(); }
@@ -349,11 +352,10 @@
         }
     }
 
-    // 🌟 全新升級：帶入 4 個手機版 Tabs 分頁與 Flexbox 排版
     function renderOrders(orders, promos, globalPages) {
         const container = document.getElementById('ordersContainer');
         
-        // 1. 產生導購區塊 (Promos) - 滿版標題與右下角按鈕
+        // 1. 導購 (解法A: 水平並排 + 垂直置中對齊)
         let promosHtml = '';
         if (promos && promos.length > 0) {
             let pCards = promos.map(p => `
@@ -361,8 +363,8 @@
                     <div style="margin-bottom: 12px;">
                         <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:0;">👑 ${escHTML(p.title)}</h6>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-                        <div style="font-size:13px; color:#dc3545; font-weight:bold;">${p.exp ? `⏰ 結單: ${escHTML(p.exp)}` : ''}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-size:14.5px; color:#dc3545; font-weight:900;">${p.exp ? `⏰ 結單: ${escHTML(p.exp)}` : ''}</div>
                         <button class="shadow-sm" style="background-color:var(--brand-brown); color:#fff; border:none; padding:8px 20px; font-size:14px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.open('${p.url}', '_blank')">👉 前往填單</button>
                     </div>
                 </div>
@@ -372,7 +374,7 @@
             promosHtml = `<div class="p-5 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
         }
 
-        // 2. 產生訂單區塊 (Orders)
+        // 2. 訂單
         let ordersHtml = '';
         let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         if (window.lastAdminSearchText) {
@@ -546,19 +548,17 @@
             ordersHtml = `<div class="text-start">${titleHtmlStr}${cardsHtml}</div>`;
         }
 
-        // 3. 渲染現貨賣場與代購規則 (滿版標題與右側按鈕)
+        // 3. 渲染現貨賣場與代購規則 (恢復左右排版)
         let instockArr = globalPages.instock;
         let instockHtml = '';
         if (instockArr && instockArr.length > 0) {
             instockHtml = instockArr.map(store => `
-                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:16px; margin-bottom:12px; text-align:left; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-                    <div style="margin-bottom: 12px;">
-                        <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:0;"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
+                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-top:8px;">
+                    <div style="flex:1; min-width:0;">
+                        <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:${store.content ? '6px' : '0'};"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
+                        ${store.content ? `<div class="text-muted small" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
                     </div>
-                    ${store.content ? `<div class="text-muted small mb-3" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
-                    <div style="display:flex; justify-content:flex-end;">
-                        ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:8px 20px; font-size:14px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
-                    </div>
+                    ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:10px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
                 </div>
             `).join('');
             instockHtml = `<div class="text-start">${instockHtml}</div>`;
@@ -574,18 +574,18 @@
             </div>
         `;
 
-        // 4. 組合最終版 Tabs 介面 (加入聯絡我們獨立滿版按鈕)
+        // 4. 組合最終版 Tabs 介面 (拔除超連結改用 button onclick)
         let finalHtml = `
             <div class="sim-nav-pills" id="innerSimTabs" role="tablist">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#sim-orders" type="button" role="tab">📦 訂單與貨況</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-promos" type="button" role="tab">🔥 最新開團</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-instock" type="button" role="tab">🛍️ 現貨賣場</button>
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#sim-rules" type="button" role="tab">📝 代購規則</button>
+                <button class="nav-link active" onclick="switchFrontTab('sim-orders', this)">📦 訂單與貨況</button>
+                <button class="nav-link" onclick="switchFrontTab('sim-promos', this)">🔥 最新開團</button>
+                <button class="nav-link" onclick="switchFrontTab('sim-instock', this)">🛍️ 現貨賣場</button>
+                <button class="nav-link" onclick="switchFrontTab('sim-rules', this)">📝 代購規則</button>
             </div>
             
-            <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line">
+            <button class="btn-contact-line" onclick="window.open('https://lin.ee/mty4uxj', '_blank')">
                 <i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)
-            </a>
+            </button>
             
             <div class="tab-content mt-2 text-center" id="innerSimTabsContent">
                 <div class="tab-pane fade show active" id="sim-orders" role="tabpanel">${ordersHtml}</div>
