@@ -47,6 +47,11 @@
 
     @media (min-width: 768px) { #ordersContainer, #adminArea { max-width: 600px; margin: 0 auto; } }
 
+    /* 🌟 前台專屬的 Tabs 分頁樣式 */
+    .sim-nav-pills { background: #fbfaf9; border-radius: 12px; padding: 4px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 4px; border: 1px solid #e0d8d0;}
+    .sim-nav-pills .nav-link { border-radius: 8px; font-weight: 800; font-size: 13.5px; padding: 10px 0; color: #6c757d; border: none; background: transparent; flex: 1 1 45%; min-width: 110px; text-align: center; transition: 0.2s; cursor: pointer; white-space: nowrap;}
+    .sim-nav-pills .nav-link.active { background: #fff; color: var(--brand-brown); box-shadow: 0 2px 5px rgba(0,0,0,0.08); }
+
     .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
     .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
     .order-header:hover { background-color: #f6f0ea; }
@@ -91,7 +96,7 @@
     .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
     .last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
     .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; }
+    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; z-index: 10; position: relative;}
     .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
 
     .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
@@ -147,6 +152,12 @@
     <div class="container pt-4">
       <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5><p class="small mt-2" style="color: #888;">歡迎來到您的專屬空間</p></div>
       
+      <div id="adminMaintenanceAlert" style="display: none; max-width: 600px; margin: 0 auto;">
+          <div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius: 12px; border: 2px solid #dc3545;">
+              <i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式，僅管理員可見此畫面
+          </div>
+      </div>
+
       <div id="adminArea" style="display:none;" class="mb-4">
           <div class="card card-custom p-4" style="border: 2px solid var(--brand-brown); background-color: #fffaf5;">
               <h6 class="fw-bold mb-3" style="color: var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
@@ -174,6 +185,7 @@
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
     // ⚠️ 部署完成後，請務必將下方的網址替換為你「最新的網頁應用程式網址」！
@@ -214,9 +226,12 @@
                 document.getElementById('homeArea').style.display = 'block';
                 document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
                 
-                // 👑 解鎖專屬查詢介面
+                // 👑 顯示上帝專屬畫面與紅燈警告
                 if (serverData.isAdmin) {
                     document.getElementById('adminArea').style.display = 'block';
+                    if (serverData.isUnderMaintenance) {
+                        document.getElementById('adminMaintenanceAlert').style.display = 'block';
+                    }
                 }
             } else { document.getElementById('bindArea').style.display = 'block'; }
         } catch (err) { 
@@ -277,7 +292,7 @@
             
             if (data.status === "SUCCESS") {
                 window.lastAdminSearchText = `【${kw}】的訂單`;
-                renderOrders(data);
+                renderOrders(data.data.orders, data.data.promos, data.data.globalPages);
             } else {
                 container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space: pre-wrap;">${data.message}</p></div>`;
             }
@@ -315,7 +330,8 @@
           }
 
           window.lastAdminSearchText = ""; 
-          renderOrders({ status: "SUCCESS", data: { orders: data.orders || [] } });
+          // 🌟 傳入分頁資訊進行渲染
+          renderOrders(data.orders || [], data.promos || [], data.globalPages || {rules:{content:''}, instock:[]});
       } catch(err) { 
           clearInterval(fetchInterval);
           container.innerHTML = `<div class="alert alert-danger text-center">查詢失敗: ${err.message}</div>`; 
@@ -362,187 +378,253 @@
         }
     }
 
-    function renderOrders(res) {
+    // 🌟 全新升級：帶入 4 個手機版 Tabs 分頁與 Flexbox 排版
+    function renderOrders(orders, promos, globalPages) {
         const container = document.getElementById('ordersContainer');
-        if (res.status === "ERROR") { container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold mb-2">😅 哎呀</h6><p class="small text-muted mb-0">${res.message}</p></div>`; return; }
-        const orders = res.data.orders;
         
+        // 1. 產生導購區塊 (Promos) - Flexbox 靠右按鈕排版
+        let promosHtml = '';
+        if (promos && promos.length > 0) {
+            let pCards = promos.map(p => `
+                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:12px 15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:10px;">
+                    <div style="flex:1; min-width:0;">
+                        <h6 style="font-weight:bold; color:var(--brand-brown); margin-bottom:${p.exp ? '4px' : '0'}; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">👑 ${escHTML(p.title)}</h6>
+                        ${p.exp ? `<div style="font-size:12px; color:#dc3545; font-weight:bold; margin-bottom:0;">⏰ 結單：${escHTML(p.exp)}</div>` : ''}
+                    </div>
+                    <button class="shadow-sm" style="background-color:var(--brand-brown); color:#fff; border:none; padding:8px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold;" onclick="window.open('${p.url}', '_blank')">👉 前往填單</button>
+                </div>
+            `).join('');
+            promosHtml = `<div class="text-start mt-2">${pCards}</div>`;
+        } else {
+            promosHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="text-secondary fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
+        }
+
+        // 2. 產生訂單區塊 (Orders)
+        let ordersHtml = '';
         let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
         if (window.lastAdminSearchText) {
-            // 🌟 標題更新為「客戶：XXX」
             titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: #a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
         }
         
-        if (!orders || orders.length === 0) { container.innerHTML = `${titleHtmlStr}<div class="card card-custom text-center p-4"><div class="mb-3" style="font-size: 28px; color: #ccc;"><i class="bi bi-inbox"></i></div><h6 class="fw-bold text-muted mb-0">目前沒有進行中的訂單紀錄</h6></div>`; return; }
-
-        let html = titleHtmlStr;
-        
-        let cardsHtml = orders.map((order, idx) => {
-            let collapseId = `order-collapse-${idx}`; 
-            let progressCollapseId = `progress-collapse-${idx}`; 
-            
-            let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
-            let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
-            let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
-
-            let titleText = escHTML(order.label);
-            let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
-            if (/\||｜/.test(titleText)) {
-                let parts = titleText.split(/\||｜/);
-                titleHtml = `
-                <div class="order-title-container">
-                    <span class="order-title-brand">${parts[0].trim()}</span>
-                    <span class="order-title-series">${parts[1].trim()}</span>
-                </div>`;
-            }
-
-            let noticeHtml = '';
-            if (order.groupNotice || order.groupMemo) {
-                noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
-            }
-
-            let progressHtml = '';
-            let progressContentHtml = '';
-            
-            // ==========================================
-            // 🌟 動態判斷貨況標題邏輯
-            // ==========================================
-            if (order.progress) {
-                let p = order.progress;
-                let hasB1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
-                let hasB2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
-
-                let titleB1 = (hasB1 && hasB2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
-                let titleB2 = (hasB1 && hasB2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
+        if (!orders || orders.length === 0) { 
+            ordersHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">📦 您目前沒有進行中的訂單</h6></div>`; 
+        } else {
+            let cardsHtml = orders.map((order, idx) => {
+                let collapseId = `order-collapse-${idx}`; 
+                let progressCollapseId = `progress-collapse-${idx}`; 
                 
-                if (hasB1) {
-                    let t = p.b1.purchased || p.b1.totalPurchased;
-                    let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
-                    let rawStep2 = p.b1.step2 || 0;
-                    let rawStep3 = p.b1.step3 || 0;
-                    let rawStep4 = p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0);
-                    
-                    let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
-                    let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
-                    let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
-                    let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
-                    
-                    let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                    let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+                let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
+                let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
+                let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
 
-                    progressContentHtml += `
-                    <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>${titleB1}</span></div>
-                        <div class="tracker-container">
-                            <div class="tracker-line"></div>
-                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div>
-                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div>
-                        </div>
-                        ${notShippedMsg}
-                    </div>`;
-                }
-                
-                if (hasB2) {
-                    let t = p.b2.purchased || p.b2.totalPurchased;
-                    let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0);
-                    let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0);
-                    let rawStep3 = p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0);
-                    let rawStep4 = p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0);
-
-                    let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
-                    let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
-                    let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
-                    let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
-
-                    let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                    let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
-
-                    progressContentHtml += `
-                    <div class="progress-wrapper mb-3">
-                        <div class="progress-title"><span>${titleB2}</span></div>
-                        <div class="tracker-container">
-                            <div class="tracker-line"></div>
-                            <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div>
-                            <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div>
-                            <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div>
-                        </div>
-                        ${notShippedMsg}
+                let titleText = escHTML(order.label);
+                let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
+                if (/\||｜/.test(titleText)) {
+                    let parts = titleText.split(/\||｜/);
+                    titleHtml = `
+                    <div class="order-title-container">
+                        <span class="order-title-brand">${parts[0].trim()}</span>
+                        <span class="order-title-series">${parts[1].trim()}</span>
                     </div>`;
                 }
 
-                if (progressContentHtml !== '') {
-                    progressHtml = `
-                    <div id="${progressCollapseId}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">
-                        🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>
+                let noticeHtml = '';
+                if (order.groupNotice || order.groupMemo) {
+                    noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
+                }
+
+                let progressHtml = '';
+                let progressContentHtml = '';
+                
+                if (order.progress) {
+                    let p = order.progress;
+                    let hasB1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
+                    let hasB2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
+
+                    let titleB1 = (hasB1 && hasB2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
+                    let titleB2 = (hasB1 && hasB2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
+                    
+                    if (hasB1) {
+                        let t = p.b1.purchased || p.b1.totalPurchased;
+                        let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0);
+                        let rawStep2 = p.b1.step2 || 0;
+                        let rawStep3 = p.b1.step3 || 0;
+                        let rawStep4 = p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0);
+                        
+                        let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
+                        let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
+                        let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
+                        let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
+                        
+                        let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
+                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+
+                        progressContentHtml += `
+                        <div class="progress-wrapper mb-3">
+                            <div class="progress-title"><span>${titleB1}</span></div>
+                            <div class="tracker-container">
+                                <div class="tracker-line"></div>
+                                <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
+                                <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div>
+                                <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div>
+                                <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div>
+                            </div>
+                            ${notShippedMsg}
+                        </div>`;
+                    }
+                    
+                    if (hasB2) {
+                        let t = p.b2.purchased || p.b2.totalPurchased;
+                        let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0);
+                        let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0);
+                        let rawStep3 = p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0);
+                        let rawStep4 = p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0);
+
+                        let pctStep1 = Math.round((rawStep1 / t) * 100) || 0;
+                        let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0;
+                        let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0;
+                        let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
+
+                        let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
+                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 10px; background-color: #fdf3f2; color: #a95a52; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; border: 1px dashed #e8c9c6;"><i class="bi bi-hourglass-split me-1"></i> 官方尚未出貨，請耐心等候</div>` : '';
+
+                        progressContentHtml += `
+                        <div class="progress-wrapper mb-3">
+                            <div class="progress-title"><span>${titleB2}</span></div>
+                            <div class="tracker-container">
+                                <div class="tracker-line"></div>
+                                <div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div>
+                                <div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div>
+                                <div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div>
+                                <div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div>
+                            </div>
+                            ${notShippedMsg}
+                        </div>`;
+                    }
+
+                    if (progressContentHtml !== '') {
+                        progressHtml = `
+                        <div id="${progressCollapseId}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">
+                            🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div id="${progressCollapseId}" class="progress-content">
+                            ${progressContentHtml}
+                        </div>`;
+                    }
+                }
+
+                let itemsHtml = order.items.map(i => `
+                    <div class="item-row">
+                        <div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div>
+                        <div class="fw-bold">$${i.amount}</div>
                     </div>
-                    <div id="${progressCollapseId}" class="progress-content">
-                        ${progressContentHtml}
+                `).join('');
+
+                let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
+                let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
+                let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
+
+                let detailsBoxHtml = `
+                <div class="details-box shadow-sm mb-3">
+                    ${itemsHtml}
+                    <div class="summary-divider"></div>
+                    <div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
+                    <div class="summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>
+                    ${last5Html}
+                    <div class="total-row"><span>應匯款金額</span><span class="total-price">$${order.due}</span></div>
+                </div>`;
+
+                let bankHtml = '';
+                if (isPaid) {
+                    let noteHtml = order.personalNote ? `<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
+                    bankHtml = `
+                    <div class="bank-info text-center shadow-sm">
+                        <div class="fw-bold fs-5" style="color: #436b46;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>
+                        ${noteHtml}
+                    </div>`;
+                } else if (order.groupBankInfo) {
+                    let deadlineHtml = order.groupDeadline ? `<span class="bank-deadline">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
+                    bankHtml = `
+                    <div class="bank-info shadow-sm">
+                        <div class="bank-title">
+                            <span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>
+                            ${deadlineHtml}
+                        </div>
+                        <div class="bank-text">${escHTML(order.groupBankInfo)}</div>
+                        <div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div>
                     </div>`;
                 }
-            }
 
-            let itemsHtml = order.items.map(i => `
-                <div class="item-row">
-                    <div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div>
-                    <div class="fw-bold">$${i.amount}</div>
+                return `
+                <div class="card-order mt-2">
+                    <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
+                        ${titleHtml}
+                        <div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div>
+                    </div>
+                    <div id="${collapseId}" class="order-content">
+                        ${noticeHtml}
+                        ${progressHtml}
+                        ${detailsBoxHtml}
+                        ${bankHtml}
+                    </div>
+                </div>`;
+            }).join('');
+
+            ordersHtml = `<div class="text-start">${titleHtmlStr}${cardsHtml}</div>`;
+        }
+
+        // 3. 渲染現貨賣場與代購規則
+        let instockArr = globalPages.instock;
+        let instockHtml = '';
+        if (instockArr && instockArr.length > 0) {
+            instockHtml = instockArr.map(store => `
+                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-top:8px;">
+                    <div style="flex:1; min-width:0;">
+                        <h6 style="font-weight:bold; color:var(--brand-charcoal); margin-bottom:${store.content ? '6px' : '0'};"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
+                        ${store.content ? `<div class="text-muted small" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
+                    </div>
+                    ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:10px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
                 </div>
             `).join('');
+            instockHtml = `<div class="text-start mt-2">${instockHtml}</div>`;
+        } else {
+            instockHtml = `<div class="p-5 mt-2 rounded border border-2 border-theme-secondary border-dashed bg-white shadow-sm text-center"><h6 class="fw-bold m-0" style="color: #888;">目前尚未開放現貨賣場喔！</h6></div>`;
+        }
 
-            let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
-            let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
-            let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
+        let rulesData = globalPages.rules;
+        let rulesHtml = `
+            <div class="card-order p-4 text-start shadow-sm mt-2">
+                <h6 class="fw-bold mb-3" style="color: var(--brand-charcoal);"><i class="bi bi-book me-2"></i>Wander Ease 代購與服務規則</h6>
+                <div class="text-muted small" style="line-height: 1.8; white-space: pre-wrap;">${escHTML(rulesData.content || '尚無公告規則。')}</div>
+            </div>
+        `;
 
-            let detailsBoxHtml = `
-            <div class="details-box shadow-sm mb-3">
-                ${itemsHtml}
-                <div class="summary-divider"></div>
-                <div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div>
-                <div class="summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>
-                ${last5Html}
-                <div class="total-row"><span>應匯款金額</span><span class="total-price">$${order.due}</span></div>
-            </div>`;
+        // 4. 組合最終版 Tabs 介面
+        let finalHtml = `
+            <ul class="nav nav-pills sim-nav-pills shadow-sm flex-wrap" id="innerSimTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active w-100" data-bs-toggle="pill" data-bs-target="#sim-orders" type="button" role="tab">📦 我的訂單與貨況</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-promos" type="button" role="tab">🔥 最新開團</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-instock" type="button" role="tab">🛍️ 現貨賣場</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link w-100" data-bs-toggle="pill" data-bs-target="#sim-rules" type="button" role="tab">📝 代購規則</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content mt-2 text-center" id="innerSimTabsContent">
+                <div class="tab-pane fade show active" id="sim-orders" role="tabpanel">${ordersHtml}</div>
+                <div class="tab-pane fade" id="sim-promos" role="tabpanel">${promosHtml}</div>
+                <div class="tab-pane fade" id="sim-instock" role="tabpanel">${instockHtml}</div>
+                <div class="tab-pane fade" id="sim-rules" role="tabpanel">${rulesHtml}</div>
+            </div>
+        `;
 
-            let bankHtml = '';
-            if (isPaid) {
-                let noteHtml = order.personalNote ? `<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
-                bankHtml = `
-                <div class="bank-info text-center shadow-sm">
-                    <div class="fw-bold fs-5" style="color: #436b46;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>
-                    ${noteHtml}
-                </div>`;
-            } else if (order.groupBankInfo) {
-                let deadlineHtml = order.groupDeadline ? `<span class="bank-deadline">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
-                bankHtml = `
-                <div class="bank-info shadow-sm">
-                    <div class="bank-title">
-                        <span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>
-                        ${deadlineHtml}
-                    </div>
-                    <div class="bank-text">${escHTML(order.groupBankInfo)}</div>
-                    <div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div>
-                </div>`;
-            }
-
-            return `
-            <div class="card-order">
-                <div class="order-header" onclick="toggleOrderCard('${collapseId}')">
-                    ${titleHtml}
-                    <div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div>
-                </div>
-                <div id="${collapseId}" class="order-content">
-                    ${noticeHtml}
-                    ${progressHtml}
-                    ${detailsBoxHtml}
-                    ${bankHtml}
-                </div>
-            </div>`;
-        }).join('');
-
-        html += cardsHtml;
-        container.innerHTML = html;
+        container.innerHTML = finalHtml;
     }
 
     function escHTML(str) { return String(str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
