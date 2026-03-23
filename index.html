@@ -264,30 +264,39 @@
 
     // 👆 第一階段：客人點擊「點我加入官方 LINE」
     window.openLineAddFriend = function() {
-        // 1. 呼叫加好友面板
+        // 1. 抓取整個「白色視窗本體」
+        let modalContent = document.querySelector('#friendshipModal .modal-content');
+        
+        // 2. 賦予它 0.3 秒的漸變能力，並立刻讓它「變透明 (淡出)」
+        modalContent.style.transition = 'opacity 0.3s ease-in-out';
+        modalContent.style.opacity = '0';
+        
+        // 3. 同時呼叫 LINE 加好友面板 (面板開始往上滑)
         try {
             liff.openWindow({ url: 'https://lin.ee/mty4uxj', external: false });
         } catch(e) {
             window.open('https://lin.ee/mty4uxj', '_blank');
         }
         
-        let step1 = document.getElementById('step1-buttons');
-        let step2 = document.getElementById('step2-buttons');
-        
-        // 2. 立即隱藏第一階段按鈕
-        step1.classList.remove('d-flex');
-        step1.classList.add('d-none');
-        
-        // 3. 準備第二階段按鈕，但先設定為「完全透明 (隱形)」
-        step2.classList.remove('d-none');
-        step2.classList.add('d-flex');
-        step2.style.opacity = '0'; 
-        step2.style.transition = 'opacity 0.8s ease-in-out'; // 設定 0.8 秒的柔和漸入動畫
-        
-        // 4. 🌟 視覺欺騙魔法：延遲 600 毫秒 (等 LINE 面板已經滑上來遮住畫面了)，才偷偷把它變清楚
+        // 4. 第一個定時器：等 300 毫秒 (此時視窗已經完全隱形，沒人看得到)
         setTimeout(() => {
-            step2.style.opacity = '1';
-        }, 600);
+            // 在隱形狀態下，偷偷把按鈕從第一階段換成第二階段
+            let step1 = document.getElementById('step1-buttons');
+            let step2 = document.getElementById('step2-buttons');
+            
+            step1.classList.remove('d-flex');
+            step1.classList.add('d-none');
+            
+            step2.classList.remove('d-none');
+            step2.classList.add('d-flex');
+            
+            // 5. 第二個定時器：再等 500 毫秒 (此時 LINE 面板已經 100% 蓋住手機畫面了)
+            setTimeout(() => {
+                // 下令已經換裝完畢的視窗「淡入浮現」，準備迎接客人關閉面板
+                modalContent.style.opacity = '1';
+            }, 500);
+            
+        }, 300);
     };
 
     // 👆 第二階段：客人關閉面板後，點擊「我已經加好友了」
