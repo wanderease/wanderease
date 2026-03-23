@@ -367,11 +367,29 @@
           const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name }) });
           const data = await res.json();
           if(data.status === "SUCCESS") {
-             document.getElementById('bindArea').style.display = 'none'; document.getElementById('homeArea').style.display = 'block';
-             document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${name}`;
-             checkMemberStatus(); 
-          } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
-      } catch(e) { alert("網路錯誤"); btn.innerText="確認綁定"; btn.disabled=false; }
+             // 1. 隱藏綁定視窗
+             document.getElementById('bindArea').style.display = 'none'; 
+             
+             // 2. 🌟 關鍵修正：顯示載入動畫，不要給客人看空白畫面
+             document.getElementById('loadingArea').style.display = 'block';
+             let loadingText = document.querySelector('#loadingArea p');
+             if(loadingText) loadingText.innerText = "✅ 綁定成功！正在為您調閱專屬訂單...";
+             
+             // 3. 🌟 關鍵修正：強制等待 1.5 秒，讓 Airtable 建立好資料庫索引後，再去撈資料
+             setTimeout(() => {
+                 checkMemberStatus(); 
+             }, 1500);
+
+          } else { 
+              alert("發生錯誤: " + data.message); 
+              btn.innerText="確認綁定"; 
+              btn.disabled=false; 
+          }
+      } catch(e) { 
+          alert("網路錯誤，請保持網路暢通並重試。"); 
+          btn.innerText="確認綁定"; 
+          btn.disabled=false; 
+      }
     }
 
     let fetchInterval;
