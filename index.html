@@ -255,24 +255,27 @@
         checkMemberStatus(); 
     };
 
-    // 客人點擊「點我加入官方 LINE」的觸發動作 (無縫直通版)
-    window.joinFriendship = function() {
-        // 1. 透過改變網址來喚起 LINE 原生加好友面板 (LINE APP 會攔截並滑出面板，不會跳轉網頁)
-        window.location.href = 'https://lin.ee/mty4uxj';
-        
-        // 2. 隱藏溫馨提醒的 Modal 視窗
+    // 客人點擊「點我加入官方 LINE」的觸發動作 (畫面預載終極版)
+    window.joinFriendship = async function() {
+        // 1. 隱藏溫馨提醒的 Modal 視窗
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
         if(modalObj) modalObj.hide();
         
-        // 3. 顯示系統載入中的動畫
+        // 2. 顯示系統載入中的動畫
         document.getElementById('loadingArea').style.display = 'block';
-        document.getElementById('carouselText').innerText = '載入專屬服務中...';
 
-        // 4. 絕對不重整網頁！等待 2.5 秒後，直接放行進入綁定/查單系統
-        setTimeout(() => {
-            checkMemberStatus();
-        }, 2500);
+        // 3. 🌟 關鍵：先讓系統去後台抓資料，並把畫面渲染完畢 (這時絕對不改變網址)
+        await checkMemberStatus(); 
+
+        // 4. 等到 checkMemberStatus 執行完畢，底下的會員中心已經長出來了！
+        // 這時候我們再用一個隱形的另開視窗標籤，呼叫加好友面板，絕對不會卡死當前網頁
+        let a = document.createElement('a');
+        a.href = 'https://lin.ee/mty4uxj';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
