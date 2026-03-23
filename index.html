@@ -255,27 +255,28 @@
         checkMemberStatus(); 
     };
 
-    // 客人點擊「點我加入官方 LINE」的觸發動作 (畫面預載終極版)
-    window.joinFriendship = async function() {
-        // 1. 隱藏溫馨提醒的 Modal 視窗
+    // 客人點擊「點我加入官方 LINE」的觸發動作 (同步雙軌完美版)
+    window.joinFriendship = function() {
+        // 1. 第一時間：直接呼叫原生面板！不等待任何網路請求，完美避開防廣告阻擋
+        try {
+            liff.openWindow({
+                url: 'https://lin.ee/mty4uxj',
+                external: false
+            });
+        } catch(e) {
+            window.open('https://lin.ee/mty4uxj', '_blank');
+        }
+        
+        // 2. 隱藏溫馨提醒的 Modal 視窗
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
         if(modalObj) modalObj.hide();
         
-        // 2. 顯示系統載入中的動畫
+        // 3. 顯示系統載入中的動畫
         document.getElementById('loadingArea').style.display = 'block';
 
-        // 3. 🌟 關鍵：先讓系統去後台抓資料，並把畫面渲染完畢 (這時絕對不改變網址)
-        await checkMemberStatus(); 
-
-        // 4. 等到 checkMemberStatus 執行完畢，底下的會員中心已經長出來了！
-        // 這時候我們再用一個隱形的另開視窗標籤，呼叫加好友面板，絕對不會卡死當前網頁
-        let a = document.createElement('a');
-        a.href = 'https://lin.ee/mty4uxj';
-        a.target = '_blank';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        // 4. 第二時間：讓系統在背景自己去抓資料畫畫面 (不用重整、不會卡死)
+        checkMemberStatus(); 
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
