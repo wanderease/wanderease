@@ -115,7 +115,7 @@
 </head>
 <body>
 
-<div id="maintenanceArea" style="display:none; text-align: center; padding: 80px 20px; background-color: var(--brand-bg); height: 100vh;">
+  <div id="maintenanceArea" style="display:none; text-align: center; padding: 80px 20px; background-color: var(--brand-bg); height: 100vh;">
     <div style="margin-bottom: 25px;">
         <img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width: 160px; height: auto;" alt="Wander Ease Logo">
     </div>
@@ -133,13 +133,38 @@
     </div>
   </div>
 
+  <div class="modal fade" id="friendshipModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered px-3">
+      <div class="modal-content shadow-lg border-0" style="border-radius: 20px; background-color: #fbfaf9;">
+        <div class="modal-body p-4 text-center">
+          <div class="mb-3">
+            <i class="bi bi-bell-fill" style="font-size: 3rem; color: var(--brand-brown);"></i>
+          </div>
+          <h4 class="fw-bold mb-3" style="color: var(--brand-charcoal); letter-spacing: 1px;">專屬通知小提醒</h4>
+          <p class="text-muted fw-bold" style="line-height: 1.7; font-size: 14.5px;">
+            為了讓您能第一時間收到「匯款對帳成功」與「出貨進度」等專屬通知訊息，建議您先將 Wander Ease 官方帳號加入好友喔！<br><br>
+            <span style="color: #a95a52; background-color: #fdf3f2; padding: 4px 8px; border-radius: 6px;">※ 若未加入好友，將無法正常接收系統推播 ※</span>
+          </p>
+          <div class="d-flex flex-column gap-3 mt-4 pt-2">
+            <button type="button" class="btn-brand" onclick="joinFriendship()" style="padding: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(121,82,56,0.2);">
+              👉 點我加入官方 LINE
+            </button>
+            <button type="button" class="btn-outline-brand" onclick="skipFriendship()" style="border: none; color: #888; background: transparent;">
+              稍後再說，先去查單系統
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="bindArea" style="display:none;">
     <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">會員中心</p></div>
     <div class="container">
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
         <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
-            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，可以慢慢輸入不要急~
+            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與Email很重要，可以慢慢輸入不要急~
         </div>
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
@@ -179,6 +204,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   
   <script>
@@ -190,12 +216,57 @@
     window.onload = async function() {
         try {
             await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { liff.login(); } 
-            else {
-                const profile = await liff.getProfile(); currentLineUid = profile.userId;
-                checkMemberStatus(); 
+            if (!liff.isLoggedIn()) { 
+                liff.login(); 
+            } else {
+                const profile = await liff.getProfile(); 
+                currentLineUid = profile.userId;
+                
+                // 📡 啟動隱形掃描雷達：檢查是否為官方帳號好友
+                try {
+                    const friend = await liff.getFriendship();
+                    if (!friend.friendFlag) {
+                        // ❌ 不是好友 (或封鎖中)：攔截並顯示溫馨提醒視窗
+                        document.getElementById('loadingArea').style.display = 'none';
+                        const friendModal = new bootstrap.Modal(document.getElementById('friendshipModal'));
+                        friendModal.show();
+                    } else {
+                        // ✅ 是好友：順利放行，繼續執行登入與查單流程
+                        checkMemberStatus(); 
+                    }
+                } catch(e) {
+                    // 如果雷達發生錯誤(例如後台沒綁定Linked OA)，為了不卡住客人，直接放行
+                    checkMemberStatus();
+                }
             }
-        } catch (err) { alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); document.getElementById('loadingArea').style.display = 'none'; }
+        } catch (err) { 
+            alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); 
+            document.getElementById('loadingArea').style.display = 'none'; 
+        }
+    };
+
+    // 客人點擊「稍後再說 (跳過)」的觸發動作
+    window.skipFriendship = function() {
+        let modalEl = document.getElementById('friendshipModal');
+        let modalObj = bootstrap.Modal.getInstance(modalEl);
+        if(modalObj) modalObj.hide();
+        
+        document.getElementById('loadingArea').style.display = 'block'; 
+        checkMemberStatus(); 
+    };
+
+    // 客人點擊「點我加入官方 LINE」的觸發動作
+    window.joinFriendship = function() {
+        // 1. 呼叫出 LINE 的原生加好友面板覆蓋在畫面上
+        window.open('https://lin.ee/mty4uxj', '_blank');
+        
+        // 2. 在背景偷偷關掉提醒視窗，並讓系統繼續推進
+        let modalEl = document.getElementById('friendshipModal');
+        let modalObj = bootstrap.Modal.getInstance(modalEl);
+        if(modalObj) modalObj.hide();
+        
+        document.getElementById('loadingArea').style.display = 'block'; 
+        checkMemberStatus(); 
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
@@ -428,7 +499,6 @@
                         
                         let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
                         
-                        // 🌟 升級版：官方尚未出貨的黃色安撫提醒區塊
                         let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
 
                         progressContentHtml += `
@@ -459,7 +529,6 @@
 
                         let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
                         
-                        // 🌟 升級版：官方尚未出貨的黃色安撫提醒區塊
                         let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
 
                         progressContentHtml += `
