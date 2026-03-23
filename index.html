@@ -143,16 +143,24 @@
           <h4 class="fw-bold mb-3" style="color: var(--brand-charcoal); letter-spacing: 1px;">專屬通知小提醒</h4>
           <p class="text-muted fw-bold" style="line-height: 1.7; font-size: 14.5px;">
             為了讓您能第一時間收到「預購是否買到」與「匯款/下單」等專屬通知訊息，建議您先將 Wander Ease 官方帳號加入好友哦~<br><br>
-            <span style="color: #a95a52; background-color: #fdf3f2; padding: 4px 8px; border-radius: 6px;">※若未加入好友，將無法接收系統訊息※</span>
+            <span style="color: #a95a52; background-color: #fdf3f2; padding: 4px 8px; border-radius: 6px;">※ 若未加入好友，將無法接收系統訊息 ※</span>
           </p>
-          <div class="d-flex flex-column gap-3 mt-4 pt-2">
-            <button type="button" class="btn-brand" onclick="joinFriendship()" style="padding: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(121,82,56,0.2);">
+          
+          <div id="step1-buttons" class="d-flex flex-column gap-3 mt-4 pt-2">
+            <button type="button" class="btn-brand" onclick="openLineAddFriend()" style="padding: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(121,82,56,0.2);">
               👉 點我加入官方 LINE
             </button>
             <button type="button" class="btn-outline-brand" onclick="skipFriendship()" style="border: none; color: #888; background: transparent;">
               稍後再說，先去查單系統
             </button>
           </div>
+
+          <div id="step2-buttons" class="d-flex flex-column gap-3 mt-4 pt-2" style="display: none !important;">
+            <button type="button" class="btn btn-success fw-bold" onclick="confirmFriendshipAdded()" style="padding: 16px; font-size: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(25,135,84,0.2); background-color: #198754; color: white; border: none;">
+              ✅ 我已經加好友了，進入系統
+            </button>
+          </div>
+
         </div>
       </div>
     </div>
@@ -164,7 +172,7 @@
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
         <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
-            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與Email很重要，慢慢輸入不要急~
+            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，可以慢慢輸入不要急~
         </div>
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
@@ -245,7 +253,7 @@
         }
     };
 
-    // 客人點擊「稍後再說 (跳過)」的觸發動作
+    // 👆 客人點擊「稍後再說 (跳過)」的觸發動作
     window.skipFriendship = function() {
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
@@ -255,28 +263,30 @@
         checkMemberStatus(); 
     };
 
-    // 客人點擊「點我加入官方 LINE」的觸發動作 (同步雙軌完美版)
-    window.joinFriendship = function() {
-        // 1. 第一時間：直接呼叫原生面板！不等待任何網路請求，完美避開防廣告阻擋
+    // 👆 第一階段：客人點擊「點我加入官方 LINE」
+    window.openLineAddFriend = function() {
+        // 1. 呼叫加好友面板
         try {
-            liff.openWindow({
-                url: 'https://lin.ee/mty4uxj',
-                external: false
-            });
+            liff.openWindow({ url: 'https://lin.ee/mty4uxj', external: false });
         } catch(e) {
             window.open('https://lin.ee/mty4uxj', '_blank');
         }
         
-        // 2. 隱藏溫馨提醒的 Modal 視窗
+        // 2. 切換 Modal 內的按鈕，把主導權交給客人
+        document.getElementById('step1-buttons').style.setProperty('display', 'none', 'important');
+        document.getElementById('step2-buttons').style.setProperty('display', 'flex', 'important');
+    };
+
+    // 👆 第二階段：客人關閉面板後，點擊「我已經加好友了」
+    window.confirmFriendshipAdded = function() {
+        // 1. 隱藏 Modal
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
         if(modalObj) modalObj.hide();
         
-        // 3. 顯示系統載入中的動畫
+        // 2. 顯示載入動畫，直接去後台抓資料，保證不卡死！
         document.getElementById('loadingArea').style.display = 'block';
-
-        // 4. 第二時間：讓系統在背景自己去抓資料畫畫面 (不用重整、不會卡死)
-        checkMemberStatus(); 
+        checkMemberStatus();
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
