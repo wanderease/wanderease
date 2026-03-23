@@ -255,31 +255,24 @@
         checkMemberStatus(); 
     };
 
-    // 客人點擊「點我加入官方 LINE」的觸發動作 (LIFF 原生穩定版)
+    // 客人點擊「點我加入官方 LINE」的觸發動作 (無縫直通版)
     window.joinFriendship = function() {
-        // 1. 使用 LIFF 原生 API 呼叫加好友面板，確保在 APP 內開啟不破圖
-        try {
-            liff.openWindow({
-                url: 'https://lin.ee/mty4uxj',
-                external: false // false 代表在 LINE 內部直接滑出面板
-            });
-        } catch (e) {
-            // 如果 liff API 突然出錯，退回使用傳統開啟方式當作備案
-            window.open('https://lin.ee/mty4uxj', '_blank');
-        }
+        // 1. 透過改變網址來喚起 LINE 原生加好友面板 (LINE APP 會攔截並滑出面板，不會跳轉網頁)
+        window.location.href = 'https://lin.ee/mty4uxj';
         
-        // 2. 雙重保險：在背景偷偷關掉提醒視窗，並啟動載入動畫
+        // 2. 隱藏溫馨提醒的 Modal 視窗
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
         if(modalObj) modalObj.hide();
+        
+        // 3. 顯示系統載入中的動畫
         document.getElementById('loadingArea').style.display = 'block';
-        document.getElementById('carouselText').innerText = '正在為您開通專屬服務...';
+        document.getElementById('carouselText').innerText = '載入專屬服務中...';
 
-        // 3. 延遲強制重整：設定 3.5 秒後，網頁偷偷重新整理自己。
-        // 當客人加完好友關閉面板時，底下的網頁其實已經帶著「好友身分」重新載入完畢，直接進入查單！
+        // 4. 絕對不重整網頁！等待 2.5 秒後，直接放行進入綁定/查單系統
         setTimeout(() => {
-            window.location.reload();
-        }, 3500);
+            checkMemberStatus();
+        }, 2500);
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
