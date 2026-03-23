@@ -164,7 +164,7 @@
       <div class="card card-custom overlap-top">
         <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
         <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
-            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與Email很重要，可以慢慢輸入不要急~
+            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與Email很重要，慢慢輸入不要急~
         </div>
         <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
         <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
@@ -255,18 +255,31 @@
         checkMemberStatus(); 
     };
 
-    // 客人點擊「點我加入官方 LINE」的觸發動作
+    // 客人點擊「點我加入官方 LINE」的觸發動作 (LIFF 原生穩定版)
     window.joinFriendship = function() {
-        // 1. 呼叫出 LINE 的原生加好友面板覆蓋在畫面上
-        window.open('https://lin.ee/mty4uxj', '_blank');
+        // 1. 使用 LIFF 原生 API 呼叫加好友面板，確保在 APP 內開啟不破圖
+        try {
+            liff.openWindow({
+                url: 'https://lin.ee/mty4uxj',
+                external: false // false 代表在 LINE 內部直接滑出面板
+            });
+        } catch (e) {
+            // 如果 liff API 突然出錯，退回使用傳統開啟方式當作備案
+            window.open('https://lin.ee/mty4uxj', '_blank');
+        }
         
-        // 2. 在背景偷偷關掉提醒視窗，並讓系統繼續推進
+        // 2. 雙重保險：在背景偷偷關掉提醒視窗，並啟動載入動畫
         let modalEl = document.getElementById('friendshipModal');
         let modalObj = bootstrap.Modal.getInstance(modalEl);
         if(modalObj) modalObj.hide();
-        
-        document.getElementById('loadingArea').style.display = 'block'; 
-        checkMemberStatus(); 
+        document.getElementById('loadingArea').style.display = 'block';
+        document.getElementById('carouselText').innerText = '正在為您開通專屬服務...';
+
+        // 3. 延遲強制重整：設定 3.5 秒後，網頁偷偷重新整理自己。
+        // 當客人加完好友關閉面板時，底下的網頁其實已經帶著「好友身分」重新載入完畢，直接進入查單！
+        setTimeout(() => {
+            window.location.reload();
+        }, 3500);
     };
 
     window.switchFrontTab = function(tabId, btnEl) {
