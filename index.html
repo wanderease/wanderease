@@ -6,632 +6,333 @@
   <title>Wander Ease 會員中心</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  
   <style>
-    :root {
-      --brand-bg: #efe8df;       
-      --brand-charcoal: #2c2c2f; 
-      --brand-brown: #795238;    
-      --brand-brown-hover: #5e3f2b; 
-      --brand-white: #ffffff;    
-      
-      --track-bg: #e0d8d0;
-      --track-active: #795238; 
-      --track-final: #2c2c2f;
-      --track-muted: #b8b0a8;
-    }
+    :root{--brand-bg:#efe8df;--brand-charcoal:#2c2c2f;--brand-brown:#795238;--brand-brown-hover:#5e3f2b;--brand-white:#fff;--track-bg:#e0d8d0;--track-active:#795238;--track-final:#2c2c2f;--track-muted:#b8b0a8;}
+    body{background:var(--brand-bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--brand-charcoal);padding-bottom:90px;}
+    .header-img{width:100%;height:160px;background:var(--brand-charcoal);color:var(--brand-white);display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:0 0 20px 20px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+    .header-img-mini{height:100px;}
+    .card-custom{border:none;border-radius:16px;box-shadow:0 8px 24px rgba(44,44,47,.06);background:var(--brand-white);padding:24px;position:relative;}
+    .overlap-top{margin-top:-30px;}
+    .btn-brand{background:var(--brand-brown);color:var(--brand-white);border-radius:12px;padding:14px;font-weight:600;font-size:16px;border:none;width:100%;transition:.2s;}
+    .btn-brand:hover,.btn-brand:active{background:var(--brand-brown-hover);color:var(--brand-white);}
+    .btn-outline-brand{border:1.5px solid var(--brand-brown);color:var(--brand-brown);border-radius:12px;padding:12px;font-weight:600;width:100%;background:transparent;transition:.2s;}
+    .btn-outline-brand:hover{background:var(--brand-brown);color:var(--brand-white);}
+    .form-label{font-size:13px;font-weight:600;color:#555;margin-bottom:6px;}
+    .form-control{border-radius:10px;padding:14px 16px;border:1.5px solid #e0d8d0;background:#fbfaf9;font-size:15px;width:100%;}
+    .form-control:focus{border-color:var(--brand-brown);box-shadow:0 0 0 3px rgba(121,82,56,.15);background:var(--brand-white);}
+    .loader-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;text-align:center;}
+    .spinner-border{color:var(--brand-brown);}
+    .text-carousel{font-size:14px;font-weight:bold;color:var(--brand-charcoal);margin-top:15px;min-height:20px;}
+    @media(min-width:768px){#adminArea,.page-content{max-width:600px;margin:0 auto;}}
 
-    body { background-color: var(--brand-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--brand-charcoal); padding-bottom: 90px; }
-    
-    .header-img { width: 100%; height: 160px; background: var(--brand-charcoal); color: var(--brand-white); display: flex; align-items: center; justify-content: center; flex-direction: column; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-    .header-img-mini { height: 100px; border-radius: 0 0 20px 20px; }
-    
-    .card-custom { border: none; border-radius: 16px; box-shadow: 0 8px 24px rgba(44,44,47,0.06); background: var(--brand-white); padding: 24px; position: relative; }
-    .overlap-top { margin-top: -30px; } 
-    
-    .btn-brand { background-color: var(--brand-brown); color: var(--brand-white); border-radius: 12px; padding: 14px; font-weight: 600; font-size: 16px; border: none; width: 100%; transition: 0.2s; }
-    .btn-brand:hover, .btn-brand:active { background-color: var(--brand-brown-hover); color: var(--brand-white); }
-    .btn-outline-brand { border: 1.5px solid var(--brand-brown); color: var(--brand-brown); border-radius: 12px; padding: 12px; font-weight: 600; width: 100%; background: transparent; transition: 0.2s; }
-    .btn-outline-brand:hover, .btn-outline-brand:active { background-color: var(--brand-brown); color: var(--brand-white); }
-    
-    .form-label { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
-    .form-control { border-radius: 10px; padding: 14px 16px; border: 1.5px solid #e0d8d0; background-color: #fbfaf9; font-size: 15px; width: 100%; }
-    .form-control:focus { border-color: var(--brand-brown); box-shadow: 0 0 0 3px rgba(121,82,56,0.15); background-color: var(--brand-white); }
-    
-    .loader-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; }
-    .spinner-border { color: var(--brand-brown); }
-    .text-carousel { font-size: 14px; font-weight: bold; color: var(--brand-charcoal); margin-top: 15px; min-height: 20px; }
-    .progress-bar-custom { width: 80%; max-width: 250px; height: 6px; background-color: #e0d8d0; border-radius: 10px; margin: 15px auto 0; overflow: hidden; position: relative; }
-    .progress-bar-fill { height: 100%; background-color: var(--brand-brown); width: 0%; transition: width 0.5s ease; animation: loadBar 2s infinite ease-in-out; }
-    @keyframes loadBar { 0% { width: 10%; transform: translateX(-10%); } 50% { width: 50%; transform: translateX(50%); } 100% { width: 10%; transform: translateX(110%); } }
+    /* 底部導航 */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:var(--brand-white);border-top:1px solid #e0d8d0;display:flex;justify-content:space-around;align-items:center;padding:10px 0 calc(env(safe-area-inset-bottom,10px) + 4px);box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+    .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;}
+    .bottom-nav-item .nav-icon{font-size:24px;line-height:1;margin-bottom:4px;}
+    .bottom-nav-item .nav-text{font-size:11px;font-weight:700;color:#b8b0a8;}
+    .bottom-nav-item.active .nav-text{color:var(--brand-brown);}
+    .bottom-nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--brand-brown);}
+    .bottom-nav-item:not(.active) .nav-icon{filter:grayscale(60%) opacity(.5);}
+    .page-content{display:none;}.page-content.active{display:block;}
+    .btn-contact-line{display:block;width:100%;background:#fff;border:1.5px solid #e8d5c4;color:#7a6c5d;border-radius:12px;padding:12px;font-weight:800;font-size:14px;text-align:center;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.02);text-decoration:none;}
+    .btn-contact-line:hover{background:#faf5f0;color:#4A3C49;text-decoration:none;}
 
-    @media (min-width: 768px) { #ordersContainer, #adminArea, .page-content { max-width: 600px; margin: 0 auto; } }
+    /* 正式訂單卡片 */
+    .card-order{background:var(--brand-white);border-radius:16px;border:1px solid #e0d8d0;margin-bottom:20px;box-shadow:0 4px 16px rgba(44,44,47,.03);overflow:hidden;text-align:left;}
+    .order-header{background:#fbfaf9;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:15px;}
+    .order-header:hover{background:#f6f0ea;}
+    .order-title-container{display:block;flex:1;min-width:0;}
+    .order-title-brand{display:block;font-weight:900;color:var(--brand-charcoal);font-size:1.15rem;line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .order-title-series{display:block;font-weight:600;color:#666;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .badge-status{background:#fdf3f2;color:#a95a52;border:1px solid #fdf3f2;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:bold;letter-spacing:1px;flex-shrink:0;}
+    .status-done{background:#eef5ee;color:#436b46;border-color:#eef5ee;}
+    .order-content{display:none;border-top:1px dashed #e0d8d0;padding-top:15px;animation:fadeIn .3s;}
+    .order-content.show{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+    .notice-box{background:#FFF3CD;border-left:4px solid #856404;padding:15px;margin:0 20px 20px;border-radius:6px;font-size:14px;color:#856404;font-weight:bold;line-height:1.6;text-align:left;}
+    .progress-toggle-btn{background:#fbfaf9;border:1px dashed #e0d8d0;color:var(--brand-charcoal);padding:12px;text-align:center;font-weight:700;font-size:14px;border-radius:8px;margin:0 20px 20px;cursor:pointer;}
+    .progress-content{display:none;animation:fadeIn .3s;}.progress-content.show{display:block;}
+    .progress-wrapper{margin:0 20px 20px;padding:20px 15px;border:1px solid #e0d8d0;border-radius:12px;background:var(--brand-white);}
+    .progress-title{font-size:14px;font-weight:800;color:var(--brand-charcoal);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+    .tracker-container{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:0 10px;margin-top:15px;}
+    .tracker-line{position:absolute;top:15px;left:30px;right:30px;height:3px;background:var(--track-bg);z-index:0;}
+    .tracker-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;flex:1;}
+    .step-dot{width:32px;height:32px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;}
+    .step-dot.active{background:var(--track-active);border-color:var(--track-active);}
+    .step-dot.final{border-color:var(--track-final);}.step-dot.final.active{background:var(--track-final);}
+    .step-label{font-size:12px;font-weight:bold;color:var(--track-active);text-align:center;margin-bottom:4px;white-space:nowrap;}.step-label.muted{color:var(--track-muted);}.step-label.final{color:var(--track-final);}
+    .step-pct{font-size:16px;font-weight:900;color:var(--brand-charcoal);}.step-pct.muted{color:var(--track-muted);}
+    .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
+    .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
+    .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
+    .summary-divider{height:1px;border-top:1px dashed #e0d8d0;margin:15px 0;}
+    .summary-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;color:#666;font-weight:500;}
+    .last5-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;font-size:14px;color:#666;font-weight:600;}
+    .last5-value{color:var(--brand-charcoal);font-weight:700;display:flex;align-items:center;gap:8px;}
+    .edit-btn{cursor:pointer;color:var(--brand-brown);font-size:13px;font-weight:700;padding:4px 8px;background:#f6f0ea;border-radius:4px;border:1px solid #e0d8d0;z-index:10;position:relative;}
+    .edit-btn:hover{background:var(--brand-brown);color:var(--brand-white);border-color:var(--brand-brown);}
+    .total-row{display:flex;justify-content:space-between;padding-top:15px;border-top:2px solid #e0d8d0;font-size:1.15rem;font-weight:900;color:var(--brand-charcoal);}
+    .total-price{color:#dc3545;}
+    .bank-info{background:#fbfaf9;border:1px solid #e0d8d0;padding:20px;margin:0 20px 20px;border-radius:12px;text-align:left;}
+    .bank-title{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;}
+    .bank-title-text{font-size:14px;color:var(--brand-charcoal);font-weight:900;display:flex;align-items:center;}
+    .bank-deadline{font-size:13px;font-weight:800;color:#dc3545;}
+    .bank-text{font-family:monospace;font-size:15px;font-weight:bold;color:var(--brand-charcoal);white-space:pre-wrap;line-height:1.6;}
+    .bank-warning{font-size:13px;font-weight:bold;color:#a95a52;margin-top:12px;}
+    .done-note{margin-top:10px;font-size:13.5px;font-weight:700;color:var(--brand-brown);background:#f6f0ea;padding:8px 12px;border-radius:8px;display:inline-block;}
 
-    /* ============================================
-       🆕 底部固定導航列
-       ============================================ */
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
-      background: var(--brand-white);
-      border-top: 1px solid #e0d8d0;
-      display: flex; justify-content: space-around; align-items: center;
-      padding: 10px 0 calc(env(safe-area-inset-bottom, 10px) + 4px);
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
-    }
-    .bottom-nav-item {
-      flex: 1; display: flex; flex-direction: column; align-items: center;
-      padding: 6px 0; cursor: pointer; transition: 0.15s;
-      -webkit-tap-highlight-color: transparent; position: relative;
-    }
-    .bottom-nav-item .nav-icon { font-size: 24px; line-height: 1; margin-bottom: 4px; }
-    .bottom-nav-item .nav-text { font-size: 11px; font-weight: 700; color: #b8b0a8; transition: 0.15s; }
-    .bottom-nav-item.active .nav-text { color: var(--brand-brown); }
-    .bottom-nav-item.active::before {
-      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 4px; height: 4px; border-radius: 50%; background: var(--brand-brown);
-    }
-    .bottom-nav-item:not(.active) .nav-icon { filter: grayscale(60%) opacity(0.5); }
-    .bottom-nav-item.active .nav-icon { filter: none; }
+    /* 預購卡片 */
+    .po-card{background:#fff;border-radius:16px;margin-bottom:20px;overflow:hidden;text-align:left;box-shadow:0 4px 16px rgba(44,44,47,.03);}
+    .po-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+    .po-title{font-size:15px;font-weight:900;color:var(--brand-charcoal);}
+    .po-sub{font-size:12px;margin-top:3px;}
+    .po-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px;white-space:nowrap;flex-shrink:0;line-height:1.3;text-align:center;}
+    .po-body{padding:10px 18px;border-top:1px dashed #e0d8d0;}
+    .po-irow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px dashed #e0d8d0;gap:6px;font-size:13px;}
+    .po-irow:last-child{border-bottom:none;}
+    .po-iname{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .po-iprice{color:#888;font-size:12px;white-space:nowrap;flex-shrink:0;}
+    .po-sum{border-top:1.5px solid #e0d8d0;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;}
+    .po-sum span:last-child{color:#dc3545;}
+    .po-notice{margin:8px 0;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;}
+    .po-notes{padding:8px 0;border-top:.5px dashed #e0d8d0;margin-top:8px;font-size:11px;color:#888;}
+    .po-notes div{padding:2px 0;line-height:1.5;}
+    .qty-ctrl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+    .qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid #e0d8d0;background:#fbfaf9;font-size:14px;font-weight:700;color:var(--brand-brown);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .qty-btn:active{background:var(--brand-brown);color:#fff;}
+    .qty-val{font-size:14px;font-weight:700;min-width:20px;text-align:center;}
+    .po-del-btn{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;background:#fdf3f2;color:#791f1f;border:none;cursor:pointer;white-space:nowrap;}
+    .po-add-btn{background:#fbfaf9;border:1.5px dashed var(--brand-brown);border-radius:10px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--brand-brown);margin-top:8px;cursor:pointer;}
+    .po-submit-btn{background:var(--brand-brown);color:#fff;text-align:center;padding:12px;border-radius:10px;font-size:14px;font-weight:700;margin-top:10px;cursor:pointer;border:none;width:100%;}
+    .po-submit-btn:disabled{background:#b8b0a8;cursor:not-allowed;}
+    .po-preview{border-top:2px dashed #e0d8d0;margin-top:10px;padding-top:10px;}
+    .po-preview-title{font-size:12px;font-weight:700;color:#555;margin-bottom:6px;}
+    .po-pv-item{border-radius:8px;padding:6px 10px;margin-bottom:5px;font-size:12px;display:flex;justify-content:space-between;align-items:center;}
+    .po-pv-undo{font-size:11px;font-weight:700;cursor:pointer;}
+    .po-shortage-row{border-radius:8px;padding:8px;margin:3px 0;border:none!important;}
 
-    /* 分頁內容區 */
-    .page-content { display: none; }
-    .page-content.active { display: block; }
+    /* 候補 */
+    .wl-card{background:#fff;border-radius:16px;border:1px solid #e0d8d0;margin-bottom:16px;overflow:hidden;text-align:left;}
+    .wl-card-h{background:#fbfaf9;padding:12px 16px;font-size:14px;font-weight:900;color:var(--brand-charcoal);border-bottom:.5px dashed #e0d8d0;}
+    .wl-item{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:.5px dashed #e0d8d0;font-size:13px;}
+    .wl-item:last-child{border-bottom:none;}
+    .wl-cancel-btn{background:#fdf3f2;color:#a95a52;font-size:11px;padding:4px 12px;border-radius:6px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
 
-    .btn-contact-line { display: block; width: 100%; background-color: #fff; border: 1.5px solid #e8d5c4; color: #7a6c5d; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 14px; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; text-decoration: none; }
-    .btn-contact-line:hover { background: #faf5f0; color: #4A3C49; text-decoration: none;}
-
-    .card-order { background: var(--brand-white); border-radius: 16px; border: 1px solid #e0d8d0; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(44,44,47,0.03); overflow: hidden; text-align: left; }
-    .order-header { background-color: #fbfaf9; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; gap: 15px; }
-    .order-header:hover { background-color: #f6f0ea; }
-    .order-title-container { display: block; flex: 1; min-width: 0; }
-    .order-title-brand { display: block; font-weight: 900; color: var(--brand-charcoal); font-size: 1.15rem; line-height: 1.3; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    .order-title-series { display: block; font-weight: 600; color: #666; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-    
-    .badge-status { background-color: #fdf3f2; color: #a95a52; border: 1px solid #fdf3f2; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; letter-spacing: 1px; flex-shrink: 0; }
-    .status-done { background-color: #eef5ee; color: #436b46; border-color: #eef5ee; }
-    
-    .order-content { display: none; border-top: 1px dashed #e0d8d0; padding-top: 15px; animation: fadeIn 0.3s ease-in-out; }
-    .order-content.show { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .notice-box { background-color: #FFF3CD; border-left: 4px solid #856404; padding: 15px; margin: 0 20px 20px 20px; border-radius: 6px; font-size: 14px; color: #856404; font-weight: bold; line-height: 1.6; text-align: left; }
-    .progress-toggle-btn { background-color: #fbfaf9; border: 1px dashed #e0d8d0; color: var(--brand-charcoal); padding: 12px; text-align: center; font-weight: 700; font-size: 14px; border-radius: 8px; margin: 0 20px 20px 20px; cursor: pointer; transition: 0.2s; }
-    .progress-toggle-btn:hover { background-color: #f6f0ea; }
-    .progress-content { display: none; animation: fadeIn 0.3s ease-in-out; }
-    .progress-content.show { display: block; }
-
-    .progress-wrapper { margin: 0 20px 20px 20px; padding: 20px 15px; border: 1px solid #e0d8d0; border-radius: 12px; background-color: var(--brand-white); }
-    .progress-title { font-size: 14px; font-weight: 800; color: var(--brand-charcoal); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
-    .tracker-container { position: relative; display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; margin-top: 15px; }
-    .tracker-line { position: absolute; top: 15px; left: 30px; right: 30px; height: 3px; background-color: var(--track-bg); z-index: 0; }
-    .tracker-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; flex: 1; }
-    .step-dot { width: 32px; height: 32px; border-radius: 50%; background-color: var(--brand-white); border: 3px solid var(--track-muted); display: flex; justify-content: center; align-items: center; box-shadow: 0 0 0 4px var(--brand-white); margin-bottom: 8px; transition: 0.3s; }
-    .step-dot.active { background-color: var(--track-active); border-color: var(--track-active); }
-    .step-dot.final { border-color: var(--track-final); }
-    .step-dot.final.active { background-color: var(--track-final); }
-    .step-label { font-size: 12px; font-weight: bold; color: var(--track-active); text-align: center; margin-bottom: 4px; white-space: nowrap; }
-    .step-label.muted { color: var(--track-muted); }
-    .step-label.final { color: var(--track-final); }
-    .step-pct { font-size: 16px; font-weight: 900; color: var(--brand-charcoal); }
-    .step-pct.muted { color: var(--track-muted); }
-
-    .details-box { background-color: #fbfaf9; border: 1px solid #e0d8d0; border-radius: 12px; margin: 0 20px 20px 20px; padding: 15px 20px; }
-    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px dashed #e0d8d0; font-size: 14.5px; color: var(--brand-charcoal); }
-    .item-row:first-child { padding-top: 0; }
-    .item-name { font-weight: 700; line-height: 1.4; }
-    .item-qty { color: #888; margin-left: 8px; font-size: 12px; font-weight: 600; }
-    .summary-divider { height: 1px; border-top: 1px dashed #e0d8d0; margin: 15px 0; }
-    .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #666; font-weight: 500; }
-    .last5-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 14px; color: #666; font-weight: 600; }
-    .last5-value { color: var(--brand-charcoal); font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .edit-btn { cursor: pointer; color: var(--brand-brown); font-size: 13px; font-weight: 700; padding: 4px 8px; background-color: #f6f0ea; border-radius: 4px; transition: 0.2s; border: 1px solid #e0d8d0; z-index: 10; position: relative;}
-    .edit-btn:hover { background-color: var(--brand-brown); color: var(--brand-white); border-color: var(--brand-brown); }
-
-    .total-row { display: flex; justify-content: space-between; padding-top: 15px; border-top: 2px solid #e0d8d0; font-size: 1.15rem; font-weight: 900; color: var(--brand-charcoal); }
-    .total-price { color: #dc3545; }
-    
-    .bank-info { background-color: #fbfaf9; border: 1px solid #e0d8d0; padding: 20px; margin: 0 20px 20px 20px; border-radius: 12px; text-align: left; }
-    .bank-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; }
-    .bank-title-text { font-size: 14px; color: var(--brand-charcoal); font-weight: 900; display: flex; align-items: center; }
-    .bank-deadline { font-size: 13px; font-weight: 800; color: #dc3545; }
-    .bank-text { font-family: monospace; font-size: 15px; font-weight: bold; color: var(--brand-charcoal); white-space: pre-wrap; line-height: 1.6; }
-    .bank-warning { font-size: 13px; font-weight: bold; color: #a95a52; margin-top: 12px; }
-    .done-note { margin-top: 10px; font-size: 13.5px; font-weight: 700; color: var(--brand-brown); background-color: #f6f0ea; padding: 8px 12px; border-radius: 8px; display: inline-block; }
+    /* 新增品項 Modal */
+    .additem-search{border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 14px;font-size:14px;width:100%;background:#fbfaf9;}
+    .additem-row{padding:12px 14px;border-bottom:.5px solid #e0d8d0;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .additem-row.sel{background:#eaf3de;}
+    .additem-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:13px;}
+    .additem-price{font-size:12px;color:#888;}
   </style>
 </head>
 <body>
-
-  <div id="maintenanceArea" style="display:none; text-align: center; padding: 80px 20px; background-color: var(--brand-bg); height: 100vh;">
-    <div style="margin-bottom: 25px;">
-        <img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width: 160px; height: auto;" alt="Wander Ease Logo">
-    </div>
-    <h3 class="fw-bold mb-4" style="color: var(--brand-brown); letter-spacing: 2px;">系統升級維護中</h3>
-    <div class="card-custom mx-auto" style="max-width: 400px; background-color: var(--brand-white);">
-        <p id="maintenanceMsg" class="fw-bold mb-0" style="color: var(--brand-brown); line-height: 1.8; font-size: 16px;"></p>
-    </div>
+  <div id="maintenanceArea" style="display:none;text-align:center;padding:80px 20px;background:var(--brand-bg);height:100vh;">
+    <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
+    <h3 class="fw-bold mb-4" style="color:var(--brand-brown);letter-spacing:2px;">系統升級維護中</h3>
+    <div class="card-custom mx-auto" style="max-width:400px;"><p id="maintenanceMsg" class="fw-bold mb-0" style="color:var(--brand-brown);line-height:1.8;font-size:16px;"></p></div>
   </div>
+  <div id="loadingArea"><div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div><div class="loader-overlay mt-5"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">🔒 安全驗證中，為您打造專屬空間...</p></div></div>
 
-  <div id="loadingArea" style="display:block;">
-    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
-    <div class="loader-overlay mt-5">
-        <div class="spinner-border mb-3" role="status"></div>
-        <p class="small text-muted fw-bold">🔒 安全驗證中，為您打造專屬空間...</p>
-    </div>
-  </div>
+  <div class="modal fade" id="friendshipModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"><div class="modal-dialog modal-dialog-centered px-3"><div class="modal-content shadow-lg border-0" style="border-radius:20px;background:#fbfaf9;"><div class="modal-body p-4 text-center">
+    <div class="mb-3"><i class="bi bi-bell-fill" style="font-size:3rem;color:var(--brand-brown);"></i></div>
+    <h4 class="fw-bold mb-3" style="color:var(--brand-charcoal);letter-spacing:1px;">專屬通知小提醒</h4>
+    <p class="text-muted fw-bold" style="line-height:1.7;font-size:14.5px;">為了讓您能第一時間收到「預購是否買到」與「匯款/下單」等專屬通知訊息，建議您先將 Wander Ease 官方帳號加入好友哦~<br><br><span style="color:#a95a52;background:#fdf3f2;padding:4px 8px;border-radius:6px;">※ 若未加入好友，將無法接收系統訊息 ※</span></p>
+    <div id="step1-buttons" class="d-flex flex-column gap-3 mt-4 pt-2"><button type="button" class="btn-brand" onclick="openLineAddFriend()" style="padding:16px;font-size:16px;">👉 點我加入官方 LINE</button><button type="button" class="btn-outline-brand" onclick="skipFriendship()" style="border:none;color:#888;background:transparent;">稍後再說，先去查單系統</button></div>
+    <div id="step2-buttons" class="d-none flex-column gap-3 mt-4 pt-2"><button type="button" class="btn btn-success fw-bold" onclick="confirmFriendshipAdded()" style="padding:16px;font-size:16px;border-radius:12px;background:#198754;color:#fff;border:none;">✅ 我已經加好友了，進入系統</button></div>
+  </div></div></div></div>
 
-  <div class="modal fade" id="friendshipModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered px-3">
-      <div class="modal-content shadow-lg border-0" style="border-radius: 20px; background-color: #fbfaf9;">
-        <div class="modal-body p-4 text-center">
-          <div class="mb-3">
-            <i class="bi bi-bell-fill" style="font-size: 3rem; color: var(--brand-brown);"></i>
-          </div>
-          <h4 class="fw-bold mb-3" style="color: var(--brand-charcoal); letter-spacing: 1px;">專屬通知小提醒</h4>
-          <p class="text-muted fw-bold" style="line-height: 1.7; font-size: 14.5px;">
-            為了讓您能第一時間收到「預購是否買到」與「匯款/下單」等專屬通知訊息，建議您先將 Wander Ease 官方帳號加入好友哦~<br><br>
-            <span style="color: #a95a52; background-color: #fdf3f2; padding: 4px 8px; border-radius: 6px;">※ 若未加入好友，將無法接收系統訊息 ※</span>
-          </p>
-          <div id="step1-buttons" class="d-flex flex-column gap-3 mt-4 pt-2">
-            <button type="button" class="btn-brand" onclick="openLineAddFriend()" style="padding: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(121,82,56,0.2);">👉 點我加入官方 LINE</button>
-            <button type="button" class="btn-outline-brand" onclick="skipFriendship()" style="border: none; color: #888; background: transparent;">稍後再說，先去查單系統</button>
-          </div>
-          <div id="step2-buttons" class="d-none flex-column gap-3 mt-4 pt-2">
-            <button type="button" class="btn btn-success fw-bold" onclick="confirmFriendshipAdded()" style="padding: 16px; font-size: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(25,135,84,0.2); background-color: #198754; color: white; border: none;">✅ 我已經加好友了，進入系統</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="bindArea" style="display:none;">
-    <div class="header-img"><h2 class="fw-bold m-0 tracking-wide" style="letter-spacing: 1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color: #d1c8c1;">會員中心</p></div>
-    <div class="container">
-      <div class="card card-custom overlap-top">
-        <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
-        <div class="text-danger fw-bold mb-3 text-center" style="font-size: 0.9rem;">
-            <i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，慢慢輸入不要急~
-        </div>
-        <div class="mb-3"><label class="form-label">📱 完整的手機號碼 <span class="text-danger fw-bold">*</span></label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
-        <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email <span class="text-danger fw-bold">*</span></label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
-        <div class="mb-4"><label class="form-label">👤 社群名稱 <span class="text-danger fw-bold">*</span></label><input type="text" id="bindName" class="form-control" placeholder='您在群組裡的名稱'></div>
-        <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
-      </div>
-    </div>
-  </div>
+  <div id="bindArea" style="display:none;"><div class="header-img"><h2 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color:#d1c8c1;">會員中心</p></div><div class="container"><div class="card card-custom overlap-top">
+    <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
+    <div class="text-danger fw-bold mb-3 text-center" style="font-size:.9rem;"><i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，慢慢輸入不要急~</div>
+    <div class="mb-3"><label class="form-label">📱 完整的手機號碼 *</label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
+    <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email *</label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
+    <div class="mb-4"><label class="form-label">👤 社群名稱 *</label><input type="text" id="bindName" class="form-control" placeholder="您在群組裡的名稱"></div>
+    <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
+  </div></div></div>
 
   <div id="homeArea" style="display:none;">
-    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing: 1px;">Wander Ease</h4></div>
+    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
     <div class="container pt-4">
-      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color: var(--brand-charcoal);"></h5><p class="small mt-2" style="color: #888;">歡迎來到您的專屬空間</p></div>
-      
-      <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line mb-3">
-          <i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)
-      </a>
-      
-      <div id="adminMaintenanceAlert" style="display: none; max-width: 600px; margin: 0 auto;">
-          <div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius: 12px; border: 2px solid #dc3545;">
-              <i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式，僅管理員可見此畫面
-          </div>
-      </div>
+      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5><p class="small mt-2" style="color:#888;">歡迎來到您的專屬空間</p></div>
+      <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
+      <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
+      <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
+        <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
+        <div class="input-group mb-2 shadow-sm" style="border-radius:10px;overflow:hidden;"><select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width:130px;border:1px solid var(--brand-brown);color:#555;"><option value="name">社群名稱</option><option value="phone">手機號碼</option><option value="email">Email</option></select><input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border:1px solid var(--brand-brown);" placeholder="請輸入關鍵字..."></div>
+        <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-file-earmark-text me-1"></i> 調閱客人的單</button>
+      </div></div>
 
-      <div id="adminArea" style="display:none;" class="mb-4">
-          <div class="card card-custom p-4" style="border: 2px solid var(--brand-brown); background-color: #fffaf5;">
-              <h6 class="fw-bold mb-3" style="color: var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
-              <div class="input-group mb-2 shadow-sm" style="border-radius: 10px; overflow: hidden;">
-                  <select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width: 130px; border: 1px solid var(--brand-brown); color: #555;">
-                      <option value="name">社群名稱</option>
-                      <option value="phone">手機號碼</option>
-                      <option value="email">Email</option>
-                  </select>
-                  <input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border: 1px solid var(--brand-brown);" placeholder="請輸入關鍵字...">
-              </div>
-              <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-file-earmark-text me-1"></i> 調閱客人的單</button>
-          </div>
-      </div>
-
-      <!-- 🆕 各分頁內容容器 -->
-      <div id="pageOrders" class="page-content active"></div>
-      <div id="pageWaitlist" class="page-content">
-          <div class="text-start">
-              <h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-hourglass-split me-2"></i>我的候補清單</h6>
-              <div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color: #e0d8d0 !important;">
-                  <h6 class="fw-bold m-0" style="color: #888;">⏳ 目前沒有候補中的商品</h6>
-              </div>
-          </div>
-      </div>
+      <div id="pageOrders" class="page-content active"><div id="preorderCardsContainer"></div><div id="regularOrdersContainer"></div></div>
+      <div id="pageWaitlist" class="page-content"><div id="waitlistContainer"></div></div>
       <div id="pagePromos" class="page-content"></div>
       <div id="pageInstock" class="page-content"></div>
       <div id="pageRules" class="page-content"></div>
     </div>
-
-    <!-- 🆕 底部固定導航列 -->
-    <nav class="bottom-nav" id="bottomNav">
-      <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders', this)">
-        <span class="nav-icon">📦</span>
-        <span class="nav-text">訂單</span>
-      </div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist', this)">
-        <span class="nav-icon">⏳</span>
-        <span class="nav-text">候補</span>
-      </div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos', this)">
-        <span class="nav-icon">🔥</span>
-        <span class="nav-text">開團</span>
-      </div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pageInstock', this)">
-        <span class="nav-icon">🛍️</span>
-        <span class="nav-text">現貨</span>
-      </div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pageRules', this)">
-        <span class="nav-icon">📝</span>
-        <span class="nav-text">規則</span>
-      </div>
+    <nav class="bottom-nav">
+      <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this);loadWaitlistData()" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos',this)"><span class="nav-icon">🔥</span><span class="nav-text">開團</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageInstock',this)"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageRules',this)"><span class="nav-icon">📝</span><span class="nav-text">規則</span></div>
     </nav>
   </div>
 
+  <div class="modal fade" id="addItemModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content shadow-lg border-0" style="border-radius:16px;max-height:85vh;">
+    <div class="modal-header border-0 pb-0" style="background:#faf5f0;"><h6 class="modal-title fw-bold" style="color:var(--brand-brown);">+ 新增品項</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-3" style="background:#faf5f0;">
+      <input type="text" class="additem-search mb-3" id="addItemSearchInput" placeholder="🔍 搜尋品項名稱..." oninput="filterAddItems(this.value)">
+      <div id="addItemList" style="border:1px solid #e0d8d0;border-radius:10px;overflow:hidden;background:#fff;max-height:50vh;overflow-y:auto;"></div>
+    </div>
+    <div class="modal-footer border-0 p-3" style="background:#faf5f0;"><button class="po-submit-btn" onclick="confirmAddItems()">加入預購清單</button></div>
+  </div></div></div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  
   <script>
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec"; 
-    const LIFF_ID = "2009208139-8lZaYbbd"; 
+    const GAS_URL="https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec";
+    const LIFF_ID="2009208139-8lZaYbbd";
+    let currentLineUid="";
+    let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
+    let addItemMasterId="",addItemSel={};
 
-    let currentLineUid = "";
+    function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+    function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+    window.switchBottomTab=function(pid,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));let t=document.getElementById(pid);if(t)t.classList.add('active');document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});};
 
-    /* ============================================
-       🆕 底部導航切換
-       ============================================ */
-    window.switchBottomTab = function(pageId, btnEl) {
-        // 切換內容
-        document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
-        let target = document.getElementById(pageId);
-        if (target) target.classList.add('active');
-        
-        // 切換導航高亮
-        document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
-        if (btnEl) btnEl.classList.add('active');
-        
-        // 捲動到頂部
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    // ===== LIFF =====
+    window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
+    window.skipFriendship=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
+    window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https://lin.ee/mty4uxj',external:false});}catch(e){window.open('https://lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
+    window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
-    window.onload = async function() {
-        try {
-            await liff.init({ liffId: LIFF_ID });
-            if (!liff.isLoggedIn()) { 
-                liff.login(); 
-            } else {
-                const profile = await liff.getProfile(); 
-                currentLineUid = profile.userId;
-                
-                try {
-                    const friend = await liff.getFriendship();
-                    if (!friend.friendFlag) {
-                        document.getElementById('loadingArea').style.display = 'none';
-                        const friendModal = new bootstrap.Modal(document.getElementById('friendshipModal'));
-                        friendModal.show();
-                    } else {
-                        checkMemberStatus(); 
-                    }
-                } catch(e) {
-                    checkMemberStatus();
-                }
-            }
-        } catch (err) { 
-            alert("LINE 登入失敗，請確認在 LINE 內部開啟。"); 
-            document.getElementById('loadingArea').style.display = 'none'; 
-        }
-    };
+    // ===== 會員 =====
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});loadPreorderData();}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
 
-    window.skipFriendship = function() {
-        let modalEl = document.getElementById('friendshipModal');
-        let modalObj = bootstrap.Modal.getInstance(modalEl);
-        if(modalObj) modalObj.hide();
-        document.getElementById('loadingArea').style.display = 'block'; 
-        checkMemberStatus(); 
-    };
+    // ===== 管理員搜尋 =====
+    let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
+    async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
 
-    window.openLineAddFriend = function() {
-        let modalContent = document.querySelector('#friendshipModal .modal-content');
-        modalContent.style.transition = 'opacity 0.3s ease-in-out';
-        modalContent.style.opacity = '0';
-        try { liff.openWindow({ url: 'https://lin.ee/mty4uxj', external: false }); } catch(e) { window.open('https://lin.ee/mty4uxj', '_blank'); }
-        setTimeout(() => {
-            let step1 = document.getElementById('step1-buttons'); let step2 = document.getElementById('step2-buttons');
-            step1.classList.remove('d-flex'); step1.classList.add('d-none');
-            step2.classList.remove('d-none'); step2.classList.add('d-flex');
-            setTimeout(() => { modalContent.style.opacity = '1'; }, 500);
-        }, 300);
-    };
+    // ===== 後五碼修改 =====
+    async function promptEditLast5(oid,cur){if(event)event.stopPropagation();let v=prompt("請輸入匯款帳號最後五碼：",cur||"");if(v===null)return;v=v.trim();if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}else{alert("失敗："+d.message);checkMemberStatus();}}catch(e){alert("網路錯誤");checkMemberStatus();}}
+    function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
+    function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
 
-    window.confirmFriendshipAdded = function() {
-        let modalEl = document.getElementById('friendshipModal');
-        let modalObj = bootstrap.Modal.getInstance(modalEl);
-        if(modalObj) modalObj.hide();
-        document.getElementById('loadingArea').style.display = 'block';
-        checkMemberStatus();
-    };
-
-    async function checkMemberStatus() {
-        try {
-            const res = await fetch(`${GAS_WEB_APP_URL}?action=getMemberData&lineUid=${currentLineUid}`);
-            const text = await res.text();
-            let serverData;
-            try { serverData = JSON.parse(text); } 
-            catch(e) { throw new Error("API 網址可能未更新或權限設定錯誤。"); }
-
-            document.getElementById('loadingArea').style.display = 'none';
-            
-            if (serverData.status === "MAINTENANCE") {
-                document.getElementById('maintenanceArea').style.display = 'block';
-                document.getElementById('maintenanceMsg').innerText = serverData.message;
-                return; 
-            }
-
-            if (serverData.status === "BOUND") {
-                document.getElementById('homeArea').style.display = 'block';
-                document.getElementById('welcomeMsg').innerText = `嗨嗨～ ${serverData.userData["最新社群名稱"]}`;
-                
-                if (serverData.isAdmin) {
-                    document.getElementById('adminArea').style.display = 'block';
-                    if (serverData.isUnderMaintenance) {
-                        document.getElementById('adminMaintenanceAlert').style.display = 'block';
-                    }
-                }
-
-                window.lastAdminSearchText = ""; 
-                renderOrders(serverData.orders || [], serverData.promos || [], serverData.globalPages || {rules:{content:''}, instock:[]});
-
-            } else { document.getElementById('bindArea').style.display = 'block'; }
-        } catch (err) { 
-            document.getElementById('loadingArea').style.display = 'none'; 
-            alert("系統連線異常：\n" + err.message); 
-        }
+    // ===== 正式訂單渲染 =====
+    function renderOrders(orders,promos,gp){
+      const oc=document.getElementById('regularOrdersContainer');
+      let tt=`<h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
+      if(window.lastAdminSearchText)tt=`<h6 class="fw-bold mb-3 ms-1" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
+      if(!orders||!orders.length){oc.innerHTML=`<div class="text-start">${tt}<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">📦 目前沒有訂單</h6></div></div>`;}
+      else{let cards=orders.map((o,idx)=>{let ci=`oc-${idx}`,pi=`pc-${idx}`,ip=o.payStatus.includes('完成')||o.payStatus.includes('✅')||o.payStatus.includes('貨付'),bc=ip?'status-done':'badge-status',sd=o.ship>0?`-$${o.ship}`:'$0';let tl=escHTML(o.label),th=`<div class="order-title-container"><span class="order-title-brand">${tl}</span></div>`;if(/\||｜/.test(tl)){let p=tl.split(/\||｜/);th=`<div class="order-title-container"><span class="order-title-brand">${p[0].trim()}</span><span class="order-title-series">${p[1].trim()}</span></div>`;}let nh='';if(o.groupNotice||o.groupMemo)nh=`<div class="notice-box">📢 公告：<br>${escHTML(o.groupNotice)}<br>${escHTML(o.groupMemo)}</div>`;let ph='',pch='';if(o.progress){let p=o.progress,h1=p.b1&&(p.b1.purchased>0||p.b1.totalPurchased>0),h2=p.b2&&(p.b2.purchased>0||p.b2.totalPurchased>0);let n1=(h1&&h2)?"📦 [非預購款] 貨況":"📦 貨況進度",n2=(h1&&h2)?"🚚 [預購款] 貨況":"🚚 貨況進度";function mkTrack(t,s1,s2,s3,s4,title){let p1=Math.round(s1/t*100)||0,p2=Math.max(0,Math.round((s2-s3)/t*100))||0,p3=Math.max(0,Math.round((s3-s4)/t*100))||0,p4=Math.round(s4/t*100)||0;let a1=s1>0?'active':'',a2=s2>0?'active':'',a3=s3>0?'active':'',a4=s4>0?'active':'';let ns=s1===0?`<div style="margin-top:20px;padding:12px;background:#FFF3CD;color:#856404;border-radius:8px;font-size:14px;font-weight:bold;text-align:center;border:1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>`:'';return`<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}</div>`;}if(h1){let t=p.b1.purchased||p.b1.totalPurchased;pch+=mkTrack(t,p.b1.step1!==undefined?p.b1.step1:(p.b1.shipped||0),p.b1.step2||0,p.b1.step3||0,p.b1.step4!==undefined?p.b1.step4:(p.b1.twArrived||0),n1);}if(h2){let t=p.b2.purchased||p.b2.totalPurchased;pch+=mkTrack(t,p.b2.step1!==undefined?p.b2.step1:(p.b2.shipped||0),p.b2.step2!==undefined?p.b2.step2:(p.b2.flight||0),p.b2.step3!==undefined?p.b2.step3:(p.b2.flight||0),p.b2.step4!==undefined?p.b2.step4:(p.b2.twArrived||0),n2);}if(pch)ph=`<div id="${pi}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${pi}')">🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i></div><div id="${pi}" class="progress-content">${pch}</div>`;}let ih=o.items.map(i=>`<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`).join('');let eb=!ip?`<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`:'';let l5=o.last5?`<span class="last5-value">${escHTML(o.last5)} ${eb}</span>`:`<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;let db=`<div class="details-box shadow-sm mb-3">${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;let bh='';if(ip){let nn=o.personalNote?`<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(o.personalNote)}</div>`:'';bh=`<div class="bank-info text-center shadow-sm"><div class="fw-bold fs-5" style="color:#436b46;"><i class="bi bi-check-circle-fill me-2"></i>已完成匯款對帳</div>${nn}</div>`;}else if(o.groupBankInfo){let dl=o.groupDeadline?`<span class="bank-deadline">匯款期限：${escHTML(o.groupDeadline)}</span>`:'';bh=`<div class="bank-info shadow-sm"><div class="bank-title"><span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>${dl}</div><div class="bank-text">${escHTML(o.groupBankInfo)}</div><div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div></div>`;}return`<div class="card-order mb-4"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;}).join('');oc.innerHTML=`<div class="text-start">${tt}${cards}</div>`;}
+      // 開團/現貨/規則
+      const pc=document.getElementById('pagePromos');pc.innerHTML=promos&&promos.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6>${promos.map(p=>`<div style="background:#fffaf5;border:1px solid #e8d5c4;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:12px;">👑 ${escHTML(p.title)}</h6><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14.5px;color:#dc3545;font-weight:900;">${p.exp?`⏰ 結單: ${escHTML(p.exp)}`:''}</div><button style="background:var(--brand-brown);color:#fff;border:none;padding:8px 20px;font-size:14px;border-radius:8px;font-weight:bold;cursor:pointer;" onclick="window.open('${p.url}','_blank')">👉 前往填單</button></div></div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">目前沒有開團</h6></div></div>`;
+      const ic=document.getElementById('pageInstock');let ia=gp.instock;ic.innerHTML=ia&&ia.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6>${ia.map(s=>`<div style="background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;padding:15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left;"><div style="flex:1;min-width:0;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:${s.content?'6px':'0'};"><i class="bi bi-shop me-2"></i>${escHTML(s.title||'現貨賣場')}</h6>${s.content?`<div class="text-muted small" style="line-height:1.5;white-space:pre-wrap;">${escHTML(s.content)}</div>`:''}</div>${s.link?`<button style="background:var(--brand-brown);color:#fff;border:none;padding:10px 16px;font-size:14px;border-radius:8px;white-space:nowrap;font-weight:bold;cursor:pointer;" onclick="window.open('${s.link}','_blank')">👉 前往逛逛</button>`:''}</div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">尚未開放</h6></div></div>`;
+      document.getElementById('pageRules').innerHTML=`<div class="text-start"><div class="card-order p-4 shadow-sm"><h6 class="fw-bold mb-3" style="color:var(--brand-charcoal);"><i class="bi bi-book me-2"></i>代購與服務規則</h6><div class="text-muted small" style="line-height:1.8;white-space:pre-wrap;">${escHTML(gp.rules.content||'尚無規則。')}</div></div></div>`;
     }
 
-    async function executeBind() {
-      const phone = document.getElementById('bindPhone').value.trim(); const email = document.getElementById('bindEmail').value.trim(); const name = document.getElementById('bindName').value.trim();
-      if(!phone || !email || !name) return alert("手機號碼、Email 與社群名稱皆為必填欄位！");
-      const btn = document.getElementById('btnBind'); btn.innerText = "資料寫入中..."; btn.disabled = true;
-      try {
-          const res = await fetch(GAS_WEB_APP_URL, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ action: 'bindUser', lineUid: currentLineUid, phone: phone, email: email, name: name }) });
-          const data = await res.json();
-          if(data.status === "SUCCESS") {
-             document.getElementById('bindArea').style.display = 'none'; 
-             document.getElementById('loadingArea').style.display = 'block';
-             let loadingText = document.querySelector('#loadingArea p');
-             if(loadingText) loadingText.innerText = "✅ 綁定成功！正在為您調閱專屬訂單...";
-             setTimeout(() => { checkMemberStatus(); }, 1500);
-          } else { alert("發生錯誤: " + data.message); btn.innerText="確認綁定"; btn.disabled=false; }
-      } catch(e) { alert("網路錯誤，請保持網路暢通並重試。"); btn.innerText="確認綁定"; btn.disabled=false; }
+    // =============================================
+    // 🎯 預購卡片
+    // =============================================
+    async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};renderPoCards();}}catch(e){}}
+    function renderPoCards(){const c=document.getElementById('preorderCardsContainer');if(!poData.preorders||!poData.preorders.length){c.innerHTML='';return;}c.innerHTML=poData.preorders.map((po,i)=>buildPoCard(po,i)).join('');}
+    function getCountdown(ds){if(!ds)return'';let t=new Date(ds.replace(/-/g,'/')).getTime()-Date.now();if(t<=0)return'已截止';let d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4);return d>0?`剩餘 ${d} 天 ${h} 小時`:`剩餘 ${h} 小時 ${m} 分`;}
+    function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
+
+    function buildPoCard(po,idx){
+      let s=po.stage,ed=pendingEdits[po.masterId]||[],dec=pendingSweep[po.masterId]||[];
+      let bc,hbg,sub,badge;
+      switch(s){
+        case'EDITING':bc='#795238';hbg='#fff';sub=`📝 結單倒數：${getCountdown(po.stageInfo.orderCloseTime)}`;badge=`<span class="po-badge" style="background:#795238;color:#fff;">可修改</span>`;break;
+        case'WAITING_PREPARING':bc='#b8b0a8';hbg='#fbfaf9';sub='📋 訂單整理中，等待開賣搶購';badge=`<span class="po-badge" style="background:#f1efe8;color:#5f5e5a;line-height:1.3;">結單<br>訂單整理中</span>`;break;
+        case'WAITING_PURCHASING':bc='#d97706';hbg='#fef9ee';sub='⏳ 仍在努力，訂單隨時更新~';badge=`<span class="po-badge" style="background:#fef3c7;color:#854f0b;">搶購中</span>`;break;
+        case'SWEEP':bc='#dc3545';hbg='#fdf3f2';sub=`⏰ 處理期限：${po.stageInfo.preorderDeadline||''}`;let cnt=po.items.filter(i=>!i.isCancelled&&!i.isWaitlisted&&!i.isSwapped&&i.reqQty>i.allocQty).length-dec.length;badge=cnt>0?`<span class="po-badge" style="background:#dc3545;color:#fff;">${cnt} 件待處理</span>`:`<span class="po-badge" style="background:#198754;color:#fff;">已選完</span>`;break;
+        case'SWEEP_DONE':bc='#198754';hbg='#eef5ee';sub='✅ 已完成缺貨處理';badge=`<span class="po-badge" style="background:#eef5ee;color:#436b46;">已處理</span>`;break;
+        case'LOCKED':bc='#b8b0a8';hbg='#f5f3ef';sub='⚠️ 處理期限已過，系統將自動處理';badge=`<span class="po-badge" style="background:#f5f3ef;color:#a95a52;">已截止</span>`;break;
+        default:bc='#b8b0a8';hbg='#fff';sub='';badge='';
+      }
+      let lb=escHTML(po.label),lbh=lb;if(/\||｜/.test(lb)){let p=lb.split(/\||｜/);lbh=`${p[0].trim()}<br><span style="font-size:13px;font-weight:600;color:#666;">${p[1].trim()}</span>`;}
+
+      let ih='';
+      // === EDITING ===
+      if(s==='EDITING'){
+        po.items.filter(i=>!i.isSwapped).forEach(i=>{
+          if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${i.originalReqQty}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+          let dl=ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId);
+          if(dl){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${i.reqQty}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
+          let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId),dq=md?md.newQty:i.reqQty,isMod=md&&md.newQty!==md.oldQty;
+          let rs=isMod?'background:#e6f1fb;border-radius:6px;border:none;margin:2px 0;padding:6px;':'';
+          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(i.product)}</span><span class="po-iprice" style="margin-right:6px;">$${i.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},-1)">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},1)">+</div></div><button class="po-del-btn" onclick="poDelItem('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty})">刪除</button></div>`;
+        });
+        ed.filter(e=>e.type==='ADD').forEach(a=>{ih+=`<div class="po-irow" style="background:#eaf3de;border-radius:6px;border:none;margin:2px 0;padding:6px;"><span class="po-iname" style="color:#27500a;">+ ${escHTML(a.product)} x${a.qty}</span><span class="po-iprice" style="color:#3b6d11;">$${a.price}</span></div>`;});
+        let total=0;po.items.forEach(i=>{if(i.isCancelled||ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId);total+=(md?md.newQty:i.reqQty)*i.price;});ed.filter(e=>e.type==='ADD').forEach(a=>{total+=a.qty*a.price;});
+        ih+=`<div class="po-sum"><span>商品小計</span><span>$${total.toLocaleString()}</span></div>`;
+        ih+=`<div class="po-add-btn" onclick="openAddItemModal('${po.masterId}')">+ 新增品項</div>`;
+      }
+      // === SWEEP ===
+      else if(s==='SWEEP'){
+        po.items.filter(i=>!i.isSwapped).forEach(i=>{
+          if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)} x${i.originalReqQty}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+          if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)} x${i.originalReqQty}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
+          let sh=i.reqQty-i.allocQty;
+          if(i.allocQty>0) ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty} (已確認)</span><span class="po-iprice">$${i.price}</span></div>`;
+          if(sh>0){let dc=dec.find(d=>d.recordId===i.recordId);
+            if(dc){let tg=dc.action==='CANCEL'?'已選取消':'已選候補',tbg=dc.action==='CANCEL'?'background:#fdf3f2;color:#dc3545':'background:#fff3cd;color:#856404';ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${sh}</span><span style="text-decoration:none;font-size:10px;font-weight:700;${tbg};padding:1px 8px;border-radius:4px;">${tg}</span></div>`;}
+            else{let bg=i.allocQty>0?'background:#fff3cd;':'background:#fdf3f2;',tc=i.allocQty>0?'color:#d97706;':'color:#dc3545;',sym=i.allocQty>0?'⚠️':'❌';ih+=`<div class="po-irow po-shortage-row" style="${bg}"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;${tc}">${sym} ${escHTML(i.product)} x${sh} (缺貨)</div><div style="font-size:11px;color:#888;">$${i.price}</div></div><div style="display:flex;gap:4px;flex-shrink:0;"><button class="po-del-btn" style="background:#ffc107;color:#412402;" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','${escAttr(po.brand)}','${escAttr(po.series)}',${i.reqQty},${i.allocQty},'WAITLIST')">轉候補</button><button class="po-del-btn" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','','',${i.reqQty},${i.allocQty},'CANCEL')">取消</button></div></div>`;}
+          }
+          if(sh<=0&&i.allocQty>0) ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;
+        });
+      }
+      // === 唯讀 ===
+      else{po.items.filter(i=>!i.isSwapped).forEach(i=>{
+        if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)} x${i.originalReqQty}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+        if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)} x${i.originalReqQty}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
+        let sh=i.reqQty-i.allocQty;
+        if(s==='WAITING_PREPARING') ih+=`<div class="po-irow"><span class="po-iname">${escHTML(i.product)} x${i.reqQty}</span><span class="po-iprice">$${i.price}</span></div>`;
+        else if(s==='WAITING_PURCHASING'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:${i.allocQty>0?'#d97706':'#dc3545'};">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)}${i.allocQty>0?` (缺${sh})`:` x${i.reqQty}`}</span><span class="po-iprice">$${i.price}</span></div>`;}
+        else if(s==='SWEEP_DONE'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;}
+        else if(s==='LOCKED'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#dc3545;">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)} x${sh}</span><span class="po-iprice" style="color:#a95a52;">等待處理</span></div>`;}
+      });if(s==='SWEEP_DONE'){let t=0;po.items.forEach(i=>{if(i.allocQty>0&&!i.isSwapped)t+=i.allocQty*i.price;});ih+=`<div class="po-sum"><span>應匯款金額</span><span>$${t.toLocaleString()}</span></div>`;}}
+
+      // 預覽
+      let pv='';
+      if(s==='EDITING'&&ed.length>0){let pi=ed.map((e,ei)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits('${po.masterId}')">確認送出修改</button></div>`;}
+      if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d,di)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${po.masterId}',${di})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep('${po.masterId}')">確認送出</button></div>`;}
+      let nt='';if(s==='SWEEP_DONE')nt=`<div class="po-notice" style="background:#fff3cd;color:#633806;border:1px dashed #efc777;">⚠️ 目前暫未開放匯款，開放後將另行通知</div>`;
+      let notes='';let fn=fmtPoNote(po.note);if(fn)notes=`<div class="po-notes">${fn}</div>`;
+
+      return`<div class="po-card" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${pv}${nt}${notes}</div></div>`;
     }
 
-    let fetchInterval;
-    function startFetchAnimation(customText) {
-        const texts = customText ? [customText, "跨海連線中...", "快好了，再等我一下下..."] : ["專屬資料載入中...", "努力為您撈取最新進度...", "連線進行中..."];
-        let i = 0;
-        document.getElementById('carouselText').innerText = texts[0];
-        fetchInterval = setInterval(() => { i = (i + 1) % texts.length; document.getElementById('carouselText').innerText = texts[i]; }, 1500);
+    // ===== 改單操作 =====
+    function poEditQty(mid,rid,prod,orig,cur,d){let nq=Math.max(1,cur+d);if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
+    function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;if(ac<=1){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty});renderPoCards();}
+    function poUndo(mid,i){let a=pendingEdits[mid];if(a)a.splice(i,1);renderPoCards();}
+
+    function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;renderAddList(po.availableProducts,'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
+    function filterAddItems(kw){let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(po.availableProducts,kw.toLowerCase());}
+    function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1)">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1)">+</div></div></div>`;}).join('')||'<div class="p-4 text-center text-muted fw-bold">找不到品項</div>';}
+    function addItemQty(id,nm,pr,d){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};addItemSel[id].qty=Math.max(0,addItemSel[id].qty+d);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(po.availableProducts,document.getElementById('addItemSearchInput').value.toLowerCase());}
+    function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty>0)pendingEdits[addItemMasterId].push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
+    async function submitEdits(mid){let ed=pendingEdits[mid];if(!ed||!ed.length)return;if(!confirm('確定送出所有修改？'))return;let btn=event.target;btn.disabled=true;btn.innerText='送出中...';try{const r=await fetch(GAS_URL+'?action=customerEditPreorder',{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改已送出！");loadPreorderData();}else{alert("失敗："+d.message);btn.disabled=false;btn.innerText='確認送出修改';}}catch(e){alert("網路錯誤");btn.disabled=false;btn.innerText='確認送出修改';}}
+
+    // ===== 二選一操作 =====
+    function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
+    function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
+    async function submitSweep(mid){let dec=pendingSweep[mid];if(!dec||!dec.length)return;if(!confirm('確定送出？'))return;let btn=event.target;btn.disabled=true;btn.innerText='送出中...';try{const r=await fetch(GAS_URL+'?action=customerSweepDecision',{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 已送出！");loadPreorderData();}else{alert("失敗："+d.message);btn.disabled=false;btn.innerText='確認送出';}}catch(e){alert("網路錯誤");btn.disabled=false;btn.innerText='確認送出';}}
+
+    // ===== 候補頁面 =====
+    let wlLoaded=false;
+    async function loadWaitlistData(){const c=document.getElementById('waitlistContainer');if(wlLoaded)return;c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><p class="small text-muted fw-bold">載入中...</p></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyWaitlist',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){wlLoaded=true;renderWL(d.data);}else c.innerHTML=`<div class="text-center p-4 text-danger fw-bold">${d.message}</div>`;}catch(e){c.innerHTML='<div class="text-center p-4 text-danger fw-bold">載入失敗</div>';}}
+    function renderWL(data){const c=document.getElementById('waitlistContainer');let g=data.groups||[],ca=data.cancelled||[];
+      if(!g.length&&!ca.length){c.innerHTML=`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-hourglass-split me-2"></i>我的候補清單</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">⏳ 目前沒有候補中的商品</h6></div></div>`;return;}
+      let h=`<h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-hourglass-split me-2"></i>我的候補清單</h6>`;
+      g.forEach(gr=>{h+=`<div class="wl-card"><div class="wl-card-h">${escHTML(gr.brand)} | ${escHTML(gr.series)}</div>${gr.items.map(i=>{let d=i.queueTime?new Date(i.queueTime):null,ds=d?`${d.getMonth()+1}/${d.getDate()}`:'';return`<div class="wl-item"><div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--brand-charcoal);">⏳ ${escHTML(i.product)} x${i.qty}</div><div style="font-size:10px;color:#888;margin-top:2px;">排隊於 ${ds}</div></div><button class="wl-cancel-btn" onclick="cancelWL('${i.recordId}','${escAttr(i.product)}')">取消候補</button></div>`;}).join('')}</div>`;});
+      if(ca.length){h+=`<div class="wl-card" style="opacity:.5;"><div style="padding:12px 16px;font-size:12px;color:#888;"><div style="font-weight:700;margin-bottom:6px;color:#999;">已取消的候補</div>${ca.map(i=>{let nm=i.note.match(/\[(\d+\/\d+ \d+:\d+)/);let ds=nm?nm[1]:'';return`<div style="text-decoration:line-through;padding:3px 0;">❌ ${escHTML(i.product)} x${i.qty}</div><div style="font-size:10px;color:#aaa;padding-bottom:6px;">您已於 ${ds} 取消候補</div>`;}).join('')}</div></div>`;}
+      c.innerHTML=`<div class="text-start">${h}</div>`;
     }
-
-    async function executeAdminSearch() {
-        const type = document.getElementById('adminSearchType').value;
-        const kw = document.getElementById('adminSearchKeyword').value.trim();
-        if (!kw) return alert("請輸入查詢關鍵字！");
-        
-        const container = document.getElementById('pageOrders');
-        container.innerHTML = `
-            <div class="loader-overlay">
-                <div class="spinner-border mb-3" role="status"></div>
-                <div id="carouselText" class="text-carousel">🔍 正在調閱客戶資料...</div>
-            </div>`;
-        
-        // 確保切到訂單分頁
-        switchBottomTab('pageOrders', document.querySelector('.bottom-nav-item'));
-            
-        startFetchAnimation("正在大海撈針尋找客人...");
-            
-        try {
-            const res = await fetch(GAS_WEB_APP_URL, {
-                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ action: 'adminSearch', lineUid: currentLineUid, searchType: type, keyword: kw })
-            });
-            const data = await res.json();
-            clearInterval(fetchInterval);
-            
-            if (data.status === "SUCCESS") {
-                window.lastAdminSearchText = `【${kw}】的訂單`;
-                renderOrders(data.data.orders, data.data.promos, data.data.globalPages);
-            } else {
-                container.innerHTML = `<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space: pre-wrap;">${data.message}</p></div>`;
-            }
-        } catch(err) {
-            clearInterval(fetchInterval);
-            container.innerHTML = `<div class="alert alert-danger text-center">網路連線錯誤，請重試</div>`;
-        }
-    }
-
-    async function promptEditLast5(orderId, currentLast5) {
-        if (event) { event.stopPropagation(); }
-        let newLast5 = prompt("請輸入您實際匯款帳號的『最後五碼』：", currentLast5 || "");
-        if (newLast5 === null) return; 
-        newLast5 = newLast5.trim();
-        if (newLast5.length !== 5 || isNaN(newLast5)) return alert("請輸入正確的 5 位數字！");
-
-        const container = document.getElementById('pageOrders');
-        container.innerHTML = `
-            <div class="loader-overlay">
-                <div class="progress-bar-custom"><div class="progress-bar-fill"></div></div>
-                <div class="text-carousel">📡 正在加密傳輸您的帳號資訊...</div>
-            </div>`;
-
-        try {
-            const res = await fetch(GAS_WEB_APP_URL, {
-                method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ action: 'updateLast5', orderId: orderId, newLast5: newLast5, lineUid: currentLineUid })
-            });
-            const data = await res.json();
-            if (data.status === "SUCCESS") { alert("✅ 帳號修改成功！"); checkMemberStatus(); } 
-            else { alert("修改失敗：" + data.message); checkMemberStatus(); }
-        } catch(err) { alert("網路連線錯誤，請稍後再試。"); checkMemberStatus(); }
-    }
-
-    function toggleOrderCard(id) { let el = document.getElementById(id); if (el.classList.contains('show')) el.classList.remove('show'); else el.classList.add('show'); }
-    
-    function toggleProgressCard(id) { 
-        if (event) { event.stopPropagation(); }
-        let el = document.getElementById(id); 
-        let btn = document.getElementById(id + '-btn');
-        if (el.classList.contains('show')) {
-            el.classList.remove('show');
-            btn.innerHTML = '🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';
-        } else { 
-            el.classList.add('show'); 
-            btn.innerHTML = '🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';
-        }
-    }
-
-    /* ============================================
-       🆕 renderOrders 改版：分別填充各分頁容器
-       ============================================ */
-    function renderOrders(orders, promos, globalPages) {
-        
-        // ===== 1. 訂單頁 =====
-        const ordersContainer = document.getElementById('pageOrders');
-        let ordersHtml = '';
-        let titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
-        if (window.lastAdminSearchText) {
-            titleHtmlStr = `<h6 class="fw-bold mb-3 ms-1" style="color: #a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
-        }
-        
-        if (!orders || orders.length === 0) { 
-            ordersHtml = `<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color: #e0d8d0 !important;"><h6 class="fw-bold m-0" style="color: #888;">📦 您目前沒有進行中的訂單</h6></div>`; 
-        } else {
-            let cardsHtml = orders.map((order, idx) => {
-                let collapseId = `order-collapse-${idx}`; 
-                let progressCollapseId = `progress-collapse-${idx}`; 
-                
-                let isPaid = (order.payStatus.includes('完成') || order.payStatus.includes('✅') || order.payStatus.includes('貨付'));
-                let badgeClass = isPaid ? 'status-done' : 'badge-status'; 
-                let shipDisplay = order.ship > 0 ? `-$${order.ship}` : `$0`;
-
-                let titleText = escHTML(order.label);
-                let titleHtml = `<div class="order-title-container"><span class="order-title-brand">${titleText}</span></div>`;
-                if (/\||｜/.test(titleText)) {
-                    let parts = titleText.split(/\||｜/);
-                    titleHtml = `<div class="order-title-container"><span class="order-title-brand">${parts[0].trim()}</span><span class="order-title-series">${parts[1].trim()}</span></div>`;
-                }
-
-                let noticeHtml = '';
-                if (order.groupNotice || order.groupMemo) {
-                    noticeHtml = `<div class="notice-box">📢 公告：<br>${escHTML(order.groupNotice)}<br>${escHTML(order.groupMemo)}</div>`;
-                }
-
-                let progressHtml = '';
-                let progressContentHtml = '';
-                
-                if (order.progress) {
-                    let p = order.progress;
-                    let hasB1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
-                    let hasB2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
-                    let titleB1 = (hasB1 && hasB2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
-                    let titleB2 = (hasB1 && hasB2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
-                    
-                    if (hasB1) {
-                        let t = p.b1.purchased || p.b1.totalPurchased;
-                        let rawStep1 = p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0); let rawStep2 = p.b1.step2 || 0; let rawStep3 = p.b1.step3 || 0; let rawStep4 = p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0);
-                        let pctStep1 = Math.round((rawStep1 / t) * 100) || 0; let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0; let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0; let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
-                        let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
-                        progressContentHtml += `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${titleB1}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div><div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div><div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div><div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div></div>${notShippedMsg}</div>`;
-                    }
-                    if (hasB2) {
-                        let t = p.b2.purchased || p.b2.totalPurchased;
-                        let rawStep1 = p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0); let rawStep2 = p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0); let rawStep3 = p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0); let rawStep4 = p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0);
-                        let pctStep1 = Math.round((rawStep1 / t) * 100) || 0; let pctStep2 = Math.max(0, Math.round(((rawStep2 - rawStep3) / t) * 100)) || 0; let pctStep3 = Math.max(0, Math.round(((rawStep3 - rawStep4) / t) * 100)) || 0; let pctStep4 = Math.round((rawStep4 / t) * 100) || 0;
-                        let act1 = rawStep1 > 0 ? 'active' : ''; let act2 = rawStep2 > 0 ? 'active' : ''; let act3 = rawStep3 > 0 ? 'active' : ''; let act4 = rawStep4 > 0 ? 'active' : '';
-                        let notShippedMsg = (rawStep1 === 0) ? `<div style="margin-top: 20px; padding: 12px; background-color: #FFF3CD; color: #856404; border-radius: 8px; font-size: 14px; font-weight: bold; text-align: center; border: 1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
-                        progressContentHtml += `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${titleB2}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${act1}"></div><div class="step-label ${act1?'':'muted'}">官方出貨</div><div class="step-pct ${act1?'':'muted'}">${pctStep1}%</div></div><div class="tracker-step"><div class="step-dot ${act2}"></div><div class="step-label ${act2?'':'muted'}">泰國到貨</div><div class="step-pct ${act2?'':'muted'}">${pctStep2}%</div></div><div class="tracker-step"><div class="step-dot ${act3}"></div><div class="step-label ${act3?'':'muted'}">海關查驗</div><div class="step-pct ${act3?'':'muted'}">${pctStep3}%</div></div><div class="tracker-step"><div class="step-dot final ${act4}"></div><div class="step-label final ${act4?'':'muted'}">台灣到貨</div><div class="step-pct final ${act4?'':'muted'}">${pctStep4}%</div></div></div>${notShippedMsg}</div>`;
-                    }
-                    if (progressContentHtml !== '') {
-                        progressHtml = `<div id="${progressCollapseId}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${progressCollapseId}')">🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i></div><div id="${progressCollapseId}" class="progress-content">${progressContentHtml}</div>`;
-                    }
-                }
-
-                let itemsHtml = order.items.map(i => `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`).join('');
-                let editBtn = !isPaid ? `<span class="edit-btn" onclick="promptEditLast5('${order.key}', '${order.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
-                let last5ValueHtml = order.last5 ? `<span class="last5-value">${escHTML(order.last5)} ${editBtn}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${editBtn}</span>`;
-                let last5Html = `<div class="last5-row"><div style="color:#666;">匯款後五碼</div>${last5ValueHtml}</div>`;
-
-                let detailsBoxHtml = `<div class="details-box shadow-sm mb-3">${itemsHtml}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${order.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${shipDisplay}</span></div>${last5Html}<div class="total-row"><span>應匯款金額</span><span class="total-price">$${order.due}</span></div></div>`;
-
-                let bankHtml = '';
-                if (isPaid) {
-                    let noteHtml = order.personalNote ? `<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(order.personalNote)}</div>` : '';
-                    bankHtml = `<div class="bank-info text-center shadow-sm"><div class="fw-bold fs-5" style="color: #436b46;"><i class="bi bi-check-circle-fill me-2"></i>此訂單已完成匯款對帳</div>${noteHtml}</div>`;
-                } else if (order.groupBankInfo) {
-                    let deadlineHtml = order.groupDeadline ? `<span class="bank-deadline">匯款期限：${escHTML(order.groupDeadline)}</span>` : '';
-                    bankHtml = `<div class="bank-info shadow-sm"><div class="bank-title"><span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>${deadlineHtml}</div><div class="bank-text">${escHTML(order.groupBankInfo)}</div><div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div></div>`;
-                }
-
-                return `<div class="card-order mb-4"><div class="order-header" onclick="toggleOrderCard('${collapseId}')">${titleHtml}<div class="badge-status ${badgeClass}">${escHTML(order.payStatus)}</div></div><div id="${collapseId}" class="order-content">${noticeHtml}${progressHtml}${detailsBoxHtml}${bankHtml}</div></div>`;
-            }).join('');
-            ordersHtml = `${titleHtmlStr}${cardsHtml}`;
-        }
-        ordersContainer.innerHTML = `<div class="text-start">${ordersHtml}</div>`;
-
-        // ===== 2. 開團頁 =====
-        const promosContainer = document.getElementById('pagePromos');
-        let promosHtml = '';
-        if (promos && promos.length > 0) {
-            let pCards = promos.map(p => `
-                <div style="background:#fffaf5; border:1px solid #e8d5c4; border-radius:12px; padding:16px; margin-bottom:12px; text-align:left; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-                    <div style="margin-bottom: 12px;"><h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:0;">👑 ${escHTML(p.title)}</h6></div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-size:14.5px; color:#dc3545; font-weight:900;">${p.exp ? `⏰ 結單: ${escHTML(p.exp)}` : ''}</div>
-                        <button class="shadow-sm" style="background-color:var(--brand-brown); color:#fff; border:none; padding:8px 20px; font-size:14px; border-radius:8px; font-weight:bold; cursor:pointer;" onclick="window.open('${p.url}', '_blank')">👉 前往填單</button>
-                    </div>
-                </div>
-            `).join('');
-            promosHtml = pCards;
-        } else {
-            promosHtml = `<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color: #e0d8d0 !important;"><h6 class="fw-bold m-0" style="color: #888;">目前沒有進行中的開團喔！</h6></div>`;
-        }
-        promosContainer.innerHTML = `<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團資訊</h6>${promosHtml}</div>`;
-
-        // ===== 3. 現貨頁 =====
-        const instockContainer = document.getElementById('pageInstock');
-        let instockArr = globalPages.instock;
-        let instockHtml = '';
-        if (instockArr && instockArr.length > 0) {
-            instockHtml = instockArr.map(store => `
-                <div style="background:#fbfaf9; border:1px solid #e0d8d0; border-radius:12px; padding:15px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; text-align:left; gap:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03); margin-top:8px;">
-                    <div style="flex:1; min-width:0;">
-                        <h6 style="font-weight:900; color:var(--brand-charcoal); line-height: 1.4; margin-bottom:${store.content ? '6px' : '0'};"><i class="bi bi-shop me-2"></i>${escHTML(store.title || '現貨賣場')}</h6>
-                        ${store.content ? `<div class="text-muted small" style="line-height: 1.5; white-space: pre-wrap;">${escHTML(store.content)}</div>` : ''}
-                    </div>
-                    ${store.link ? `<button class="shadow-sm" style="background-color: var(--brand-brown); color:#fff; border:none; padding:10px 16px; font-size:14px; border-radius:8px; white-space:nowrap; flex-shrink:0; font-weight:bold; cursor:pointer;" onclick="window.open('${store.link}', '_blank')">👉 前往逛逛</button>` : ''}
-                </div>
-            `).join('');
-        } else {
-            instockHtml = `<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color: #e0d8d0 !important;"><h6 class="fw-bold m-0" style="color: #888;">目前尚未開放現貨賣場喔！</h6></div>`;
-        }
-        instockContainer.innerHTML = `<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color: var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6>${instockHtml}</div>`;
-
-        // ===== 4. 規則頁 =====
-        const rulesContainer = document.getElementById('pageRules');
-        let rulesData = globalPages.rules;
-        rulesContainer.innerHTML = `
-            <div class="text-start">
-                <div class="card-order p-4 shadow-sm mt-0">
-                    <h6 class="fw-bold mb-3" style="color: var(--brand-charcoal);"><i class="bi bi-book me-2"></i>Wander Ease 代購與服務規則</h6>
-                    <div class="text-muted small" style="line-height: 1.8; white-space: pre-wrap;">${escHTML(rulesData.content || '尚無公告規則。')}</div>
-                </div>
-            </div>
-        `;
-    }
-
-    function escHTML(str) { return String(str||'').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+    async function cancelWL(id,nm){if(!confirm(`確定取消【${nm}】的候補？`))return;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'customerCancelWaitlist',lineUid:currentLineUid,waitlistItemId:id})});const d=await r.json();if(d.status==="SUCCESS"){alert("已取消。");wlLoaded=false;loadWaitlistData();}else alert("失敗："+d.message);}catch(e){alert("網路錯誤");}}
   </script>
 </body>
 </html>
