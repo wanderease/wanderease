@@ -328,21 +328,67 @@
     function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.length>0?f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;let lim=p.maxQty>0?`<span style="font-size:10px;color:#a95a52;"> (限購${p.maxQty})</span>`:'';return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}${lim}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1,${p.maxQty||0})">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1,${p.maxQty||0})">+</div></div></div>`;}).join(''):(kw?'<div class="p-4 text-center text-muted fw-bold">找不到符合的品項</div>':'<div class="p-4 text-center fw-bold" style="color:#795238;">此系列所有品項皆已訂購<br><span class="text-muted fw-normal" style="font-size:12px;">如需調整數量，請直接在訂單上操作 +/-</span></div>');}
     function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
     function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;let existingDel=ed.findIndex(e=>e.type==='DELETE'&&po&&po.items.find(i=>i.recordId===e.recordId&&i.inventoryId===id));if(existingDel>-1){let delEntry=ed[existingDel];let origItem=po.items.find(i=>i.recordId===delEntry.recordId);if(origItem&&s.qty===origItem.reqQty){ed.splice(existingDel,1);}else if(origItem){ed.splice(existingDel,1);ed.push({type:'MODIFY',recordId:delEntry.recordId,product:s.name,oldQty:origItem.reqQty,newQty:s.qty});}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
-    async function submitEdits(mid){let ed=pendingEdits[mid];if(!ed||!ed.length)return;if(!confirm('確定送出所有修改？'))return;let btn=event.target;btn.disabled=true;btn.innerText='送出中...';try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'customerEditPreorder',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed})})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改已送出！");loadPreorderData();}else{alert("失敗："+d.message);btn.disabled=false;btn.innerText='確認送出修改';}}catch(e){alert("網路錯誤");btn.disabled=false;btn.innerText='確認送出修改';}}
+    
+    // 🌟 【升級】秒關閉，背景執行的改單送出
+    function submitEdits(mid){
+        let ed=pendingEdits[mid];
+        if(!ed||!ed.length)return;
+        if(!confirm('確定送出所有修改？\n(送出後系統會在後台自動處理，您可以繼續瀏覽)'))return;
+        
+        fetch(GAS_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body:new URLSearchParams({action:'customerEditPreorder',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed})})
+        }).then(r => r.json()).then(d => {
+            if(d.status !== "SUCCESS") console.error("背景處理失敗: ", d.message);
+        }).catch(e => console.error("網路錯誤", e));
+
+        alert("✅ 您的修改請求已成功送出！系統正在後台為您處理中。");
+        delete pendingEdits[mid]; // 瞬間清除修改狀態
+        renderPoCards(); // 瞬間重整畫面
+    }
 
     // ===== 二選一操作 =====
     function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
     function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
-    async function submitSweep(mid){let dec=pendingSweep[mid];if(!dec||!dec.length)return;if(!confirm('確定送出？'))return;let btn=event.target;btn.disabled=true;btn.innerText='送出中...';try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'customerSweepDecision',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec})})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 已送出！");loadPreorderData();}else{alert("失敗："+d.message);btn.disabled=false;btn.innerText='確認送出';}}catch(e){alert("網路錯誤");btn.disabled=false;btn.innerText='確認送出';}}
+    
+    // 🌟 【升級】秒關閉，背景執行的候補送出
+    function submitSweep(mid){
+        let dec=pendingSweep[mid];
+        if(!dec||!dec.length)return;
+        if(!confirm('確定送出您的決定？\n(送出後系統會在後台自動處理，您可以繼續瀏覽)'))return;
+        
+        fetch(GAS_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body:new URLSearchParams({action:'customerSweepDecision',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec})})
+        }).then(r => r.json()).then(d => {
+            if(d.status !== "SUCCESS") console.error("背景處理失敗: ", d.message);
+        }).catch(e => console.error("網路錯誤", e));
+
+        alert("✅ 候補/取消決定已送出！系統正在後台為您處理中。");
+        delete pendingSweep[mid]; // 瞬間清除修改狀態
+        renderPoCards(); // 瞬間重整畫面
+    }
 
     // ===== 候補頁面 =====
-    async function loadWaitlistData(){const c=document.getElementById('waitlistContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><p class="small text-muted fw-bold">載入中...</p></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyWaitlist',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){renderWL(d.data);}else c.innerHTML=`<div class="text-center p-4 text-danger fw-bold">${d.message}</div>`;}catch(e){c.innerHTML='<div class="text-center p-4 text-danger fw-bold">載入失敗</div>';}}    function renderWL(data){const c=document.getElementById('waitlistContainer');let g=data.groups||[],ca=data.cancelled||[];
-      if(!g.length&&!ca.length){c.innerHTML=`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-hourglass-split me-2"></i>我的候補清單</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">⏳ 目前沒有候補中的商品</h6></div></div>`;return;}
-      let h=`<h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-hourglass-split me-2"></i>我的候補清單</h6>`;
-      g.forEach(gr=>{h+=`<div class="wl-card"><div class="wl-card-h">${escHTML(gr.brand)} | ${escHTML(gr.series)}</div>${gr.items.map(i=>{let d=i.queueTime?new Date(i.queueTime):null,ds=d?`${d.getMonth()+1}/${d.getDate()}`:'';return`<div class="wl-item"><div style="flex:1;min-width:0;"><div style="font-weight:700;color:var(--brand-charcoal);">⏳ ${escHTML(i.product)} x${i.qty}</div><div style="font-size:10px;color:#888;margin-top:2px;">排隊於 ${ds}</div></div><button class="wl-cancel-btn" onclick="cancelWL('${i.recordId}','${escAttr(i.product)}')">取消候補</button></div>`;}).join('')}</div>`;});
-      if(ca.length){h+=`<div class="wl-card" style="opacity:.5;"><div style="padding:12px 16px;font-size:12px;color:#888;"><div style="font-weight:700;margin-bottom:6px;color:#999;">已取消的候補</div>${ca.map(i=>{let nm=i.note.match(/\[(\d+\/\d+ \d+:\d+)/);let ds=nm?nm[1]:'';return`<div style="text-decoration:line-through;padding:3px 0;">❌ ${escHTML(i.product)} x${i.qty}</div><div style="font-size:10px;color:#aaa;padding-bottom:6px;">您已於 ${ds} 取消候補</div>`;}).join('')}</div></div>`;}
-      c.innerHTML=`<div class="text-start">${h}</div>`;
+    async function loadWaitlistData(){ renderWL(); }    
+    
+    // 🌟 【升級】候補功能 Coming Soon 畫面
+    function renderWL(data){
+      const c=document.getElementById('waitlistContainer');
+      c.innerHTML = `
+        <div class="text-start">
+          <h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);">
+            <i class="bi bi-hourglass-split me-2"></i>我的候補清單
+          </h6>
+          <div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;">
+            <h5 class="fw-bold m-0" style="color:var(--brand-brown); letter-spacing:1px;">🚀 Coming Soon...</h5>
+            <p class="text-muted mt-2 mb-0" style="font-size:13px; font-weight:600;">候補功能升級中，敬請期待！</p>
+          </div>
+        </div>`;
     }
+    
     async function cancelWL(id,nm){if(!confirm(`確定取消【${nm}】的候補？`))return;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'customerCancelWaitlist',lineUid:currentLineUid,waitlistItemId:id})});const d=await r.json();if(d.status==="SUCCESS"){alert("已取消。");loadWaitlistData();}else alert("失敗："+d.message);}catch(e){alert("網路錯誤");}}
   </script>
 </body>
