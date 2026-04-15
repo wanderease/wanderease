@@ -329,52 +329,100 @@
     function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
     function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;let existingDel=ed.findIndex(e=>e.type==='DELETE'&&po&&po.items.find(i=>i.recordId===e.recordId&&i.inventoryId===id));if(existingDel>-1){let delEntry=ed[existingDel];let origItem=po.items.find(i=>i.recordId===delEntry.recordId);if(origItem&&s.qty===origItem.reqQty){ed.splice(existingDel,1);}else if(origItem){ed.splice(existingDel,1);ed.push({type:'MODIFY',recordId:delEntry.recordId,product:s.name,oldQty:origItem.reqQty,newQty:s.qty});}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
     
-    // 🌟 【升級】秒關閉，背景執行的改單送出
+    // 🌟 樂觀更新 (Optimistic UI)：客人按下送出後瞬間切換畫面，系統在背景默默處理
     function submitEdits(mid){
         let ed=pendingEdits[mid];
         if(!ed||!ed.length)return;
-        if(!confirm('確定送出所有修改？\n(送出後系統會在後台自動處理，您可以繼續瀏覽)'))return;
+        if(!confirm('確定送出所有修改？'))return;
         
+        // 1. 瞬間套用修改結果到畫面資料上 (樂觀更新)
+        let po = poData.preorders.find(p => p.masterId === mid);
+        if(po) {
+            ed.forEach(e => {
+                if(e.type === 'MODIFY') {
+                    let it = po.items.find(i => i.recordId === e.recordId);
+                    if(it) it.reqQty = e.newQty;
+                } else if(e.type === 'DELETE') {
+                    let it = po.items.find(i => i.recordId === e.recordId);
+                    if(it) it.isCancelled = true;
+                } else if(e.type === 'ADD') {
+                    po.items.push({
+                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), // 暫時的假ID
+                        inventoryId: e.inventoryId,
+                        product: e.product,
+                        price: e.price,
+                        reqQty: e.qty,
+                        allocQty: 0
+                    });
+                }
+            });
+        }
+
+        // 2. 發送給背景處理 (不卡畫面)
+        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
         fetch(GAS_URL,{
             method:"POST",
             headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerEditPreorder',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed})})
+            body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
         }).then(r => r.json()).then(d => {
-            if(d.status !== "SUCCESS") console.error("背景處理失敗: ", d.message);
-        }).catch(e => console.error("網路錯誤", e));
+            if(d.status === "SUCCESS") {
+                // 背景處理成功後，偷偷把真實資料拉回來覆蓋假資料
+                loadPreorderData(); 
+            } else {
+                alert("❌ 系統背景處理異常：" + d.message);
+                loadPreorderData(); // 發生錯誤時重置畫面
+            }
+        }).catch(e => console.error("背景連線異常:", e));
 
-        alert("✅ 您的修改請求已成功送出！系統正在後台為您處理中。");
-        delete pendingEdits[mid]; // 瞬間清除修改狀態
-        renderPoCards(); // 瞬間重整畫面
+        // 3. 瞬間提示成功，清除預覽並重新渲染卡片
+        alert("✅ 已完成送出！");
+        delete pendingEdits[mid];
+        renderPoCards();
     }
 
     // ===== 二選一操作 =====
     function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
     function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
     
-    // 🌟 【升級】秒關閉，背景執行的候補送出
+    // 🌟 樂觀更新 (Optimistic UI)
     function submitSweep(mid){
         let dec=pendingSweep[mid];
         if(!dec||!dec.length)return;
-        if(!confirm('確定送出您的決定？\n(送出後系統會在後台自動處理，您可以繼續瀏覽)'))return;
+        if(!confirm('確定送出您的決定？'))return;
         
+        // 1. 瞬間套用修改結果
+        let po = poData.preorders.find(p => p.masterId === mid);
+        if(po) {
+            dec.forEach(d => {
+                let it = po.items.find(i => i.recordId === d.recordId);
+                if(it) {
+                    if(d.action === 'CANCEL') it.isCancelled = true; 
+                    else if(d.action === 'WAITLIST') it.isWaitlisted = true;
+                }
+            });
+        }
+
+        // 2. 發送給背景處理
+        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
         fetch(GAS_URL,{
             method:"POST",
             headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerSweepDecision',payload:JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec})})
+            body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
         }).then(r => r.json()).then(d => {
-            if(d.status !== "SUCCESS") console.error("背景處理失敗: ", d.message);
-        }).catch(e => console.error("網路錯誤", e));
+            if(d.status === "SUCCESS") loadPreorderData();
+            else { alert("❌ 系統背景處理異常：" + d.message); loadPreorderData(); }
+        }).catch(e => console.error("背景連線異常:", e));
 
-        alert("✅ 候補/取消決定已送出！系統正在後台為您處理中。");
-        delete pendingSweep[mid]; // 瞬間清除修改狀態
-        renderPoCards(); // 瞬間重整畫面
+        // 3. 瞬間提示成功並渲染畫面
+        alert("✅ 已完成送出！");
+        delete pendingSweep[mid];
+        renderPoCards();
     }
 
     // ===== 候補頁面 =====
     async function loadWaitlistData(){ renderWL(); }    
     
-    // 🌟 【升級】候補功能 Coming Soon 畫面
+    // 🌟 候補功能 Coming Soon 畫面 (簡化版)
     function renderWL(data){
       const c=document.getElementById('waitlistContainer');
       c.innerHTML = `
@@ -384,7 +432,6 @@
           </h6>
           <div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;">
             <h5 class="fw-bold m-0" style="color:var(--brand-brown); letter-spacing:1px;">🚀 Coming Soon...</h5>
-            <p class="text-muted mt-2 mb-0" style="font-size:13px; font-weight:600;">候補功能升級中，敬請期待！</p>
           </div>
         </div>`;
     }
