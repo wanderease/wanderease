@@ -347,7 +347,7 @@
                     if(it) it.isCancelled = true;
                 } else if(e.type === 'ADD') {
                     po.items.push({
-                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), // 暫時的假ID
+                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), 
                         inventoryId: e.inventoryId,
                         product: e.product,
                         price: e.price,
@@ -366,16 +366,15 @@
             body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
         }).then(r => r.json()).then(d => {
             if(d.status === "SUCCESS") {
-                // 背景處理成功後，偷偷把真實資料拉回來覆蓋假資料
                 loadPreorderData(); 
             } else {
                 alert("❌ 系統背景處理異常：" + d.message);
-                loadPreorderData(); // 發生錯誤時重置畫面
+                loadPreorderData(); 
             }
         }).catch(e => console.error("背景連線異常:", e));
 
         // 3. 瞬間提示成功，清除預覽並重新渲染卡片
-        alert("✅ 已完成送出！");
+        alert("✅ 已完成送出！系統正在為您處理。");
         delete pendingEdits[mid];
         renderPoCards();
     }
@@ -407,7 +406,7 @@
         fetch(GAS_URL,{
             method:"POST",
             headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
+            body:newSearchParams({action:'customerSweepDecision',payload:payloadStr})
         }).then(r => r.json()).then(d => {
             if(d.status === "SUCCESS") loadPreorderData();
             else { alert("❌ 系統背景處理異常：" + d.message); loadPreorderData(); }
