@@ -220,7 +220,40 @@
     // ===== 會員 =====
     async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
-
+    
+    // ===== 管理員清除 Cache =====
+    async function executeAdminClearCache() {
+      if (!confirm("確定清除所有前台 Cache？\n（所有客人下次查詢會讀取最新資料）")) {
+        return;
+      }
+      const btn = event.target.closest('button');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span>⏳</span><span>清除中...</span>';
+      btn.disabled = true;
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            action: 'adminClearCache',
+            lineUid: currentLineUid
+          })
+        });
+        const d = await r.json();
+        if (d.status === "SUCCESS") {
+          alert("✅ 前台 Cache 已清空\n頁面即將重新載入");
+          window.location.reload();
+        } else {
+          alert("清除失敗：" + d.message);
+          btn.innerHTML = originalHTML;
+          btn.disabled = false;
+        }
+      } catch (e) {
+        alert("網路錯誤：" + e.message);
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+      }
+    }
     // ===== 管理員搜尋 =====
     let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
     async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
