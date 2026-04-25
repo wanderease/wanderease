@@ -1,1476 +1,898 @@
-<style>
-  :root {
-    --theme-bg-light: #E7E6F7;
-    --theme-accent-pink: #E3D0D8;
-    --theme-secondary: #AEA3B0;
-    --theme-primary: #827081;
-    --theme-accent-blue: #C6D2ED;
-    --theme-text-primary: #4A3C49;
-    --theme-text-secondary: #6B626D;
-  }
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <title>Wander Ease 會員中心</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    :root{--brand-bg:#efe8df;--brand-charcoal:#2c2c2f;--brand-brown:#795238;--brand-brown-hover:#5e3f2b;--brand-white:#fff;--track-bg:#e0d8d0;--track-active:#795238;--track-final:#2c2c2f;--track-muted:#b8b0a8;}
+    body{background:var(--brand-bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--brand-charcoal);padding-bottom:90px;}
+    .header-img{width:100%;height:160px;background:var(--brand-charcoal);color:var(--brand-white);display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:0 0 20px 20px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+    .header-img-mini{height:100px;}
+    .card-custom{border:none;border-radius:16px;box-shadow:0 8px 24px rgba(44,44,47,.06);background:var(--brand-white);padding:24px;position:relative;}
+    .overlap-top{margin-top:-30px;}
+    .btn-brand{background:var(--brand-brown);color:var(--brand-white);border-radius:12px;padding:14px;font-weight:600;font-size:16px;border:none;width:100%;transition:.2s;}
+    .btn-brand:hover,.btn-brand:active{background:var(--brand-brown-hover);color:var(--brand-white);}
+    .btn-outline-brand{border:1.5px solid var(--brand-brown);color:var(--brand-brown);border-radius:12px;padding:12px;font-weight:600;width:100%;background:transparent;transition:.2s;}
+    .btn-outline-brand:hover{background:var(--brand-brown);color:var(--brand-white);}
+    .form-label{font-size:13px;font-weight:600;color:#555;margin-bottom:6px;}
+    .form-control{border-radius:10px;padding:14px 16px;border:1.5px solid #e0d8d0;background:#fbfaf9;font-size:15px;width:100%;}
+    .form-control:focus{border-color:var(--brand-brown);box-shadow:0 0 0 3px rgba(121,82,56,.15);background:var(--brand-white);}
+    .loader-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;text-align:center;}
+    .spinner-border{color:var(--brand-brown);}
+    .text-carousel{font-size:14px;font-weight:bold;color:var(--brand-charcoal);margin-top:15px;min-height:20px;}
+    @media(min-width:768px){#adminArea,.page-content{max-width:600px;margin:0 auto;}}
 
-  .waitlist-bg { background-color: #f8f9fa; min-height: 100vh; padding-bottom: 50px; font-family: "Segoe UI", sans-serif; }
+    /* 底部導航 */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:var(--brand-white);border-top:1px solid #e0d8d0;display:flex;justify-content:space-around;align-items:center;padding:10px 0 calc(env(safe-area-inset-bottom,10px) + 4px);box-shadow:0 -4px 16px rgba(0,0,0,.06);}
+    .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;}
+    .bottom-nav-item .nav-icon{font-size:24px;line-height:1;margin-bottom:4px;}
+    .bottom-nav-item .nav-text{font-size:11px;font-weight:700;color:#b8b0a8;}
+    .bottom-nav-item.active .nav-text{color:var(--brand-brown);}
+    .bottom-nav-item.active::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--brand-brown);}
+    .bottom-nav-item:not(.active) .nav-icon{filter:grayscale(60%) opacity(.5);}
+    .page-content{display:none;}.page-content.active{display:block;}
+    .btn-contact-line{display:block;width:100%;background:#fff;border:1.5px solid #e8d5c4;color:#7a6c5d;border-radius:12px;padding:12px;font-weight:800;font-size:14px;text-align:center;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.02);text-decoration:none;}
+    .btn-contact-line:hover{background:#faf5f0;color:#4A3C49;text-decoration:none;}
 
-  .text-theme-primary { color: var(--theme-text-primary) !important; }
-  .text-theme-secondary { color: var(--theme-text-secondary) !important; }
+    /* 正式訂單卡片 */
+    .card-order{background:var(--brand-white);border-radius:16px;border:1px solid #e0d8d0;margin-bottom:20px;box-shadow:0 4px 16px rgba(44,44,47,.03);overflow:hidden;text-align:left;}
+    .order-header{background:#fbfaf9;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:15px;}
+    .order-header:hover{background:#f6f0ea;}
+    .order-title-container{display:block;flex:1;min-width:0;}
+    .order-title-brand{display:block;font-weight:900;color:var(--brand-charcoal);font-size:1.15rem;line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .order-title-series{display:block;font-weight:600;color:#666;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .badge-status{background:#fdf3f2;color:#a95a52;border:1px solid #fdf3f2;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:bold;letter-spacing:1px;flex-shrink:0;}
+    .status-done{background:#eef5ee;color:#436b46;border-color:#eef5ee;}
+    .order-content{display:none;border-top:1px dashed #e0d8d0;padding-top:15px;animation:fadeIn .3s;}
+    .order-content.show{display:block;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+    .notice-box{background:#FFF3CD;border-left:4px solid #856404;padding:15px;margin:0 20px 20px;border-radius:6px;font-size:14px;color:#856404;font-weight:bold;line-height:1.6;text-align:left;}
+    .progress-toggle-btn{background:#fbfaf9;border:1px dashed #e0d8d0;color:var(--brand-charcoal);padding:12px;text-align:center;font-weight:700;font-size:14px;border-radius:8px;margin:0 20px 20px;cursor:pointer;}
+    .progress-content{display:none;animation:fadeIn .3s;}.progress-content.show{display:block;}
+    .progress-wrapper{margin:0 20px 20px;padding:20px 15px;border:1px solid #e0d8d0;border-radius:12px;background:var(--brand-white);}
+    .progress-title{font-size:14px;font-weight:800;color:var(--brand-charcoal);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+    .tracker-container{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:0 10px;margin-top:15px;}
+    .tracker-line{position:absolute;top:15px;left:30px;right:30px;height:3px;background:var(--track-bg);z-index:0;}
+    .tracker-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;flex:1;}
+    .step-dot{width:32px;height:32px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;}
+    .step-dot.active{background:var(--track-active);border-color:var(--track-active);}
+    .step-dot.final{border-color:var(--track-final);}.step-dot.final.active{background:var(--track-final);}
+    .step-label{font-size:12px;font-weight:bold;color:var(--track-active);text-align:center;margin-bottom:4px;white-space:nowrap;}.step-label.muted{color:var(--track-muted);}.step-label.final{color:var(--track-final);}
+    .step-pct{font-size:16px;font-weight:900;color:var(--brand-charcoal);}.step-pct.muted{color:var(--track-muted);}
+    .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
+    .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
+    .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
+    .summary-divider{height:1px;border-top:1px dashed #e0d8d0;margin:15px 0;}
+    .summary-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;color:#666;font-weight:500;}
+    .last5-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;font-size:14px;color:#666;font-weight:600;}
+    .last5-value{color:var(--brand-charcoal);font-weight:700;display:flex;align-items:center;gap:8px;}
+    .edit-btn{cursor:pointer;color:var(--brand-brown);font-size:13px;font-weight:700;padding:4px 8px;background:#f6f0ea;border-radius:4px;border:1px solid #e0d8d0;z-index:10;position:relative;}
+    .edit-btn:hover{background:var(--brand-brown);color:var(--brand-white);border-color:var(--brand-brown);}
+    .total-row{display:flex;justify-content:space-between;padding-top:15px;border-top:2px solid #e0d8d0;font-size:1.15rem;font-weight:900;color:var(--brand-charcoal);}
+    .total-price{color:#dc3545;}
+    .bank-info{background:#fbfaf9;border:1px solid #e0d8d0;padding:20px;margin:0 20px 20px;border-radius:12px;text-align:left;}
+    .bank-title{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px;}
+    .bank-title-text{font-size:14px;color:var(--brand-charcoal);font-weight:900;display:flex;align-items:center;}
+    .bank-deadline{font-size:13px;font-weight:800;color:#dc3545;}
+    .bank-text{font-family:monospace;font-size:15px;font-weight:bold;color:var(--brand-charcoal);white-space:pre-wrap;line-height:1.6;}
+    .bank-warning{font-size:13px;font-weight:bold;color:#a95a52;margin-top:12px;}
+    .done-note{margin-top:10px;font-size:13.5px;font-weight:700;color:var(--brand-brown);background:#f6f0ea;padding:8px 12px;border-radius:8px;display:inline-block;}
 
-  /* 🌟 主視角切換 Tabs */
-  .wl-nav-tabs { border: none; gap: 10px; }
-  .wl-nav-tabs .nav-link {
-    color: var(--theme-text-secondary);
-    background-color: transparent;
-    font-weight: bold;
-    border: 1px solid var(--theme-secondary);
-    padding: 10px 24px;
-    border-radius: 6px;
-    transition: 0.2s;
-  }
-  .wl-nav-tabs .nav-link.active {
-    color: white !important;
-    background-color: var(--theme-primary) !important;
-    border-color: var(--theme-primary) !important;
-    box-shadow: 0 4px 10px rgba(130, 112, 129, 0.3);
-  }
-  .wl-nav-tabs .nav-link:hover:not(.active) {
-    background-color: var(--theme-bg-light);
-    border-color: var(--theme-primary);
-    color: var(--theme-text-primary);
-  }
+    /* 預購卡片 */
+    .po-card{background:#fff;border-radius:16px;margin-bottom:20px;overflow:hidden;text-align:left;box-shadow:0 4px 16px rgba(44,44,47,.03);}
+    .po-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+    .po-title{font-size:15px;font-weight:900;color:var(--brand-charcoal);}
+    .po-sub{font-size:12px;margin-top:3px;}
+    .po-badge{font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px;white-space:nowrap;flex-shrink:0;line-height:1.3;text-align:center;}
+    .po-body{padding:10px 18px;border-top:1px dashed #e0d8d0;}
+    .po-irow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px dashed #e0d8d0;gap:6px;font-size:13px;}
+    .po-irow:last-child{border-bottom:none;}
+    .po-iname{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .po-iprice{color:#888;font-size:12px;white-space:nowrap;flex-shrink:0;}
+    .po-sum{border-top:1.5px solid #e0d8d0;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;}
+    .po-sum span:last-child{color:#dc3545;}
+    .po-notice{margin:8px 0;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;}
+    .po-notes{padding:8px 0;border-top:.5px dashed #e0d8d0;margin-top:8px;font-size:11px;color:#888;}
+    .po-notes div{padding:2px 0;line-height:1.5;}
+    .qty-ctrl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+    .qty-btn{width:26px;height:26px;border-radius:6px;border:1px solid #e0d8d0;background:#fbfaf9;font-size:14px;font-weight:700;color:var(--brand-brown);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .qty-btn:active{background:var(--brand-brown);color:#fff;}
+    .qty-val{font-size:14px;font-weight:700;min-width:20px;text-align:center;}
+    .po-del-btn{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;background:#fdf3f2;color:#791f1f;border:none;cursor:pointer;white-space:nowrap;}
+    .po-add-btn{background:#fbfaf9;border:1.5px dashed var(--brand-brown);border-radius:10px;padding:10px;text-align:center;font-size:13px;font-weight:700;color:var(--brand-brown);margin-top:8px;cursor:pointer;}
+    .po-submit-btn{background:var(--brand-brown);color:#fff;text-align:center;padding:12px;border-radius:10px;font-size:14px;font-weight:700;margin-top:10px;cursor:pointer;border:none;width:100%;}
+    .po-submit-btn:disabled{background:#b8b0a8;cursor:not-allowed;}
+    .po-preview{border-top:2px dashed #e0d8d0;margin-top:10px;padding-top:10px;}
+    .po-preview-title{font-size:12px;font-weight:700;color:#555;margin-bottom:6px;}
+    .po-pv-item{border-radius:8px;padding:6px 10px;margin-bottom:5px;font-size:12px;display:flex;justify-content:space-between;align-items:center;}
+    .po-pv-undo{font-size:11px;font-weight:700;cursor:pointer;}
+    .po-shortage-row{border-radius:8px;padding:8px;margin:3px 0;border:none!important;}
 
-  /* 🌟 清場日設定框 */
-  .clear-deadline-box {
-    background: #fff8e1;
-    border: 1px solid #ffca28;
-    border-radius: 6px;
-    padding: 5px 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-  }
-  .clear-deadline-box label { font-weight: bold; color: #b07c00; margin: 0; }
-  .clear-deadline-box input {
-    border: 1px solid #ccc;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-  }
+    /* 候補 */
+    .wl-card{background:#fff;border-radius:16px;border:1px solid #e0d8d0;margin-bottom:16px;overflow:hidden;text-align:left;}
+    .wl-card-h{background:#fbfaf9;padding:12px 16px;font-size:14px;font-weight:900;color:var(--brand-charcoal);border-bottom:.5px dashed #e0d8d0;}
+    .wl-item{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:.5px dashed #e0d8d0;font-size:13px;}
+    .wl-item:last-child{border-bottom:none;}
+    .wl-cancel-btn{background:#fdf3f2;color:#a95a52;font-size:11px;padding:4px 12px;border-radius:6px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
 
-  /* 🌟 品牌按鈕區塊 */
-  .brand-filter-wrapper { padding: 5px 0 20px 0; }
-  .brand-filter-btn {
-    border: 2px solid #ced4da;
-    color: var(--theme-text-secondary);
-    background: white !important;
-    border-radius: 8px;
-    padding: 6px 18px;
-    font-weight: bold;
-    transition: 0.2s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  }
-  .brand-filter-btn.active {
-    color: var(--theme-primary);
-    border: 2px solid var(--theme-primary) !important;
-    box-shadow: 0 4px 10px rgba(130, 112, 129, 0.2);
-  }
-  .brand-filter-btn:hover:not(.active) {
-    border-color: var(--theme-secondary);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  }
+    /* 候補頁面新版 */
+    .wl-rules-box{background:linear-gradient(135deg,#fff9f0 0%,#fff4e5 100%);border:1px solid #f0d9b5;border-radius:12px;padding:16px;margin-bottom:20px;}
+    .wl-rules-box h3{font-size:14px;font-weight:900;color:#8b6f3d;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+    .wl-rules-box ul{list-style:none;padding:0;font-size:13px;line-height:1.7;color:#5c4423;margin:0;}
+    .wl-rules-box li{padding-left:22px;position:relative;margin-bottom:10px;}
+    .wl-rules-box li:last-child{margin-bottom:0;}
+    .wl-rules-box li::before{content:"💡";position:absolute;left:0;font-size:12px;top:2px;}
+    .wl-rules-box strong{color:#6b3d1a;font-weight:700;}
+    .wl-section-head{font-size:14px;font-weight:900;margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
+    .wl-section-head .wl-count{background:#e0d8d0;color:#555;padding:1px 10px;border-radius:10px;font-size:12px;font-weight:700;}
+    .wl-section-alert{color:#dc3545;}
+    .wl-section-alert .wl-count{background:#dc3545;color:white;}
+    .wl-confirm-wrapper{border:2px solid #dc3545;border-radius:12px;padding:4px;background:linear-gradient(135deg,#fff5f5 0%,#ffe8e8 100%);margin-bottom:16px;box-shadow:0 4px 14px rgba(220,53,69,0.12);}
+    .wl-confirm-alert{background:#dc3545;color:white;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;}
+    .wl-v2-card{border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid #e0d8d0;}
+    .wl-v2-cardhead{padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px dashed rgba(0,0,0,0.12);}
+    .wl-v2-brand{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;color:white;}
+    .wl-v2-series{font-size:13px;font-weight:900;color:#2c2c2f;}
+    .wl-v2-body{padding:4px 0;background:white;}
+    .wl-v2-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px dashed #eee;gap:8px;}
+    .wl-v2-item:last-child{border-bottom:none;}
+    .wl-v2-info{flex:1;min-width:0;}
+    .wl-v2-name{font-size:14px;font-weight:700;color:#2c2c2f;word-break:break-all;line-height:1.4;}
+    .wl-v2-meta{font-size:11px;color:#888;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+    .wl-v2-actions{flex-shrink:0;display:flex;gap:6px;}
+    .wl-btn-cancel{background:#fdf3f2;color:#a95a52;border:1px solid #f3d2d0;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-btn-confirm{background:#e0f3e8;color:#1a5e37;border:1px solid #a8d9be;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-btn-abandon{background:#fde8e8;color:#8b1a1a;border:1px solid #f3c4c4;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-link-orders{background:#f6f0ea;border:1px dashed #795238;border-radius:10px;padding:14px;text-align:center;font-size:13px;color:#795238;font-weight:700;cursor:pointer;margin-bottom:12px;}
+    .wl-collapse-head{padding:10px 14px;background:#f5f3ef;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#666;margin-bottom:12px;}
+    .wl-empty{background:white;border:2px dashed #e0d8d0;padding:40px 20px;border-radius:12px;text-align:center;color:#888;font-size:14px;font-weight:600;}
+    /* 放棄/取消 Modal */
+    .wl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2000;}
+    .wl-modal-card{background:white;border-radius:16px;max-width:400px;width:100%;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-height:90vh;display:flex;flex-direction:column;}
+    .wl-modal-head{padding:16px;text-align:center;font-size:16px;font-weight:900;flex-shrink:0;}
+    .wl-modal-head.danger{background:#dc3545;color:white;}
+    .wl-modal-head.warning{background:#ffa07a;color:white;}
+    .wl-modal-body{padding:18px;font-size:13.5px;line-height:1.7;color:#333;overflow-y:auto;flex:1;}
+    .wl-modal-actions{display:flex;gap:8px;padding:0 18px 18px;flex-shrink:0;}
+    .wl-modal-btn{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:14px;}
+    .wl-modal-btn-secondary{background:#e0d8d0;color:#333;}
+    .wl-modal-btn-danger{background:#dc3545;color:white;}
+    .wl-modal-btn-danger:disabled{background:#f8b4ba;cursor:not-allowed;}
+    .wl-affected-list{background:#fff3cd;border-left:3px solid #ffa500;padding:10px 12px;margin:12px 0;border-radius:4px;font-size:12.5px;}
+    .wl-affected-list ul{list-style:disc;padding-left:20px;margin-top:4px;}
+    .wl-rule-check{display:flex;align-items:flex-start;gap:8px;background:#f6f6f6;padding:10px 12px;border-radius:8px;margin:12px 0;}
+    .wl-rule-check input{margin-top:3px;transform:scale(1.2);}
+    .wl-rule-check label{font-size:12.5px;line-height:1.5;color:#555;cursor:pointer;}
 
-  /* 🌟 狀態子 Tab */
-  .wl-status-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 20px;
-    background: white;
-    border-radius: 10px;
-    padding: 6px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-    overflow-x: auto;
-    flex-wrap: nowrap;
-  }
-  .wl-status-tab {
-    flex: 1;
-    min-width: 180px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    text-align: center;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--theme-text-secondary);
-    transition: 0.2s;
-    white-space: nowrap;
-  }
-  .wl-status-tab .badge-num {
-    display: inline-block;
-    background: #ddd;
-    color: #333;
-    padding: 2px 10px;
-    border-radius: 12px;
-    margin-left: 6px;
-    font-size: 12px;
-    font-weight: bold;
-  }
-  .wl-status-tab.active { color: white; }
-  .wl-status-tab.active .badge-num { background: rgba(255,255,255,0.25); color: white; }
-  .wl-status-tab-notify.active { background: #198754; }
-  .wl-status-tab-sent.active { background: #0d6efd; }
-  .wl-status-tab-confirmed.active { background: #6f42c1; }
-  .wl-status-tab-overdue.active { background: #dc3545; }
-
-  /* 🌟 狀態指引區 */
-  .wl-state-hint {
-    background: white;
-    padding: 14px 20px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-    border-left: 5px solid #198754;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .wl-state-hint.sent { border-left-color: #0d6efd; }
-  .wl-state-hint.confirmed { border-left-color: #6f42c1; }
-  .wl-state-hint.overdue { border-left-color: #dc3545; }
-  .wl-state-hint-text { font-size: 14px; color: var(--theme-text-primary); }
-  .wl-state-hint-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-  /* 🌟 商品配貨/已購買視角的系列卡片 */
-  .series-big-card { border: 1px solid var(--theme-secondary); border-radius: 12px; margin-bottom: 20px; background-color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow: hidden; }
-  .series-big-header { background-color: var(--theme-bg-light); padding: 12px 20px; border-bottom: 1px solid var(--theme-secondary); display: flex; align-items: center; }
-  .series-badge { background-color: var(--theme-primary); color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; font-size: 1rem; letter-spacing: 1px; }
-
-  .radar-card { border-bottom: 1px solid #f0f0f0; background: #fff; }
-  .radar-card:last-child { border-bottom: none; }
-  .radar-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-  .radar-header:hover { background-color: #f8f9fa; }
-
-  /* 🌟 客戶訂單視角：系列分組 */
-  .wl-cust-series-group { margin-bottom: 24px; }
-  .wl-cust-series-header {
-    background: var(--theme-bg-light);
-    padding: 10px 18px;
-    border-radius: 8px 8px 0 0;
-    font-weight: bold;
-    color: var(--theme-text-primary);
-    border-left: 4px solid var(--theme-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .wl-cust-series-header.overdue {
-    background: #fef2f2;
-    border-left-color: #dc3545;
-  }
-  .wl-cust-series-body {
-    background: #fdfdfd;
-    padding: 16px;
-    border: 1px solid #eee;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-  }
-
-  /* 🌟 客戶卡片 */
-  .wl-customer-card { border-radius: 12px; border: 1px solid var(--theme-secondary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); background-color: #fff; height: 100%; transition: 0.2s; overflow: hidden; }
-  .wl-customer-card:hover { border-color: var(--theme-primary); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
-  .wl-customer-card.highlighted { border: 2px solid #198754 !important; box-shadow: 0 6px 16px rgba(25, 135, 84, 0.2) !important; }
-  .wl-customer-card.overdue { border: 2px solid #dc3545 !important; background: #fef7f7; }
-
-  .queue-table { table-layout: fixed; width: 100%; font-size: 0.95rem; }
-  .queue-table th, .queue-table td { vertical-align: middle; text-align: center !important; }
-  .queue-table th { background-color: #f8f9fa; font-weight: bold; color: var(--theme-text-secondary); padding: 10px 5px; border-bottom: 2px solid #eee; }
-  .queue-table td { padding: 12px 5px; border-bottom: 1px solid #f0f0f0; }
-  .alloc-input { width: 100%; max-width: 70px; text-align: center; font-weight: bold; border: 1px solid var(--theme-secondary); border-radius: 6px; margin: 0 auto; }
-
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
-  .dot-red { background-color: #dc3545; }
-  .dot-green { background-color: #198754; }
-  .dot-yellow { background-color: #ffc107; }
-
-  .wl-status-badge { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; font-weight: bold; color: white; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .wl-badge-new { background: #198754; }
-  .wl-badge-sent { background: #0d6efd; }
-  .wl-badge-confirmed { background: #6f42c1; }
-  .wl-badge-overdue { background: #dc3545; }
-  .wl-badge-queue { background: #6c757d; }
-
-  /* 🌟 狀態 Tab 「排隊中」色系（中性灰）*/
-  .wl-status-tab-queue.active { background: #6c757d; }
-
-  /* 🌟 商品配貨 Tab: Summary 統計表 */
-  .wl-summary-section { padding: 14px 20px; background: #fafbfc; border-bottom: 1px solid #eee; }
-  .wl-summary-label { font-size: 14px; color: var(--theme-text-secondary); margin-bottom: 10px; font-weight: bold; }
-  .wl-summary-table { width: 100%; font-size: 15px; border-collapse: collapse; background: white; border: 1px solid #dee2e6; border-radius: 6px; overflow: hidden; }
-  .wl-summary-table thead { background: #e9ecef; }
-  .wl-summary-table th { padding: 12px 10px; font-weight: bold; color: var(--theme-text-secondary); font-size: 14px; text-align: center; }
-  .wl-summary-table td { padding: 12px 10px; text-align: center; border-top: 1px solid #f1f3f5; font-weight: bold; font-size: 15px; }
-  .wl-summary-table tr.summary-row:hover { background: #f8f9fa; cursor: pointer; }
-  .wl-summary-table .sm-name { text-align: left; padding-left: 18px; color: var(--theme-text-primary); font-size: 15px; }
-  .wl-summary-table .sm-req { color: var(--theme-text-primary); }
-  .wl-summary-table .sm-stock { color: var(--theme-primary); }
-  .wl-summary-table .sm-alloc { color: #198754; }
-  .wl-summary-table .sm-short { color: #dc3545; }
-  .wl-summary-table .sm-over { color: #0d6efd; }
-
-  .wl-status-text { padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: bold; display: inline-block; white-space: nowrap; }
-  .wl-status-full { background: #d1e7dd; color: #0f5132; }
-  .wl-status-part { background: #fff3cd; color: #664d03; }
-  .wl-status-none { background: #f8d7da; color: #842029; }
-  .wl-status-over { background: #cfe2ff; color: #084298; }
-
-  .dot-blue { background-color: #0d6efd; }
-
-  /* 🌟 客戶訂單「排隊中」Tab 專用：客人大卡片 */
-  .wl-cust-big-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
-  .wl-cust-big-card { background: white; border: 1px solid #dee2e6; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
-  .wl-cust-big-head { background: linear-gradient(135deg, #adb5bd 0%, #868e96 100%); color: white; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
-  .wl-cust-big-name { font-size: 18px; font-weight: bold; }
-  .wl-cust-big-meta { font-size: 13px; opacity: 0.92; margin-top: 3px; }
-  .wl-cust-big-body { padding: 14px 18px; }
-  .wl-brand-block { margin-bottom: 14px; }
-  .wl-brand-block:last-child { margin-bottom: 0; }
-  .wl-brand-block-title { font-size: 14px; font-weight: bold; color: var(--theme-text-secondary); margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px dashed #dee2e6; }
-  .wl-series-sub-badge { display: inline-block; background: var(--theme-bg-light); color: var(--theme-primary); padding: 2px 10px; border-radius: 4px; font-size: 13px; margin-right: 5px; font-weight: bold; }
-  .wl-qitem { background: #f8f9fa; padding: 10px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 14px; border-left: 3px solid #dee2e6; }
-  .wl-qitem-name { font-weight: bold; color: var(--theme-text-primary); margin-bottom: 5px; font-size: 15px; }
-  .wl-qitem-meta { font-size: 13px; color: var(--theme-text-secondary); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-
-  .wl-line-bound { background: #d4edda; color: #155724; padding: 3px 10px; border-radius: 10px; font-size: 13px; font-weight: bold; }
-  .wl-line-unbound { background: #f8d7da; color: #721c24; padding: 3px 10px; border-radius: 10px; font-size: 13px; font-weight: bold; }
-</style>
-
-<div class="waitlist-bg p-3 pt-4">
-  <div class="container-fluid max-w-1200">
-
-    <!-- ==================== 頂部主 Tabs + 操作列 ==================== -->
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-      <ul class="nav wl-nav-tabs" id="wlTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="tab-wl-product" data-bs-toggle="tab" data-bs-target="#view-wl-products" type="button" role="tab">
-            <i class="bi bi-box-seam me-1"></i> 📦 商品配貨
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" id="tab-wl-customer" data-bs-toggle="tab" data-bs-target="#view-wl-customers" type="button" role="tab">
-            <i class="bi bi-person-lines-fill me-1"></i> 👤 客戶訂單
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link text-success" id="tab-wl-purchased" data-bs-toggle="tab" data-bs-target="#view-wl-purchased" type="button" role="tab">
-            <i class="bi bi-check-circle-fill me-1"></i> ✅ 已購買
-          </button>
-        </li>
-      </ul>
-
-      <div class="d-flex gap-2 align-items-center flex-wrap">
-        <div class="clear-deadline-box">
-          <label><i class="bi bi-clock-fill"></i> 清場日：</label>
-          <input type="datetime-local" id="wl_clearDeadlineInput" onchange="saveWlClearDeadline()">
-        </div>
-        <button class="btn btn-success fw-bold shadow-sm" id="btn-run-wl-alloc" onclick="runWaitlistAllocation()">
-          <i class="bi bi-gear-fill me-1"></i> 執行配貨
-        </button>
-        <button class="btn btn-warning fw-bold shadow-sm" onclick="openEditRulesModal()">
-          <i class="bi bi-pencil-square me-1"></i> 編輯規則
-        </button>
-        <button class="btn btn-outline-theme fw-bold shadow-sm" onclick="loadWaitlistRadar()">
-          <i class="bi bi-arrow-clockwise"></i> 刷新雷達
-        </button>
-      </div>
-    </div>
-
-    <hr class="mt-2 mb-4" style="border-top: 2px solid var(--theme-secondary); opacity: 0.2;">
-
-    <!-- 載入中 -->
-    <div id="wlLoader" class="text-center py-5">
-      <div class="spinner-border text-theme-primary" style="width: 3rem; height: 3rem;"></div>
-      <p class="mt-3 fw-bold text-theme-secondary">讀取候補資料中...</p>
-    </div>
-
-    <div id="wlContent" class="d-none">
-
-      <!-- 品牌篩選（所有主 Tab 共用） -->
-      <div class="brand-filter-wrapper">
-        <div id="wl_brandFilterContainer" class="d-flex gap-2 flex-wrap justify-content-start"></div>
-      </div>
-
-      <div class="tab-content">
-
-        <!-- ==================== 📦 商品配貨 Tab ==================== -->
-        <div class="tab-pane fade show active" id="view-wl-products" role="tabpanel">
-          <div class="d-flex justify-content-end mb-3">
-            <button class="btn btn-dark fw-bold shadow-sm px-4" onclick="executeWlGlobalSaveAction()">
-              <i class="bi bi-save2 me-1"></i> 儲存所有配貨變更
-            </button>
-          </div>
-          <div id="wl_radarContainer"></div>
-        </div>
-
-        <!-- ==================== 👤 客戶訂單 Tab（核心新設計） ==================== -->
-        <div class="tab-pane fade" id="view-wl-customers" role="tabpanel">
-
-          <!-- 狀態子 Tab -->
-          <div class="wl-status-tabs">
-            <button class="wl-status-tab wl-status-tab-queue active" onclick="setWlStateTab('queue')">
-              ⏳ 排隊中 <span class="badge-num" id="wl_cnt_queue">0</span>
-            </button>
-            <button class="wl-status-tab wl-status-tab-notify" onclick="setWlStateTab('notify')">
-              🎯 有新配貨待通知 <span class="badge-num" id="wl_cnt_notify">0</span>
-            </button>
-            <button class="wl-status-tab wl-status-tab-sent" onclick="setWlStateTab('sent')">
-              🔔 已通知待客人確認 <span class="badge-num" id="wl_cnt_sent">0</span>
-            </button>
-            <button class="wl-status-tab wl-status-tab-confirmed" onclick="setWlStateTab('confirmed')">
-              🔒 客人已確認待轉單 <span class="badge-num" id="wl_cnt_confirmed">0</span>
-            </button>
-            <button class="wl-status-tab wl-status-tab-overdue" onclick="setWlStateTab('overdue')">
-              ⏰ 已逾期待清場 <span class="badge-num" id="wl_cnt_overdue">0</span>
-            </button>
-          </div>
-
-          <!-- 狀態指引區（動態內容） -->
-          <div id="wl_stateHint"></div>
-
-          <!-- 系列分組客戶卡片區 -->
-          <div id="wlCustomerContainer"></div>
-        </div>
-
-        <!-- ==================== ✅ 已購買 Tab ==================== -->
-        <div class="tab-pane fade" id="view-wl-purchased" role="tabpanel">
-          <div id="wlPurchasedContainer"></div>
-        </div>
-      </div>
-    </div>
+    /* 新增品項 Modal */
+    .additem-search{border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 14px;font-size:14px;width:100%;background:#fbfaf9;}
+    .additem-row{padding:12px 14px;border-bottom:.5px solid #e0d8d0;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+    .additem-row.sel{background:#eaf3de;}
+    .additem-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:13px;}
+    .additem-price{font-size:12px;color:#888;}
+  </style>
+</head>
+<body>
+  <div id="maintenanceArea" style="display:none;text-align:center;padding:80px 20px;background:var(--brand-bg);height:100vh;">
+    <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
+    <h3 class="fw-bold mb-4" style="color:var(--brand-brown);letter-spacing:2px;">系統升級維護中</h3>
+    <div class="card-custom mx-auto" style="max-width:400px;"><p id="maintenanceMsg" class="fw-bold mb-0" style="color:var(--brand-brown);line-height:1.8;font-size:16px;"></p></div>
   </div>
-</div>
+  <div id="loadingArea"><div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div><div class="loader-overlay mt-5"><div class="spinner-border mb-3" role="status"></div><p class="small text-muted fw-bold">🔒 安全驗證中，為您打造專屬空間...</p></div></div>
 
-<!-- ==================== Modal：LINE 通知確認 ==================== -->
-<div class="modal fade" id="wlNotifyModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content border-success shadow">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title fw-bold"><i class="bi bi-chat-square-text me-2"></i>確認發送 LINE 通知</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body bg-light">
-        <div class="alert alert-info mb-3 py-2">
-          <i class="bi bi-info-circle-fill"></i> 以下文案會推播給有綁定 LINE 的客人。無綁定的客人請手動聯繫。
-        </div>
-        <textarea id="wlNotifyContent" class="form-control mb-3 border-success" rows="14" style="font-family: monospace; font-size: 15px;"></textarea>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-outline-success fw-bold" onclick="copyWlNotifyText()">
-          <i class="bi bi-clipboard me-1"></i> 複製全部文案
-        </button>
-        <button type="button" class="btn btn-success fw-bold px-4 shadow" id="btnAutoSendLine" onclick="executeWlAutoSendLine()">
-          <i class="bi bi-send-fill me-1"></i> 自動推播
-        </button>
-      </div>
+  <div class="modal fade" id="friendshipModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"><div class="modal-dialog modal-dialog-centered px-3"><div class="modal-content shadow-lg border-0" style="border-radius:20px;background:#fbfaf9;"><div class="modal-body p-4 text-center">
+    <div class="mb-3"><i class="bi bi-bell-fill" style="font-size:3rem;color:var(--brand-brown);"></i></div>
+    <h4 class="fw-bold mb-3" style="color:var(--brand-charcoal);letter-spacing:1px;">專屬通知小提醒</h4>
+    <p class="text-muted fw-bold" style="line-height:1.7;font-size:14.5px;">為了讓您能第一時間收到「預購是否買到」與「匯款/下單」等專屬通知訊息，建議您先將 Wander Ease 官方帳號加入好友哦~<br><br><span style="color:#a95a52;background:#fdf3f2;padding:4px 8px;border-radius:6px;">※ 若未加入好友，將無法接收系統訊息 ※</span></p>
+    <div id="step1-buttons" class="d-flex flex-column gap-3 mt-4 pt-2"><button type="button" class="btn-brand" onclick="openLineAddFriend()" style="padding:16px;font-size:16px;">👉 點我加入官方 LINE</button><button type="button" class="btn-outline-brand" onclick="skipFriendship()" style="border:none;color:#888;background:transparent;">稍後再說，先去查單系統</button></div>
+    <div id="step2-buttons" class="d-none flex-column gap-3 mt-4 pt-2"><button type="button" class="btn btn-success fw-bold" onclick="confirmFriendshipAdded()" style="padding:16px;font-size:16px;border-radius:12px;background:#198754;color:#fff;border:none;">✅ 我已經加好友了，進入系統</button></div>
+  </div></div></div></div>
+
+  <div id="bindArea" style="display:none;"><div class="header-img"><h2 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color:#d1c8c1;">會員中心</p></div><div class="container"><div class="card card-custom overlap-top">
+    <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
+    <div class="text-danger fw-bold mb-3 text-center" style="font-size:.9rem;"><i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，慢慢輸入不要急~</div>
+    <div class="mb-3"><label class="form-label">📱 完整的手機號碼 *</label><input type="tel" id="bindPhone" class="form-control" placeholder="例如：0912345678"></div>
+    <div class="mb-3"><label class="form-label">✉️ 填單時使用的 Email *</label><input type="email" id="bindEmail" class="form-control" placeholder="例如：your@email.com"></div>
+    <div class="mb-4"><label class="form-label">👤 社群名稱 *</label><input type="text" id="bindName" class="form-control" placeholder="您在群組裡的名稱"></div>
+    <button id="btnBind" class="btn-brand" onclick="executeBind()">確認綁定</button>
+  </div></div></div>
+
+  <div id="homeArea" style="display:none;">
+    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
+    <div class="container pt-4">
+      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5><p class="small mt-2" style="color:#888;">歡迎來到您的專屬空間</p></div>
+      <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
+      <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
+      <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
+        <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
+        <div class="input-group mb-2 shadow-sm" style="border-radius:10px;overflow:hidden;"><select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width:130px;border:1px solid var(--brand-brown);color:#555;"><option value="name">社群名稱</option><option value="phone">手機號碼</option><option value="email">Email</option></select><input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border:1px solid var(--brand-brown);" placeholder="請輸入關鍵字..."></div>
+        <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-file-earmark-text me-1"></i> 調閱客人的單</button>
+      </div></div>
+
+      <div id="pageOrders" class="page-content active"><div id="preorderCardsContainer"></div><div id="regularOrdersContainer"></div></div>
+      <div id="pageWaitlist" class="page-content"><div id="waitlistContainer"></div></div>
+      <div id="pagePromos" class="page-content"></div>
+      <div id="pageInstock" class="page-content"></div>
+      <div id="pageRules" class="page-content"></div>
     </div>
+    <nav class="bottom-nav">
+      <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this)" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos',this)"><span class="nav-icon">🔥</span><span class="nav-text">開團</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageInstock',this)"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pageRules',this)"><span class="nav-icon">📝</span><span class="nav-text">規則</span></div>
+    </nav>
   </div>
-</div>
 
-<!-- ==================== Modal：通知結果報告 ==================== -->
-<div class="modal fade" id="wlNotifyResultModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content shadow">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold" id="wlNotifyResultTitle"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="wlNotifyResultBody"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary fw-bold" data-bs-dismiss="modal" onclick="loadWaitlistRadar()">確認</button>
-      </div>
+  <div class="modal fade" id="addItemModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><div class="modal-content shadow-lg border-0" style="border-radius:16px;max-height:85vh;">
+    <div class="modal-header border-0 pb-0" style="background:#faf5f0;"><h6 class="modal-title fw-bold" style="color:var(--brand-brown);">+ 新增品項</h6><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body p-3" style="background:#faf5f0;">
+      <input type="text" class="additem-search mb-3" id="addItemSearchInput" placeholder="🔍 搜尋品項名稱..." oninput="filterAddItems(this.value)">
+      <div id="addItemList" style="border:1px solid #e0d8d0;border-radius:10px;overflow:hidden;background:#fff;max-height:50vh;overflow-y:auto;"></div>
     </div>
-  </div>
-</div>
+    <div class="modal-footer border-0 p-3" style="background:#faf5f0;"><button class="po-submit-btn" onclick="confirmAddItems()">加入預購清單</button></div>
+  </div></div></div>
 
-<!-- ==================== Modal：編輯候補規則 ==================== -->
-<div class="modal fade" id="wlEditRulesModal" tabindex="-1">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content shadow">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i>編輯候補規則說明</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body bg-light">
-        <div class="alert alert-info py-2 small">
-          <i class="bi bi-info-circle-fill"></i> 這裡編輯的內容會顯示在客人前台「候補清單」頁面頂部。每一段中間請空一行，前台會自動以項目符號排版。
-          <strong class="d-block mt-1">⚠️ 不要在規則裡寫「關於候補的小提醒」這個標題，前台已自動顯示，重複輸入會變成第一條規則。</strong>
-        </div>
-        <div class="row g-3">
-          <div class="col-lg-6">
-            <label class="form-label fw-bold mb-1"><i class="bi bi-pencil"></i> 編輯區</label>
-            <textarea id="wlRulesTextarea" class="form-control border-warning" rows="14" style="font-size: 14px; line-height: 1.7;" placeholder="輸入候補規則說明...每段中間空一行" oninput="updateRulePreview()"></textarea>
-          </div>
-          <div class="col-lg-6">
-            <label class="form-label fw-bold mb-1"><i class="bi bi-eye"></i> 客人端預覽</label>
-            <div id="wlRulesPreview" style="background:linear-gradient(135deg,#fff9f0 0%,#fff4e5 100%);border:1px solid #f0d9b5;border-radius:12px;padding:16px;min-height:300px;">
-              <div style="font-size:14px;font-weight:900;color:#8b6f3d;margin-bottom:12px;">💛 關於候補的小提醒</div>
-              <ul id="wlRulesPreviewList" style="list-style:none;padding:0;font-size:13px;line-height:1.7;color:#5c4423;margin:0;"></ul>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">取消</button>
-        <button type="button" class="btn btn-warning fw-bold px-4" onclick="saveWaitlistRules()">
-          <i class="bi bi-save me-1"></i> 儲存並套用
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const GAS_URL="https://script.google.com/macros/s/AKfycbx6qs-OtcuH44JOBLUI6sslHWRvNWqm7acUUTLDmdSy7_CuFCcTNrxelbUNBSR5FDMzNQ/exec";
+    const LIFF_ID="2009208139-8lZaYbbd";
+    let currentLineUid="";
+    let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
+    let addItemMasterId="",addItemSel={};
+    let wlInitialData={groups:[],cancelled:[]};
 
-<script>
-  // ==========================================
-  // 全域狀態
-  // ==========================================
-  let wlGlobalProducts = [];
-  let wlGlobalPurchased = [];
-  let wlGlobalCustomerItems = []; // 扁平明細陣列
-  let wlClearDeadline = "";
-  let wl_BrandFilter = 'ALL';
-  let wl_StateTab = 'queue'; // queue | notify | sent | confirmed | overdue
-  let wl_NotifyPayloads = [];
+    function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+    function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+    window.switchBottomTab=function(pid,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));let t=document.getElementById(pid);if(t)t.classList.add('active');document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(pid==='pageWaitlist')loadWaitlistData();};
 
-  // ==========================================
-  // 工具
-  // ==========================================
-  function wl_escHTML(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-  }
+    // ===== LIFF =====
+    window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
+    window.skipFriendship=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
+    window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https://lin.ee/mty4uxj',external:false});}catch(e){window.open('https://lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
+    window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
-  function wl_escapeQuotes(str) {
-    if (str === null || str === undefined) return '';
-    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, "&quot;");
-  }
+    // ===== 會員 =====
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
 
-  function wl_fmtTime(iso) {
-    if (!iso) return '';
-    let d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-  }
+    // ===== 管理員搜尋 =====
+    let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
+    async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
 
-  // ==========================================
-  // 初始化
-  // ==========================================
-  document.addEventListener("DOMContentLoaded", loadWaitlistRadar);
+    // ===== 後五碼修改 =====
+    async function promptEditLast5(oid,cur){if(event)event.stopPropagation();let v=prompt("請輸入匯款帳號最後五碼：",cur||"");if(v===null)return;v=v.trim();if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}else{alert("失敗："+d.message);checkMemberStatus();}}catch(e){alert("網路錯誤");checkMemberStatus();}}
+    function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
+    function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
 
-  function loadWaitlistRadar() {
-    let loader = document.getElementById('wlLoader');
-    loader.innerHTML = `<div class="spinner-border text-theme-primary" style="width: 3rem; height: 3rem;"></div><p class="mt-3 fw-bold text-theme-secondary">讀取候補資料中...</p>`;
-    loader.classList.remove('d-none');
-    document.getElementById('wlContent').classList.add('d-none');
-
-    google.script.run
-      .withSuccessHandler(res => {
-        try {
-          if (res.status !== "SUCCESS") throw new Error(res.message);
-          let parsed = JSON.parse(res.payload);
-
-          wlGlobalProducts = parsed.radar.map((item, idx) => ({ ...item, originalIndex: idx }));
-          wlGlobalPurchased = parsed.purchased;
-          wlGlobalCustomerItems = parsed.customerItems;
-          wlClearDeadline = parsed.clearDeadline || "";
-
-          // 將清場日填入 input
-          document.getElementById('wl_clearDeadlineInput').value = wlClearDeadline;
-
-          renderWlBrandFilters();
-          renderWlRadar();
-          renderWlCustomerView();
-          renderWlPurchasedView();
-
-          loader.classList.add('d-none');
-          document.getElementById('wlContent').classList.remove('d-none');
-        } catch (err) {
-          loader.innerHTML = `<div class="alert alert-danger text-start fw-bold fs-5 mt-4 mx-auto" style="max-width: 600px;"><i class="bi bi-x-circle-fill me-2"></i>資料渲染失敗：<br><span class="fs-6 text-dark fw-normal">${err.message}</span></div>`;
-        }
-      })
-      .withFailureHandler(err => {
-        loader.innerHTML = `<div class="alert alert-danger text-start fw-bold fs-5 mt-4 mx-auto" style="max-width: 600px;"><i class="bi bi-wifi-off me-2"></i>連線錯誤：<br><span class="fs-6 text-dark fw-normal">${err.message}</span></div>`;
-      })
-      .api_getWaitlistRadar();
-  }
-
-  // ==========================================
-  // 清場日設定
-  // ==========================================
-  function saveWlClearDeadline() {
-    let val = document.getElementById('wl_clearDeadlineInput').value;
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res.status === "SUCCESS") {
-          wlClearDeadline = val;
-          // 重新載入以重新判定逾期
-          loadWaitlistRadar();
-        } else {
-          alert("設定清場日失敗：" + res.message);
-        }
-      })
-      .api_setClearDeadline(val);
-  }
-
-  // ==========================================
-  // 執行配貨
-  // ==========================================
-  function runWaitlistAllocation() {
-    let btn = document.getElementById('btn-run-wl-alloc');
-    btn.disabled = true;
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> 配貨中...`;
-
-    google.script.run
-      .withSuccessHandler(res => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-gear-fill me-1"></i> 執行配貨`;
-        if (res.status === "SUCCESS") {
-          alert("✅ " + res.message);
-          loadWaitlistRadar();
-        } else {
-          alert("❌ 配貨失敗：" + res.message);
-        }
-      })
-      .withFailureHandler(err => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-gear-fill me-1"></i> 執行配貨`;
-        alert("連線錯誤：" + err.message);
-      })
-      .api_runWaitlistAllocation();
-  }
-
-  // ==========================================
-  // 品牌篩選
-  // ==========================================
-  function renderWlBrandFilters() {
-    let brands = [...new Set([
-      ...wlGlobalProducts.map(p => p.brand),
-      ...wlGlobalCustomerItems.map(c => c.brand),
-      ...wlGlobalPurchased.map(p => p.brand)
-    ])].filter(Boolean).sort();
-
-    let html = `<button class="brand-filter-btn ${wl_BrandFilter === 'ALL' ? 'active' : ''}" onclick="setWlBrandFilter('ALL')">全部品牌</button>`;
-    brands.forEach(b => {
-      let safeB = wl_escapeQuotes(b);
-      html += `<button class="brand-filter-btn ${wl_BrandFilter === b ? 'active' : ''}" onclick="setWlBrandFilter('${safeB}')">${wl_escHTML(b)}</button>`;
-    });
-    document.getElementById('wl_brandFilterContainer').innerHTML = html;
-  }
-
-  function setWlBrandFilter(brand) {
-    wl_BrandFilter = brand;
-    renderWlBrandFilters();
-    renderWlRadar();
-    renderWlCustomerView();
-    renderWlPurchasedView();
-  }
-
-  // ==========================================
-  // 📦 商品配貨 Tab 渲染
-  // ==========================================
-  function renderWlRadar() {
-    const container = document.getElementById('wl_radarContainer');
-    let filteredData = wl_BrandFilter === 'ALL' ? wlGlobalProducts : wlGlobalProducts.filter(p => p.brand === wl_BrandFilter);
-
-    if (filteredData.length === 0) {
-      container.innerHTML = '<div class="text-center py-5 text-theme-secondary fw-bold fs-5 border border-theme-secondary rounded-4 bg-light">目前此分類下沒有排隊中的商品。</div>';
-      return;
+    // ===== 正式訂單渲染 =====
+    function renderOrders(orders,promos,gp){
+      const oc=document.getElementById('regularOrdersContainer');
+      let tt=`<h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
+      if(window.lastAdminSearchText)tt=`<h6 class="fw-bold mb-3 ms-1" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
+      if(!orders||!orders.length){oc.innerHTML=`<div class="text-start">${tt}<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">📦 目前沒有訂單</h6></div></div>`;}
+      else{let cards=orders.map((o,idx)=>{let ci=`oc-${idx}`,pi=`pc-${idx}`,ip=o.payStatus.includes('完成')||o.payStatus.includes('✅')||o.payStatus.includes('貨付'),bc=ip?'status-done':'badge-status',sd=o.ship>0?`-$${o.ship}`:'$0';let tl=escHTML(o.label),th=`<div class="order-title-container"><span class="order-title-brand">${tl}</span></div>`;if(/\||｜/.test(tl)){let p=tl.split(/\||｜/);th=`<div class="order-title-container"><span class="order-title-brand">${p[0].trim()}</span><span class="order-title-series">${p[1].trim()}</span></div>`;}let nh='';if(o.groupNotice||o.groupMemo)nh=`<div class="notice-box">📢 公告：<br>${escHTML(o.groupNotice)}<br>${escHTML(o.groupMemo)}</div>`;let ph='',pch='';if(o.progress){let p=o.progress,h1=p.b1&&(p.b1.purchased>0||p.b1.totalPurchased>0),h2=p.b2&&(p.b2.purchased>0||p.b2.totalPurchased>0);let n1=(h1&&h2)?"📦 [非預購款] 貨況":"📦 貨況進度",n2=(h1&&h2)?"🚚 [預購款] 貨況":"🚚 貨況進度";function mkTrack(t,s1,s2,s3,s4,title){let p1=Math.round(s1/t*100)||0,p2=Math.max(0,Math.round((s2-s3)/t*100))||0,p3=Math.max(0,Math.round((s3-s4)/t*100))||0,p4=Math.round(s4/t*100)||0;let a1=s1>0?'active':'',a2=s2>0?'active':'',a3=s3>0?'active':'',a4=s4>0?'active':'';let ns=s1===0?`<div style="margin-top:20px;padding:12px;background:#FFF3CD;color:#856404;border-radius:8px;font-size:14px;font-weight:bold;text-align:center;border:1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>`:'';return`<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}</div>`;}if(h1){let t=p.b1.purchased||p.b1.totalPurchased;pch+=mkTrack(t,p.b1.step1!==undefined?p.b1.step1:(p.b1.shipped||0),p.b1.step2||0,p.b1.step3||0,p.b1.step4!==undefined?p.b1.step4:(p.b1.twArrived||0),n1);}if(h2){let t=p.b2.purchased||p.b2.totalPurchased;pch+=mkTrack(t,p.b2.step1!==undefined?p.b2.step1:(p.b2.shipped||0),p.b2.step2!==undefined?p.b2.step2:(p.b2.flight||0),p.b2.step3!==undefined?p.b2.step3:(p.b2.flight||0),p.b2.step4!==undefined?p.b2.step4:(p.b2.twArrived||0),n2);}if(pch)ph=`<div id="${pi}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${pi}')">🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i></div><div id="${pi}" class="progress-content">${pch}</div>`;}let ih=o.items.map(i=>`<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`).join('');let eb=!ip?`<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`:'';let l5=o.last5?`<span class="last5-value">${escHTML(o.last5)} ${eb}</span>`:`<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;let db=`<div class="details-box shadow-sm mb-3">${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;let bh='';if(ip){let nn=o.personalNote?`<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(o.personalNote)}</div>`:'';bh=`<div class="bank-info text-center shadow-sm"><div class="fw-bold fs-5" style="color:#436b46;"><i class="bi bi-check-circle-fill me-2"></i>已完成匯款對帳</div>${nn}</div>`;}else if(o.groupBankInfo){let dl=o.groupDeadline?`<span class="bank-deadline">匯款期限：${escHTML(o.groupDeadline)}</span>`:'';bh=`<div class="bank-info shadow-sm"><div class="bank-title"><span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>${dl}</div><div class="bank-text">${escHTML(o.groupBankInfo)}</div><div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div></div>`;}return`<div class="card-order mb-4"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;}).join('');oc.innerHTML=`<div class="text-start">${tt}${cards}</div>`;}
+      // 開團/現貨/規則
+      const pc=document.getElementById('pagePromos');pc.innerHTML=promos&&promos.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6>${promos.map(p=>`<div style="background:#fffaf5;border:1px solid #e8d5c4;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:12px;">👑 ${escHTML(p.title)}</h6><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14.5px;color:#dc3545;font-weight:900;">${p.exp?`⏰ 結單: ${escHTML(p.exp)}`:''}</div><button style="background:var(--brand-brown);color:#fff;border:none;padding:8px 20px;font-size:14px;border-radius:8px;font-weight:bold;cursor:pointer;" onclick="window.open('${p.url}','_blank')">👉 前往填單</button></div></div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">目前沒有開團</h6></div></div>`;
+      const ic=document.getElementById('pageInstock');let ia=gp.instock;ic.innerHTML=ia&&ia.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6>${ia.map(s=>`<div style="background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;padding:15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left;"><div style="flex:1;min-width:0;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:${s.content?'6px':'0'};"><i class="bi bi-shop me-2"></i>${escHTML(s.title||'現貨賣場')}</h6>${s.content?`<div class="text-muted small" style="line-height:1.5;white-space:pre-wrap;">${escHTML(s.content)}</div>`:''}</div>${s.link?`<button style="background:var(--brand-brown);color:#fff;border:none;padding:10px 16px;font-size:14px;border-radius:8px;white-space:nowrap;font-weight:bold;cursor:pointer;" onclick="window.open('${s.link}','_blank')">👉 前往逛逛</button>`:''}</div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">尚未開放</h6></div></div>`;
+      document.getElementById('pageRules').innerHTML=`<div class="text-start"><div class="card-order p-4 shadow-sm"><h6 class="fw-bold mb-3" style="color:var(--brand-charcoal);"><i class="bi bi-book me-2"></i>代購與服務規則</h6><div class="text-muted small" style="line-height:1.8;white-space:pre-wrap;">${escHTML(gp.rules.content||'尚無規則。')}</div></div></div>`;
     }
 
-    let seriesMap = {};
-    filteredData.forEach(p => {
-      let s = p.series || "未分類系列";
-      if (!seriesMap[s]) seriesMap[s] = [];
-      seriesMap[s].push(p);
-    });
+    // =============================================
+    // 🎯 預購卡片
+    // =============================================
+    async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};renderPoCards();}}catch(e){}}
+    function renderPoCards(){const c=document.getElementById('preorderCardsContainer');if(!poData.preorders||!poData.preorders.length){c.innerHTML='';return;}c.innerHTML=poData.preorders.map((po,i)=>buildPoCard(po,i)).join('');}
+    function getCountdown(ds){if(!ds)return'';let t=new Date(ds.replace(/-/g,'/')).getTime()-Date.now();if(t<=0)return'已截止';let d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4);return d>0?`剩餘 ${d} 天 ${h} 小時`:`剩餘 ${h} 小時 ${m} 分`;}
+    function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
 
-    let html = '';
-    let seriesIndex = 0;
+    function buildPoCard(po,idx){
+      let s=po.stage,ed=pendingEdits[po.masterId]||[],dec=pendingSweep[po.masterId]||[];
+      let bc,hbg,sub,badge;
+      switch(s){
+        case'EDITING':bc='#795238';hbg='#fff';sub=`📝 結單倒數：${getCountdown(po.stageInfo.orderCloseTime)}`;badge=`<span class="po-badge" style="background:#795238;color:#fff;">可修改</span>`;break;
+        case'WAITING_PREPARING':bc='#b8b0a8';hbg='#fbfaf9';sub='📋 訂單整理中，等待開賣搶購';badge=`<span class="po-badge" style="background:#f1efe8;color:#5f5e5a;line-height:1.3;">結單<br>訂單整理中</span>`;break;
+        case'WAITING_PURCHASING':bc='#d97706';hbg='#fef9ee';sub='⏳ 仍在努力，訂單隨時更新~';badge=`<span class="po-badge" style="background:#fef3c7;color:#854f0b;">搶購中</span>`;break;
+        case'SWEEP':bc='#dc3545';hbg='#fdf3f2';sub=`⏰ 處理期限：${po.stageInfo.preorderDeadline||''}`;let cnt=po.items.filter(i=>!i.isCancelled&&!i.isWaitlisted&&!i.isSwapped&&i.reqQty>i.allocQty).length-dec.length;badge=cnt>0?`<span class="po-badge" style="background:#dc3545;color:#fff;">${cnt} 件待處理</span>`:`<span class="po-badge" style="background:#198754;color:#fff;">已選完</span>`;break;
+        case'SWEEP_DONE':bc='#198754';hbg='#eef5ee';sub='✅ 已完成缺貨處理';badge=`<span class="po-badge" style="background:#eef5ee;color:#436b46;">已處理</span>`;break;
+        case'LOCKED':bc='#b8b0a8';hbg='#f5f3ef';sub='⚠️ 處理期限已過，系統將自動處理';badge=`<span class="po-badge" style="background:#f5f3ef;color:#a95a52;">已截止</span>`;break;
+        default:bc='#b8b0a8';hbg='#fff';sub='';badge='';
+      }
+      let lb=escHTML(po.label),lbh=lb;if(/\||｜/.test(lb)){let p=lb.split(/\||｜/);lbh=`${p[0].trim()}<br><span style="font-size:13px;font-weight:600;color:#666;">${p[1].trim()}</span>`;}
 
-    Object.keys(seriesMap).sort().forEach(seriesName => {
-      let sIdx = seriesIndex++;
-      let itemsInSeries = seriesMap[seriesName];
-      itemsInSeries.sort(wl_sortProductsClient_);
+      let ih='';
+      // === EDITING ===
+      if(s==='EDITING'){
+        po.items.filter(i=>!i.isSwapped).forEach(i=>{
+          if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+          let dl=ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId);
+          if(dl){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${i.reqQty}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
+          let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId),dq=md?md.newQty:i.reqQty,isMod=md&&md.newQty!==md.oldQty;
+          let rs=isMod?'background:#e6f1fb;border-radius:6px;border:none;margin:2px 0;padding:6px;':'';
+          let limitLabel=i.maxQty>0?`<span style="font-size:9px;color:#a95a52;margin-left:4px;">限購${i.maxQty}</span>`:'';
+          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(i.product)}${limitLabel}</span><span class="po-iprice" style="margin-right:6px;">$${i.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},-1,${i.maxQty||0})">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},1,${i.maxQty||0})">+</div></div><button class="po-del-btn" onclick="poDelItem('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty})">刪除</button></div>`;
+        });
+        ed.filter(e=>e.type==='ADD').forEach(a=>{ih+=`<div class="po-irow" style="background:#eaf3de;border-radius:6px;border:none;margin:2px 0;padding:6px;"><span class="po-iname" style="color:#27500a;">+ ${escHTML(a.product)} x${a.qty}</span><span class="po-iprice" style="color:#3b6d11;">$${a.price}</span></div>`;});
+        let total=0;po.items.forEach(i=>{if(i.isCancelled||ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId);total+=(md?md.newQty:i.reqQty)*i.price;});ed.filter(e=>e.type==='ADD').forEach(a=>{total+=a.qty*a.price;});
+        ih+=`<div class="po-sum"><span>商品小計</span><span>$${total.toLocaleString()}</span></div>`;
+        ih+=`<div class="po-add-btn" onclick="openAddItemModal('${po.masterId}')">+ 新增品項</div>`;
+      }
+      // === SWEEP ===
+      else if(s==='SWEEP'){
+        po.items.filter(i=>!i.isSwapped).forEach(i=>{
+          if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+          if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
+          
+          let sh = i.reqQty - i.allocQty;
+          
+          if (sh <= 0) {
+            ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;
+          } else {
+            if (i.allocQty > 0) {
+              ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty} (已確認)</span><span class="po-iprice">$${i.price}</span></div>`;
+            }
+            let dc = dec.find(d => d.recordId === i.recordId);
+            if (dc) {
+              let tg = dc.action === 'CANCEL' ? '已選取消' : '已選候補';
+              let tbg = dc.action === 'CANCEL' ? 'background:#fdf3f2;color:#dc3545' : 'background:#fff3cd;color:#856404';
+              ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${sh}</span><span style="text-decoration:none;font-size:10px;font-weight:700;${tbg};padding:1px 8px;border-radius:4px;">${tg}</span></div>`;
+            } else {
+              let bg = i.allocQty > 0 ? 'background:#fff3cd;' : 'background:#fdf3f2;';
+              let tc = i.allocQty > 0 ? 'color:#d97706;' : 'color:#dc3545;';
+              let sym = i.allocQty > 0 ? '⚠️' : '❌';
+              ih+=`<div class="po-irow po-shortage-row" style="${bg}"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;${tc}">${sym} ${escHTML(i.product)} x${sh} (缺貨)</div><div style="font-size:11px;color:#888;">$${i.price}</div></div><div style="display:flex;gap:4px;flex-shrink:0;"><button class="po-del-btn" style="background:#ffc107;color:#412402;" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','${escAttr(po.brand)}','${escAttr(po.series)}',${i.reqQty},${i.allocQty},'WAITLIST')">轉候補</button><button class="po-del-btn" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','','',${i.reqQty},${i.allocQty},'CANCEL')">取消</button></div></div>`;
+            }
+          }
+        });
+      }
+      // === 唯讀 ===
+      else{po.items.filter(i=>!i.isSwapped).forEach(i=>{
+        if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+        if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
+        let sh=i.reqQty-i.allocQty;
+        if(s==='WAITING_PREPARING') ih+=`<div class="po-irow"><span class="po-iname">${escHTML(i.product)} x${i.reqQty}</span><span class="po-iprice">$${i.price}</span></div>`;
+        else if(s==='WAITING_PURCHASING'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:${i.allocQty>0?'#d97706':'#dc3545'};">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)}${i.allocQty>0?` (缺${sh})`:` x${i.reqQty}`}</span><span class="po-iprice">$${i.price}</span></div>`;}
+        else if(s==='SWEEP_DONE'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;}
+        else if(s==='LOCKED'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#dc3545;">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)} x${sh}</span><span class="po-iprice" style="color:#a95a52;">等待處理</span></div>`;}
+      });if(s==='SWEEP_DONE'){let t=0;po.items.forEach(i=>{if(i.allocQty>0&&!i.isSwapped)t+=i.allocQty*i.price;});ih+=`<div class="po-sum"><span>應匯款金額</span><span>$${t.toLocaleString()}</span></div>`;}}
 
-      // 🌟 Summary 統計表
-      let summaryRowsHtml = itemsInSeries.map(p => {
-        let stats = computeSummaryStats_(p);
-        let shortDisplay = stats.shortage > 0 ? stats.shortage : '—';
-        let overDisplay = stats.overflow > 0 ? stats.overflow : '—';
-        let collapseId = `wlCollapseRadar_s${sIdx}_p${p.originalIndex}`;
+      // 預覽
+      let pv='';
+      if(s==='EDITING'&&ed.length>0){let pi=ed.map((e,ei)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits('${po.masterId}')">確認送出修改</button></div>`;}
+      if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d,di)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${po.masterId}',${di})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep('${po.masterId}')">確認送出</button></div>`;}
+      let nt='';if(s==='SWEEP_DONE')nt=`<div class="po-notice" style="background:#fff3cd;color:#633806;border:1px dashed #efc777;">⚠️ 目前暫未開放匯款，開放後將另行通知</div>`;
+      let notes='';let fn=fmtPoNote(po.note);if(fn)notes=`<div class="po-notes">${fn}</div>`;
+
+      return`<div class="po-card" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${pv}${nt}${notes}</div></div>`;
+    }
+
+    // ===== 改單操作 =====
+    function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
+    function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;if(ac<=1){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty});renderPoCards();}
+    function poUndo(mid,i){let a=pendingEdits[mid];if(a)a.splice(i,1);renderPoCards();}
+
+    function getFullAvailableProducts(po){
+      let list=[...(po.availableProducts||[])];
+      let ed=pendingEdits[po.masterId]||[];
+      ed.filter(e=>e.type==='DELETE').forEach(del=>{
+        let item=po.items.find(i=>i.recordId===del.recordId);
+        if(item&&item.inventoryId&&!list.find(p=>p.inventoryId===item.inventoryId)){
+          list.push({inventoryId:item.inventoryId,name:item.product,price:item.price,maxQty:item.maxQty||0});
+        }
+      });
+      return list;
+    }
+    function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;renderAddList(getFullAvailableProducts(po),'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
+    function filterAddItems(kw){let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),kw.toLowerCase());}
+    function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.length>0?f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;let lim=p.maxQty>0?`<span style="font-size:10px;color:#a95a52;"> (限購${p.maxQty})</span>`:'';return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}${lim}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1,${p.maxQty||0})">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1,${p.maxQty||0})">+</div></div></div>`;}).join(''):(kw?'<div class="p-4 text-center text-muted fw-bold">找不到符合的品項</div>':'<div class="p-4 text-center fw-bold" style="color:#795238;">此系列所有品項皆已訂購<br><span class="text-muted fw-normal" style="font-size:12px;">如需調整數量，請直接在訂單上操作 +/-</span></div>');}
+    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
+    function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;let existingDel=ed.findIndex(e=>e.type==='DELETE'&&po&&po.items.find(i=>i.recordId===e.recordId&&i.inventoryId===id));if(existingDel>-1){let delEntry=ed[existingDel];let origItem=po.items.find(i=>i.recordId===delEntry.recordId);if(origItem&&s.qty===origItem.reqQty){ed.splice(existingDel,1);}else if(origItem){ed.splice(existingDel,1);ed.push({type:'MODIFY',recordId:delEntry.recordId,product:s.name,oldQty:origItem.reqQty,newQty:s.qty});}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
+    
+    // 🌟 樂觀更新 (Optimistic UI)：客人按下送出後瞬間切換畫面，系統在背景默默處理
+    function submitEdits(mid){
+        let ed=pendingEdits[mid];
+        if(!ed||!ed.length)return;
+        if(!confirm('確定送出所有修改？'))return;
+        
+        // 1. 瞬間套用修改結果到畫面資料上 (樂觀更新)
+        let po = poData.preorders.find(p => p.masterId === mid);
+        if(po) {
+            ed.forEach(e => {
+                if(e.type === 'MODIFY') {
+                    let it = po.items.find(i => i.recordId === e.recordId);
+                    if(it) it.reqQty = e.newQty;
+                } else if(e.type === 'DELETE') {
+                    let it = po.items.find(i => i.recordId === e.recordId);
+                    if(it) it.isCancelled = true;
+                } else if(e.type === 'ADD') {
+                    po.items.push({
+                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), // 暫時的假ID
+                        inventoryId: e.inventoryId,
+                        product: e.product,
+                        price: e.price,
+                        reqQty: e.qty,
+                        allocQty: 0
+                    });
+                }
+            });
+        }
+
+        // 2. 發送給背景處理 (不卡畫面)
+        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
+        fetch(GAS_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
+        }).then(r => r.json()).then(d => {
+            if(d.status === "SUCCESS") {
+                // 背景處理成功後，偷偷把真實資料拉回來覆蓋假資料
+                loadPreorderData(); 
+            } else {
+                alert("❌ 系統背景處理異常：" + d.message);
+                loadPreorderData(); // 發生錯誤時重置畫面
+            }
+        }).catch(e => console.error("背景連線異常:", e));
+
+        // 3. 瞬間提示成功，清除預覽並重新渲染卡片
+        alert("✅ 已完成送出！");
+        delete pendingEdits[mid];
+        renderPoCards();
+    }
+
+    // ===== 二選一操作 =====
+    function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
+    function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
+    
+    // 🌟 樂觀更新 (Optimistic UI)
+    function submitSweep(mid){
+        let dec=pendingSweep[mid];
+        if(!dec||!dec.length)return;
+        if(!confirm('確定送出您的決定？'))return;
+        
+        // 1. 瞬間套用修改結果
+        let po = poData.preorders.find(p => p.masterId === mid);
+        if(po) {
+            dec.forEach(d => {
+                let it = po.items.find(i => i.recordId === d.recordId);
+                if(it) {
+                    if(d.action === 'CANCEL') it.isCancelled = true; 
+                    else if(d.action === 'WAITLIST') it.isWaitlisted = true;
+                }
+            });
+        }
+
+        // 2. 發送給背景處理
+        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
+        fetch(GAS_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/x-www-form-urlencoded"},
+            body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
+        }).then(r => r.json()).then(d => {
+            if(d.status === "SUCCESS") loadPreorderData();
+            else { alert("❌ 系統背景處理異常：" + d.message); loadPreorderData(); }
+        }).catch(e => console.error("背景連線異常:", e));
+
+        // 3. 瞬間提示成功並渲染畫面
+        alert("✅ 已完成送出！");
+        delete pendingSweep[mid];
+        renderPoCards();
+    }
+
+    // ===== 候補頁面（V2 完整版） =====
+    let wlCustomerData = null;
+
+    async function loadWaitlistData(){
+      const c = document.getElementById('waitlistContainer');
+      c.innerHTML = `<div class="loader-overlay"><div class="spinner-border"></div><p class="text-carousel">讀取候補清單中...</p></div>`;
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'getMyWaitlist', lineUid: currentLineUid})
+        });
+        const d = await r.json();
+        if (d.status === "SUCCESS") {
+          wlCustomerData = d.data;
+          renderWL(wlCustomerData);
+        } else if (d.status === "UNBOUND") {
+          c.innerHTML = `<div class="wl-empty">請先完成 LINE 綁定才能使用候補功能</div>`;
+        } else {
+          c.innerHTML = `<div class="wl-empty" style="color:#dc3545;">讀取失敗：${escHTML(d.message||'')}</div>`;
+        }
+      } catch(e){
+        c.innerHTML = `<div class="wl-empty" style="color:#dc3545;">連線錯誤，請重新整理</div>`;
+      }
+    }
+
+    // 🎨 品牌 hash 自動配色（前後端同一演算法）
+    function wlGetBrandColor(brand) {
+      const palette = [
+        { bg:'#fce8e8', text:'#8b1a1a' },
+        { bg:'#fff4e0', text:'#8a5a00' },
+        { bg:'#fffacc', text:'#685800' },
+        { bg:'#e4f5e4', text:'#1f5c1f' },
+        { bg:'#d9f1f1', text:'#0f5a5a' },
+        { bg:'#dfeafc', text:'#1a3d78' },
+        { bg:'#ece0f7', text:'#3e1d6e' },
+        { bg:'#fce0ec', text:'#702346' },
+        { bg:'#eae3d5', text:'#5a4423' },
+        { bg:'#e6e6e6', text:'#333333' }
+      ];
+      let hash = 0;
+      const s = String(brand||'');
+      for (let i = 0; i < s.length; i++) {
+        hash = ((hash << 5) - hash) + s.charCodeAt(i);
+        hash = hash & hash;
+      }
+      return palette[Math.abs(hash) % palette.length];
+    }
+
+    // 格式化排隊時間
+    function wlFmtTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return (d.getMonth()+1) + '/' + d.getDate();
+    }
+
+    // 格式化清場截止時間
+    function wlFmtDeadline(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    // 把規則文字轉成 <li> 清單（自動以空行分段）
+    function wlFormatRules(rules) {
+      if (!rules) {
         return `
-          <tr class="summary-row" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
-            <td class="sm-name">${wl_escHTML(p.productName)}</td>
-            <td class="sm-req">${p.totalReq}</td>
-            <td class="sm-stock">${p.aiStockQty}</td>
-            <td class="sm-alloc" data-summary-alloc="${p.originalIndex}">${p.totalAlloc}</td>
-            <td class="sm-short" data-summary-short="${p.originalIndex}">${shortDisplay}</td>
-            <td class="sm-over" data-summary-over="${p.originalIndex}">${overDisplay}</td>
-            <td data-summary-status="${p.originalIndex}"><span class="wl-status-text ${stats.statusClass}">${stats.statusLabel}</span></td>
-          </tr>`;
-      }).join('');
+          <li>候補 = <strong>委託我們為您代購</strong>。商品一旦順利買到，會直接為您保留，所以請您確實是想要這份商品再排隊唷</li>
+          <li>商品價格會依<strong>配到貨當下的匯率與運費</strong>計算，無法預先告知，如果對價格有疑慮，建議您先不要排隊</li>
+          <li>想法改變了也沒關係，隨時可以在這個頁面點「取消排隊」，<strong>越早取消越好</strong></li>
+          <li>當我們通知您配到貨了，若選擇「放棄」，為避免您繼續佔著其他排隊位置，<strong>系統會一併取消您其他的候補</strong>，請您謹慎考慮後再做決定</li>`;
+      }
+      return rules.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+        .map(p => `<li>${escHTML(p).replace(/\n/g, '<br>')}</li>`).join('');
+    }
 
-      let summaryTable = `
-        <div class="wl-summary-section">
-          <div class="wl-summary-label">📊 本系列配貨總覽</div>
-          <table class="wl-summary-table">
-            <thead>
-              <tr>
-                <th style="text-align: left; padding-left: 18px;">品項名稱</th>
-                <th>排隊需求</th>
-                <th>可配庫存</th>
-                <th style="color: #198754;">已配貨</th>
-                <th style="color: #dc3545;">缺口</th>
-                <th style="color: #0d6efd;">超出可配</th>
-                <th>狀態</th>
-              </tr>
-            </thead>
-            <tbody>${summaryRowsHtml}</tbody>
-          </table>
+    // 依品牌系列分組候補項目
+    function wlGroupByBrandSeries(items) {
+      const map = {};
+      items.forEach(i => {
+        const key = `${i.brand}||${i.series}`;
+        if (!map[key]) map[key] = { brand: i.brand, series: i.series, items: [] };
+        map[key].items.push(i);
+      });
+      return Object.values(map);
+    }
+
+    // 主渲染
+    function renderWL(data) {
+      const c = document.getElementById('waitlistContainer');
+      if (!data) { c.innerHTML = `<div class="wl-empty">尚未載入</div>`; return; }
+
+      let html = `
+        <h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);">
+          <i class="bi bi-hourglass-split me-2"></i>我的候補清單
+        </h6>
+        <div class="wl-rules-box">
+          <h3>💛 關於候補的小提醒</h3>
+          <ul>${wlFormatRules(data.rules)}</ul>
         </div>`;
 
-      // 🌟 底下的可展開品項隊列卡片（原樣保留）
-      let itemsHtml = '';
-      itemsInSeries.forEach(p => {
-        let dotClass = computeDotClass_(p);
-        let collapseId = `wlCollapseRadar_s${sIdx}_p${p.originalIndex}`;
+      const hasWaiting = data.waitingConfirm && data.waitingConfirm.length > 0;
+      const hasConfirmed = data.confirmedItems && data.confirmedItems.length > 0;
+      const hasQueue = data.queueItems && data.queueItems.length > 0;
+      const hasTransferred = data.transferredCount > 0;
+      const hasCancelled = data.cancelledItems && data.cancelledItems.length > 0;
 
-        let queueHtml = p.queue.map(q => {
-          let rowClass = q.allocQty > 0 ? 'table-success opacity-75' : '';
-          let lockIcon = q.isConfirmed ? ' 🔒' : (q.isNotified ? ' 🔔' : '');
-          return `
-            <tr class="${rowClass}">
-              <td class="fw-bold text-theme-primary text-start ps-4">${wl_escHTML(q.customerName)}${lockIcon}</td>
-              <td class="fw-bold text-danger">${q.reqQty}</td>
-              <td>
-                <input type="number" class="form-control alloc-input text-theme-primary border-theme-primary wl-alloc-inp"
-                       min="0" max="${q.reqQty}" value="${q.allocQty}"
-                       data-id="${q.recordId}"
-                       data-product-idx="${p.originalIndex}"
-                       ${q.isConfirmed ? 'disabled title="已確認鎖定不可修改"' : ''}
-                       oninput="syncWlAllocState('${q.recordId}', this.value)">
-              </td>
-              <td class="text-theme-secondary small">${wl_fmtTime(q.time)}</td>
-            </tr>`;
-        }).join('');
+      // 🎯 已配到貨待確認
+      if (hasWaiting) {
+        const deadlineStr = data.clearDeadline ? wlFmtDeadline(data.clearDeadline) : '';
+        const deadlineTxt = deadlineStr ? `，請於 <strong>${escHTML(deadlineStr)}</strong> 前完成確認` : '';
+        html += `
+          <div class="wl-section-head wl-section-alert">
+            <span>🎯 配到貨！需要您確認</span>
+            <span class="wl-count">${data.waitingConfirm.length} 件</span>
+          </div>
+          <div class="wl-confirm-wrapper">
+            <div class="wl-confirm-alert">
+              ⚠️ 以下商品已為您買到${deadlineTxt}<br>
+              <span style="font-size:11px;opacity:0.9;">逾期未確認將視為放棄並連帶取消其他排隊</span>
+            </div>`;
+        const groups = wlGroupByBrandSeries(data.waitingConfirm);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">🎁 ${escHTML(i.product)} x${i.allocQty}</div>
+                <div class="wl-v2-meta" style="color:#a95a52;font-weight:700;"><span>✨ 已為您配到</span></div>
+              </div>
+              <div class="wl-v2-actions">
+                <button class="wl-btn-confirm" onclick="wlConfirmItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">✓ 確認保留</button>
+                <button class="wl-btn-abandon" onclick="wlAbandonItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">⚠ 放棄</button>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card" style="border:1px solid #f5c2c7;">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
 
-        itemsHtml += `
-          <div class="radar-card">
-            <div class="radar-header" data-bs-toggle="collapse" data-bs-target="#${collapseId}">
-              <div class="d-flex align-items-center">
-                <span class="status-dot ${dotClass}" data-status-dot="${p.originalIndex}"></span>
-                <span class="fs-5 fw-bold text-theme-primary">${wl_escHTML(p.productName)}</span>
-                <span class="badge bg-danger ms-3 shadow-sm fs-6">總排隊: ${p.totalReq} 件</span>
-              </div>
-              <span class="fw-bold text-success fs-6 me-3"><span data-header-alloc="${p.originalIndex}">已配: ${p.totalAlloc}</span> 件 / 可用庫存: ${p.aiStockQty}</span>
-            </div>
-            <div id="${collapseId}" class="collapse">
-              <div class="p-0 border-top border-theme-secondary overflow-auto" style="max-height: 400px;">
-                <table class="table table-hover queue-table m-0">
-                  <thead class="sticky-top" style="top: 0; z-index: 0;">
-                    <tr>
-                      <th style="width: 30%; text-align: left !important; padding-left: 20px;">社群名稱</th>
-                      <th style="width: 20%;">需求量</th>
-                      <th style="width: 20%;">配貨量</th>
-                      <th style="width: 30%;">排隊時間</th>
-                    </tr>
-                  </thead>
-                  <tbody>${queueHtml}</tbody>
-                </table>
-              </div>
-            </div>
+      // 🔒 已確認待轉單
+      if (hasConfirmed) {
+        html += `
+          <div class="wl-section-head" style="color:#6f42c1;">
+            <span>🔒 已確認，等待轉為正式訂單</span>
+            <span class="wl-count" style="background:#6f42c1;color:white;">${data.confirmedItems.length} 件</span>
           </div>`;
-      });
-      html += `<div class="series-big-card">
-                  <div class="series-big-header"><div class="series-badge">${wl_escHTML(seriesName)}</div></div>
-                  ${summaryTable}
-                  <div class="series-body bg-white">${itemsHtml}</div>
-                </div>`;
-    });
-    container.innerHTML = html;
-  }
-
-  // ==========================================
-  // 📦 商品配貨 Tab: 統計輔助
-  // ==========================================
-  function computeSummaryStats_(p) {
-    let shortage = Math.max(0, p.totalReq - p.totalAlloc);
-    let overflow = Math.max(0, p.aiStockQty - Math.max(p.totalReq, p.totalAlloc));
-
-    let statusClass, statusLabel;
-    if (overflow > 0) {
-      statusClass = 'wl-status-over';
-      statusLabel = '🔵 超出可配';
-    } else if (p.totalAlloc >= p.totalReq && p.totalReq > 0) {
-      statusClass = 'wl-status-full';
-      statusLabel = '🟢 已配齊';
-    } else if (p.totalAlloc > 0) {
-      statusClass = 'wl-status-part';
-      statusLabel = '🟡 部分配';
-    } else {
-      statusClass = 'wl-status-none';
-      statusLabel = '🔴 未配';
-    }
-    return { shortage, overflow, statusClass, statusLabel };
-  }
-
-  function computeDotClass_(p) {
-    let overflow = p.aiStockQty - Math.max(p.totalReq, p.totalAlloc);
-    if (overflow > 0) return 'dot-blue';
-    if (p.totalAlloc >= p.totalReq && p.totalReq > 0) return 'dot-green';
-    if (p.totalAlloc > 0) return 'dot-yellow';
-    return 'dot-red';
-  }
-
-  // 品項排序（前端）：按名稱中文字母
-  function wl_sortProductsClient_(a, b) {
-    let nameA = String(a.productName || "");
-    let nameB = String(b.productName || "");
-    return nameA.localeCompare(nameB, 'zh-Hant');
-  }
-
-  // ==========================================
-  // 📦 手動改配貨量時，同步更新 summary 表與 header 標籤
-  // ==========================================
-  function syncWlAllocState(recordId, value) {
-    let val = parseInt(value) || 0;
-    wlGlobalProducts.forEach(p => {
-      let target = p.queue.find(q => q.recordId === recordId);
-      if (target) {
-        target.allocQty = val;
-        p.totalAlloc = p.queue.reduce((sum, q) => sum + q.allocQty, 0);
-
-        // 同步更新 DOM 上該品項的 summary 列數字、header 已配數、狀態燈
-        let idx = p.originalIndex;
-        let stats = computeSummaryStats_(p);
-        let allocCells = document.querySelectorAll(`[data-summary-alloc="${idx}"]`);
-        allocCells.forEach(el => el.innerText = p.totalAlloc);
-        let shortCells = document.querySelectorAll(`[data-summary-short="${idx}"]`);
-        shortCells.forEach(el => el.innerText = stats.shortage > 0 ? stats.shortage : '—');
-        let overCells = document.querySelectorAll(`[data-summary-over="${idx}"]`);
-        overCells.forEach(el => el.innerText = stats.overflow > 0 ? stats.overflow : '—');
-        let statusCells = document.querySelectorAll(`[data-summary-status="${idx}"]`);
-        statusCells.forEach(el => {
-          el.innerHTML = `<span class="wl-status-text ${stats.statusClass}">${stats.statusLabel}</span>`;
-        });
-        let headerCells = document.querySelectorAll(`[data-header-alloc="${idx}"]`);
-        headerCells.forEach(el => el.innerText = `已配: ${p.totalAlloc}`);
-        let dotCells = document.querySelectorAll(`[data-status-dot="${idx}"]`);
-        let newDotClass = computeDotClass_(p);
-        dotCells.forEach(el => {
-          el.className = `status-dot ${newDotClass}`;
+        const groups = wlGroupByBrandSeries(data.confirmedItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)} x${i.allocQty}</div>
+                <div class="wl-v2-meta"><span style="color:#6f42c1;font-weight:700;">✅ 已確認，稍後會幫您建立正式訂單</span></div>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
         });
       }
-    });
-  }
 
-  function executeWlGlobalSaveAction() {
-    const payload = [];
-    document.querySelectorAll('.wl-alloc-inp').forEach(inp => {
-      payload.push({ recordId: inp.getAttribute('data-id'), allocQty: inp.value });
-    });
-    google.script.run.withSuccessHandler(res => {
-      let parsed = typeof res === 'string' ? JSON.parse(res) : res;
-      if (parsed.status === "SUCCESS") {
-        alert("✅ 配貨數量已儲存！");
-        loadWaitlistRadar();
+      // ⏳ 排隊中
+      if (hasQueue) {
+        html += `
+          <div class="wl-section-head">
+            <span>⏳ 排隊中</span>
+            <span class="wl-count">${data.queueItems.length} 件</span>
+          </div>`;
+        const groups = wlGroupByBrandSeries(data.queueItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)}</div>
+                <div class="wl-v2-meta"><span>需求 ${i.reqQty}</span><span>排隊於 ${wlFmtTime(i.queueTime)}</span></div>
+              </div>
+              <div class="wl-v2-actions">
+                <button class="wl-btn-cancel" onclick="wlCancelItem('${i.recordId}','${escAttr(i.product)}',${i.reqQty})">取消排隊</button>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+      }
+
+      // ✅ 已轉訂單（只提示）
+      if (hasTransferred) {
+        html += `
+          <div class="wl-section-head">
+            <span>✅ 已轉正式訂單</span>
+            <span class="wl-count">${data.transferredCount} 件</span>
+          </div>
+          <div class="wl-link-orders" onclick="switchToOrdersTab()">
+            🔄 請到「訂單」頁查看這些已轉正式訂單的後續
+          </div>`;
+      }
+
+      // ❌ 歷史取消（折疊）
+      if (hasCancelled) {
+        html += `
+          <div class="wl-collapse-head" onclick="wlToggleCancelled()">
+            <span>❌ 歷史取消紀錄</span>
+            <span id="wlCancelledToggle">${data.cancelledItems.length} 件 ▾</span>
+          </div>
+          <div id="wlCancelledList" style="display:none;">`;
+        const groups = wlGroupByBrandSeries(data.cancelledItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item" style="opacity:0.6;">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)}</div>
+                <div class="wl-v2-meta"><span>${wlFmtTime(i.queueTime)}</span></div>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card" style="opacity:0.85;">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 空狀態
+      if (!hasWaiting && !hasConfirmed && !hasQueue && !hasTransferred && !hasCancelled) {
+        html += `<div class="wl-empty">🎈 您目前沒有候補中的商品</div>`;
+      }
+
+      c.innerHTML = html;
+    }
+
+    function wlToggleCancelled() {
+      const el = document.getElementById('wlCancelledList');
+      const toggle = document.getElementById('wlCancelledToggle');
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        toggle.innerHTML = toggle.innerHTML.replace('▾', '▴');
       } else {
-        alert("儲存失敗：" + parsed.message);
+        el.style.display = 'none';
+        toggle.innerHTML = toggle.innerHTML.replace('▴', '▾');
       }
-    }).api_saveWaitlistAllocations(payload);
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：狀態 Tab 切換
-  // ==========================================
-  function setWlStateTab(tab) {
-    wl_StateTab = tab;
-    document.querySelectorAll('.wl-status-tab').forEach(t => t.classList.remove('active'));
-    document.querySelector(`.wl-status-tab-${tab}`).classList.add('active');
-    renderWlCustomerView();
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：依狀態 Tab 分類明細
-  // ==========================================
-  function classifyItemByState(i) {
-    if (i.isTransferred) return null; // 已轉單的不在此 Tab 顯示
-    if (i.isConfirmed) return 'confirmed';
-    if (i.isOverdue) return 'overdue';
-    if (i.isNotified) return 'sent';
-    if (i.allocQty > 0) return 'notify';
-    return 'queue'; // 🌟 排隊中但未配貨 → queue Tab
-  }
-
-  function renderWlCustomerView() {
-    const container = document.getElementById('wlCustomerContainer');
-    const hintEl = document.getElementById('wl_stateHint');
-
-    // 先依品牌篩選
-    let items = wlGlobalCustomerItems.filter(i => {
-      if (wl_BrandFilter !== 'ALL' && i.brand !== wl_BrandFilter) return false;
-      return true;
-    });
-
-    // 統計五個狀態的數量
-    let counts = { queue: 0, notify: 0, sent: 0, confirmed: 0, overdue: 0 };
-    items.forEach(i => {
-      let s = classifyItemByState(i);
-      if (s) counts[s]++;
-    });
-    document.getElementById('wl_cnt_queue').innerText = counts.queue;
-    document.getElementById('wl_cnt_notify').innerText = counts.notify;
-    document.getElementById('wl_cnt_sent').innerText = counts.sent;
-    document.getElementById('wl_cnt_confirmed').innerText = counts.confirmed;
-    document.getElementById('wl_cnt_overdue').innerText = counts.overdue;
-
-    // 篩出當前狀態 Tab 的明細
-    let stateItems = items.filter(i => classifyItemByState(i) === wl_StateTab);
-
-    // 渲染狀態指引區
-    hintEl.innerHTML = renderWlStateHint(wl_StateTab, stateItems.length);
-
-    if (stateItems.length === 0) {
-      container.innerHTML = `<div class="text-center py-5 text-theme-secondary fw-bold fs-5 bg-white rounded-3 shadow-sm">${getEmptyStateMessage(wl_StateTab)}</div>`;
-      return;
     }
 
-    // 🌟 排隊中 Tab 使用「客人分組大卡片」版型
-    if (wl_StateTab === 'queue') {
-      container.innerHTML = renderQueueCustomerCards(stateItems);
-      return;
+    function switchToOrdersTab() {
+      const ordersTab = document.querySelector('.bottom-nav-item[onclick*="pageOrders"]');
+      if (ordersTab) ordersTab.click();
     }
 
-    // 依 品牌-系列-客人 三層分組
-    let grouped = {}; // key = "brand||series" → { brand, series, customers: {custKey → {name, uid, hasUid, items: []}} }
-    stateItems.forEach(i => {
-      let grpKey = `${i.brand}||${i.series}`;
-      if (!grouped[grpKey]) grouped[grpKey] = { brand: i.brand, series: i.series, customers: {} };
-      let custKey = i.linkId || i.customerName;
-      if (!grouped[grpKey].customers[custKey]) {
-        grouped[grpKey].customers[custKey] = {
-          name: i.customerName, uid: i.uid, hasUid: i.hasUid, linkId: i.linkId, items: []
-        };
-      }
-      grouped[grpKey].customers[custKey].items.push(i);
-    });
+    // ===== 取消排隊 Modal =====
+    function wlCancelItem(recordId, productName, qty) {
+      const modalHtml = `
+        <div class="wl-modal-bg" id="wlCancelModal">
+          <div class="wl-modal-card">
+            <div class="wl-modal-head warning">🗑 確認取消排隊</div>
+            <div class="wl-modal-body">
+              您將取消以下候補排隊：
+              <div style="background:#fff8e1;border-radius:8px;padding:10px 12px;margin:10px 0;font-weight:700;">
+                ${escHTML(productName)} × ${qty}
+              </div>
+              <div style="font-size:12px;color:#888;">
+                ＊ 取消後無法復原，若還想購買須重新填單<br>
+                ＊ 此動作僅取消此品項，其他候補不受影響
+              </div>
+              <div class="wl-rule-check">
+                <input type="checkbox" id="wlChkCancel" onchange="document.getElementById('wlBtnCancelOk').disabled = !this.checked;">
+                <label for="wlChkCancel">我已閱讀並了解候補規則，確認要取消此品項的排隊</label>
+              </div>
+            </div>
+            <div class="wl-modal-actions">
+              <button class="wl-modal-btn wl-modal-btn-secondary" onclick="wlCloseModal()">返回</button>
+              <button class="wl-modal-btn wl-modal-btn-danger" id="wlBtnCancelOk" disabled onclick="wlExecCancel('${recordId}')">確定取消</button>
+            </div>
+          </div>
+        </div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
 
-    // 渲染
-    let html = '';
-    Object.keys(grouped).sort().forEach(grpKey => {
-      let g = grouped[grpKey];
-      let custList = Object.values(g.customers);
-      let headerClass = wl_StateTab === 'overdue' ? 'overdue' : '';
+    async function wlExecCancel(recordId) {
+      const btn = document.getElementById('wlBtnCancelOk');
+      btn.disabled = true; btn.innerHTML = '處理中...';
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerCancelWaitlist', lineUid: currentLineUid, waitlistItemId: recordId})
+        });
+        const d = await r.json();
+        wlCloseModal();
+        if (d.status === "SUCCESS") { alert("✅ 已取消排隊"); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ wlCloseModal(); alert("網路錯誤"); }
+    }
 
-      let cardsHtml = custList.map((c, cIdx) => {
-        let hasLine = c.hasUid
-          ? `<i class="bi bi-line text-success fs-5" title="已綁定"></i>`
-          : `<i class="bi bi-line text-secondary opacity-25" title="未綁定"></i>`;
+    // ===== 確認保留 =====
+    async function wlConfirmItem(recordId, productName, qty) {
+      if (!confirm(`確認保留此商品？\n\n${productName} × ${qty}\n\n確認後會由小幫手為您建立正式訂單並通知匯款。`)) return;
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerConfirmWaitlist', lineUid: currentLineUid, recordIds: JSON.stringify([recordId])})
+        });
+        const d = await r.json();
+        if (d.status === "SUCCESS") { alert("✅ 已確認保留"); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ alert("網路錯誤"); }
+    }
 
-        let itemsHtml = c.items.map(i => {
-          let badge = renderStateBadge(wl_StateTab);
-          let extraInfo = '';
-          if (wl_StateTab === 'sent') {
-            // 顯示配量
-            extraInfo = `<div class="text-theme-secondary small mt-1">配量 ${i.allocQty} 件</div>`;
-          } else if (wl_StateTab === 'confirmed') {
-            extraInfo = `<div class="text-theme-secondary small mt-1">配量 ${i.allocQty} 件・${i.confirmedTime ? '客人確認於 ' + wl_fmtTime(i.confirmedTime) : '已確認'}</div>`;
-          } else if (wl_StateTab === 'overdue') {
-            extraInfo = `<div class="small mt-1 text-danger fw-bold">配量 ${i.allocQty} 件・已通知但未確認（逾期）</div>`;
-          }
+    // ===== 放棄配貨（含連坐警告 Modal）=====
+    async function wlAbandonItem(recordId, productName, qty) {
+      // 先預覽連坐取消名單
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'previewAbandonCascade', lineUid: currentLineUid, waitlistItemId: recordId})
+        });
+        const d = await r.json();
+        if (d.status !== "SUCCESS") return alert("讀取失敗：" + d.message);
 
-          return `
-            <div class="mb-2 p-2 rounded border bg-light">
-              <div class="d-flex justify-content-between align-items-start">
-                <span class="fw-bold text-theme-primary" style="max-width: 65%; word-break: break-all;">${wl_escHTML(i.product)}</span>
-                <div class="text-end">
-                  <span class="text-theme-secondary small me-1">需:${i.reqQty}</span>
-                  <span class="text-success fw-bold small">配:${i.allocQty}</span>
+        const cascaded = d.cascaded || [];
+        let cascadeHtml = '';
+        if (cascaded.length > 0) {
+          cascadeHtml = `
+            <div class="wl-affected-list">
+              <strong style="color:#856404;">🗑 將一併取消的其他候補（${cascaded.length} 件）：</strong>
+              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）'}</li>`).join('')}</ul>
+            </div>`;
+        }
+
+        const modalHtml = `
+          <div class="wl-modal-bg" id="wlAbandonModal">
+            <div class="wl-modal-card">
+              <div class="wl-modal-head danger">⚠️ 重要警告：放棄配貨</div>
+              <div class="wl-modal-body">
+                您即將放棄以下已為您配到的商品：
+                <div style="background:#fff8e1;border-radius:8px;padding:10px 12px;margin:10px 0;font-weight:700;">
+                  ${escHTML(productName)} × ${qty}
+                </div>
+                <div style="background:#ffe8e8;border-left:4px solid #dc3545;padding:12px;border-radius:4px;margin:14px 0;">
+                  <div style="color:#dc3545;font-weight:900;margin-bottom:6px;">⚠️ 此動作將同時取消您其他所有候補</div>
+                  <div style="font-size:12.5px;color:#5a1e1e;line-height:1.5;">
+                    為避免您繼續佔用排隊位置，系統會自動取消以下候補：
+                  </div>
+                </div>
+                ${cascadeHtml}
+                <div style="font-size:12px;color:#666;line-height:1.5;">
+                  如您只是暫時不需要這件商品，但仍希望保留其他候補，請點「返回」選「✓ 確認保留」。
+                </div>
+                <div class="wl-rule-check">
+                  <input type="checkbox" id="wlChkAbandon" onchange="document.getElementById('wlBtnAbandonOk').disabled = !this.checked;">
+                  <label for="wlChkAbandon">我已了解：放棄配貨會同時取消我其他所有候補，此決定不可復原</label>
                 </div>
               </div>
-              <div class="d-flex justify-content-between align-items-center mt-1">
-                ${extraInfo}
-                <div>${badge}</div>
+              <div class="wl-modal-actions">
+                <button class="wl-modal-btn wl-modal-btn-secondary" onclick="wlCloseModal()">返回</button>
+                <button class="wl-modal-btn wl-modal-btn-danger" id="wlBtnAbandonOk" disabled onclick="wlExecAbandon('${recordId}')">確定放棄並取消全部候補</button>
               </div>
-            </div>`;
-        }).join('');
-
-        let cardClass = 'wl-customer-card p-3 d-flex flex-column h-100';
-        if (wl_StateTab === 'notify' || wl_StateTab === 'confirmed') cardClass += ' highlighted';
-        if (wl_StateTab === 'overdue') cardClass += ' overdue';
-
-        let allRecordIds = c.items.map(i => i.recordId).join(',');
-        let custNameSafe = wl_escHTML(c.name);
-        let uniqueChkId = `wl_chk_${grpKey.replace(/[^a-zA-Z0-9]/g, '_')}_${cIdx}`;
-
-        let checkboxHtml = '';
-        // 只有需要批次操作的 Tab 才顯示 checkbox
-        if (wl_StateTab === 'notify' || wl_StateTab === 'confirmed' || wl_StateTab === 'overdue') {
-          let uidAttr = c.uid ? wl_escapeQuotes(c.uid) : '';
-          checkboxHtml = `
-            <div class="form-check d-flex align-items-center m-0">
-              <input class="form-check-input wl-cust-chk fs-5 border-theme-secondary mt-0"
-                     type="checkbox"
-                     data-records="${allRecordIds}"
-                     data-customer="${custNameSafe}"
-                     data-uid="${uidAttr}"
-                     data-hasuid="${c.hasUid ? '1' : '0'}"
-                     id="${uniqueChkId}">
-              <label class="form-check-label fw-bold text-theme-primary fs-5 ms-2 text-nowrap" for="${uniqueChkId}">${custNameSafe}</label>
-            </div>`;
-        } else {
-          // sent Tab：沒勾選框，只顯示名稱
-          checkboxHtml = `<div class="fw-bold text-theme-primary fs-5">${custNameSafe}</div>`;
-        }
-
-        return `
-          <div class="col-md-6 col-lg-4 mb-3 wl-customer-wrapper">
-            <div class="${cardClass}">
-              <div class="d-flex justify-content-between align-items-center border-bottom border-theme-secondary pb-2 mb-2">
-                ${checkboxHtml}
-                ${hasLine}
-              </div>
-              <div class="flex-grow-1">${itemsHtml}</div>
             </div>
           </div>`;
-      }).join('');
-
-      html += `
-        <div class="wl-cust-series-group">
-          <div class="wl-cust-series-header ${headerClass}">
-            <div class="series-badge ${wl_StateTab === 'overdue' ? 'bg-danger' : ''}">${wl_escHTML(g.brand)} · ${wl_escHTML(g.series)}</div>
-            <span class="small text-theme-secondary">本系列 ${custList.length} 位客人</span>
-          </div>
-          <div class="wl-cust-series-body">
-            <div class="row g-0">${cardsHtml}</div>
-          </div>
-        </div>`;
-    });
-
-    container.innerHTML = html;
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：排隊中視角（客人分組大卡片）
-  // ==========================================
-  function renderQueueCustomerCards(stateItems) {
-    // 依客人分組（key = linkId 或 customerName）
-    let custMap = {};
-    stateItems.forEach(i => {
-      let custKey = i.linkId || i.customerName;
-      if (!custMap[custKey]) {
-        custMap[custKey] = {
-          name: i.customerName,
-          uid: i.uid,
-          hasUid: i.hasUid,
-          linkId: i.linkId,
-          earliestTime: i.time,
-          totalCount: 0,
-          brandMap: {} // brand||series → items[]
-        };
-      }
-      let c = custMap[custKey];
-      c.totalCount++;
-      // 更新最早時間
-      if (i.time && (new Date(i.time) < new Date(c.earliestTime))) c.earliestTime = i.time;
-      let bkey = `${i.brand}||${i.series}`;
-      if (!c.brandMap[bkey]) c.brandMap[bkey] = { brand: i.brand, series: i.series, items: [] };
-      c.brandMap[bkey].items.push(i);
-    });
-
-    // 排序：依最早排隊時間（老顧客優先）
-    let custList = Object.values(custMap);
-    custList.sort((a, b) => new Date(a.earliestTime) - new Date(b.earliestTime));
-
-    if (custList.length === 0) return '';
-
-    let cardsHtml = custList.map(c => {
-      let lineBadge = c.hasUid
-        ? `<span class="wl-line-bound">✅ LINE</span>`
-        : `<span class="wl-line-unbound">❌ 未綁</span>`;
-
-      // 系列內再排序品項
-      let brandBlocks = Object.values(c.brandMap).map(b => {
-        let itemsHtml = b.items.map(i => `
-          <div class="wl-qitem">
-            <div class="wl-qitem-name">${wl_escHTML(i.product)}</div>
-            <div class="wl-qitem-meta">
-              <span>需求 <strong>${i.reqQty}</strong></span>
-              <span>排隊 ${wl_fmtTime(i.time)}</span>
-              <span class="wl-status-badge wl-badge-queue">⏳ 排隊中</span>
-            </div>
-          </div>`).join('');
-
-        return `
-          <div class="wl-brand-block">
-            <div class="wl-brand-block-title">
-              <span class="wl-series-sub-badge">${wl_escHTML(b.brand)}</span> ${wl_escHTML(b.series)}
-            </div>
-            ${itemsHtml}
-          </div>`;
-      }).join('');
-
-      return `
-        <div class="wl-cust-big-card">
-          <div class="wl-cust-big-head">
-            <div>
-              <div class="wl-cust-big-name">${wl_escHTML(c.name)}</div>
-              <div class="wl-cust-big-meta">共 ${c.totalCount} 件排隊明細・最早排隊 ${wl_fmtTime(c.earliestTime)}</div>
-            </div>
-            ${lineBadge}
-          </div>
-          <div class="wl-cust-big-body">${brandBlocks}</div>
-        </div>`;
-    }).join('');
-
-    return `<div class="wl-cust-big-grid">${cardsHtml}</div>`;
-  }
-
-  function renderWlStateHint(tab, count) {
-    if (tab === 'queue') {
-      return `
-        <div class="wl-state-hint" style="border-left-color: #6c757d;">
-          <div class="wl-state-hint-text">
-            ⏳ 此區顯示「<strong>排隊中但還沒配到貨</strong>」的全部明細。<strong>依客人分組</strong>—— 每位客人一張大卡片，可以看到他橫跨所有品牌系列的候補狀況。此 Tab 僅供查閱，無動作按鈕。
-          </div>
-          <div class="wl-state-hint-actions">
-            <span class="small text-theme-secondary">📖 查閱模式</span>
-          </div>
-        </div>`;
-    } else if (tab === 'notify') {
-      return `
-        <div class="wl-state-hint">
-          <div class="wl-state-hint-text">
-            🎯 此區顯示「<strong>配到貨且尚未通知</strong>」的客人。勾選後按按鈕推 LINE 通知，成功發送的會自動標記為已通知。
-          </div>
-          <div class="wl-state-hint-actions">
-            <div class="form-check d-flex align-items-center m-0">
-              <input class="form-check-input fs-5 border-theme-primary mt-0" type="checkbox" id="wl_chkAll" onclick="toggleWlSelectAll()">
-              <label class="form-check-label fw-bold text-theme-primary ms-2 text-nowrap" for="wl_chkAll">全選 (${count})</label>
-            </div>
-            <button class="btn btn-success fw-bold shadow-sm" onclick="generateWlNotify()">
-              <i class="bi bi-send-fill me-1"></i> LINE 通知客人
-            </button>
-          </div>
-        </div>`;
-    } else if (tab === 'sent') {
-      return `
-        <div class="wl-state-hint sent">
-          <div class="wl-state-hint-text">
-            🔔 此區顯示「<strong>已通知但客人還沒回應</strong>」的客人。此階段沒有按鈕，等客人到前台確認保留或放棄。
-          </div>
-          <div class="wl-state-hint-actions">
-            <span class="small text-theme-secondary">等待客人前台操作中...</span>
-          </div>
-        </div>`;
-    } else if (tab === 'confirmed') {
-      return `
-        <div class="wl-state-hint confirmed">
-          <div class="wl-state-hint-text">
-            🔒 此區顯示「<strong>客人前台已按確認保留</strong>」的客人。勾選後一鍵轉為正式訂單，匯款後五碼會帶入正式單。
-          </div>
-          <div class="wl-state-hint-actions">
-            <div class="form-check d-flex align-items-center m-0">
-              <input class="form-check-input fs-5 border-theme-primary mt-0" type="checkbox" id="wl_chkAll" onclick="toggleWlSelectAll()">
-              <label class="form-check-label fw-bold text-theme-primary ms-2 text-nowrap" for="wl_chkAll">全選 (${count})</label>
-            </div>
-            <button class="btn btn-primary fw-bold shadow-sm" onclick="transferWlSelectedItems()">
-              <i class="bi bi-rocket-takeoff me-1"></i> 轉正式訂單
-            </button>
-          </div>
-        </div>`;
-    } else if (tab === 'overdue') {
-      let deadlineStr = wlClearDeadline ? new Date(wlClearDeadline).toLocaleString('zh-TW') : '(未設定)';
-      return `
-        <div class="wl-state-hint overdue">
-          <div class="wl-state-hint-text">
-            ⏰ 已通知但超過清場日未確認的明細，共 <strong>${count}</strong> 筆。清場日：<strong>${deadlineStr}</strong><br>
-            <span class="small text-theme-secondary">系統只列名單，不會自動清場。請確認後手動按「一鍵清場」。</span>
-          </div>
-          <div class="wl-state-hint-actions">
-            <div class="form-check d-flex align-items-center m-0">
-              <input class="form-check-input fs-5 border-theme-primary mt-0" type="checkbox" id="wl_chkAll" onclick="toggleWlSelectAll()">
-              <label class="form-check-label fw-bold text-theme-primary ms-2 text-nowrap" for="wl_chkAll">全選 (${count})</label>
-            </div>
-            <button class="btn btn-danger fw-bold shadow-sm" onclick="clearWlOverdueItems()">
-              <i class="bi bi-trash3 me-1"></i> 一鍵清場
-            </button>
-          </div>
-        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      } catch(e) { alert("網路錯誤"); }
     }
-    return '';
-  }
 
-  function renderStateBadge(tab) {
-    if (tab === 'queue') return '<span class="wl-status-badge wl-badge-queue">⏳ 排隊中</span>';
-    if (tab === 'notify') return '<span class="wl-status-badge wl-badge-new">🎯 新配貨</span>';
-    if (tab === 'sent') return '<span class="wl-status-badge wl-badge-sent">🔔 已通知</span>';
-    if (tab === 'confirmed') return '<span class="wl-status-badge wl-badge-confirmed">🔒 已確認</span>';
-    if (tab === 'overdue') return '<span class="wl-status-badge wl-badge-overdue">⏰ 逾期</span>';
-    return '';
-  }
-
-  function getEmptyStateMessage(tab) {
-    if (tab === 'queue') return '目前沒有排隊中的候補明細。';
-    if (tab === 'notify') return '目前沒有「配到貨待通知」的客人。執行配貨後新配到的客人會出現在這裡。';
-    if (tab === 'sent') return '目前沒有「已通知待確認」的客人。';
-    if (tab === 'confirmed') return '目前沒有「客人已確認待轉單」的客人。';
-    if (tab === 'overdue') return '目前沒有「已逾期待清場」的客人。' + (wlClearDeadline ? '' : '（尚未設定清場日）');
-    return '';
-  }
-
-  function toggleWlSelectAll() {
-    const master = document.getElementById('wl_chkAll');
-    if (!master) return;
-    document.querySelectorAll('.wl-cust-chk').forEach(chk => chk.checked = master.checked);
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：LINE 通知
-  // ==========================================
-  function generateWlNotify() {
-    const checked = document.querySelectorAll('.wl-cust-chk:checked');
-    if (checked.length === 0) return alert("請先勾選要通知的客人！");
-
-    // 以 "客人 uid" 為 key 合併同客人的多筆明細
-    let custPayloadMap = {}; // key → {name, uid, hasUid, recordIds, itemLines}
-    checked.forEach(chk => {
-      let custName = chk.getAttribute('data-customer');
-      let uid = chk.getAttribute('data-uid');
-      let hasUid = chk.getAttribute('data-hasuid') === '1';
-      let recIds = chk.getAttribute('data-records').split(',').filter(Boolean);
-      let key = custName;
-
-      if (!custPayloadMap[key]) {
-        custPayloadMap[key] = { name: custName, uid: uid, hasUid: hasUid, recordIds: [], itemLines: [] };
-      }
-
-      // 找出對應的明細
-      recIds.forEach(rid => {
-        let item = wlGlobalCustomerItems.find(i => i.recordId === rid);
-        if (item) {
-          custPayloadMap[key].recordIds.push(rid);
-          custPayloadMap[key].itemLines.push(`✅ 【${item.brand}・${item.series}】 ${item.product} x${item.allocQty}`);
-        }
-      });
-    });
-
-    wl_NotifyPayloads = [];
-    let fullText = "";
-    let canSendCount = 0;
-    let noLineCount = 0;
-
-    Object.values(custPayloadMap).forEach(c => {
-      let msg = `嗨嗨～${c.name}，好消息！\n\n` +
-                `您之前許願候補的商品，我們已經幫您買到了 🎉\n\n` +
-                `【保留明細】\n${c.itemLines.join('\n')}\n\n` +
-                `請您抽空到我們的許願候補查詢系統，確認是否要保留這些商品 💖\n` +
-                `・確認保留 → 我們會將商品轉為正式訂單並通知您匯款\n` +
-                `・放棄 → 商品釋出給下一位排隊的客人`;
-
-      let statusText = c.hasUid ? "🟢 (可自動發送)" : "🔴 (無綁定，需手動聯絡)";
-      fullText += `========== ${c.name} ${statusText} ==========\n${msg}\n\n`;
-
-      if (c.hasUid) {
-        canSendCount++;
-        wl_NotifyPayloads.push({
-          uid: c.uid,
-          customerName: c.name,
-          hasUid: true,
-          message: msg,
-          recordIds: c.recordIds
+    async function wlExecAbandon(recordId) {
+      const btn = document.getElementById('wlBtnAbandonOk');
+      btn.disabled = true; btn.innerHTML = '處理中...';
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerAbandonWaitlist', lineUid: currentLineUid, waitlistItemId: recordId})
         });
-      } else {
-        noLineCount++;
-      }
-    });
-
-    document.getElementById('wlNotifyContent').value = fullText;
-    let sendBtn = document.getElementById('btnAutoSendLine');
-    if (canSendCount > 0) {
-      sendBtn.innerHTML = `<i class="bi bi-send-fill me-1"></i> 自動推播 (${canSendCount} 人)`;
-      sendBtn.disabled = false;
-    } else {
-      sendBtn.innerHTML = `⚠️ 無可推播對象`;
-      sendBtn.disabled = true;
-    }
-    if (noLineCount > 0) {
-      sendBtn.innerHTML += ` ⚠️${noLineCount} 人未綁`;
-    }
-    new bootstrap.Modal(document.getElementById('wlNotifyModal')).show();
-  }
-
-  function copyWlNotifyText() {
-    navigator.clipboard.writeText(document.getElementById('wlNotifyContent').value)
-      .then(() => alert("✅ 文案已複製到剪貼簿！"));
-  }
-
-  function executeWlAutoSendLine() {
-    if (wl_NotifyPayloads.length === 0) return;
-    if (!confirm(`確定要向 ${wl_NotifyPayloads.length} 位客人推播 LINE 通知嗎？\n\n成功推播的客人會自動標記為「已通知」。\n失敗的客人會列在結果名單中，您可以之後再推一次。`)) return;
-
-    const btn = document.getElementById('btnAutoSendLine');
-    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>推播中...`;
-    btn.disabled = true;
-
-    google.script.run
-      .withSuccessHandler(res => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-send-fill me-1"></i> 自動推播`;
-        let parsed = typeof res === 'string' ? JSON.parse(res) : res;
-
-        bootstrap.Modal.getInstance(document.getElementById('wlNotifyModal')).hide();
-
-        if (parsed.status === "SUCCESS") {
-          showWlNotifyResult(parseInt(parsed.successCount) || 0, parseInt(parsed.failCount) || 0, parsed.failedDetails || []);
-        } else {
-          alert("❌ 推播失敗：" + parsed.message);
-        }
-      })
-      .withFailureHandler(err => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="bi bi-send-fill me-1"></i> 自動推播`;
-        alert("連線錯誤：" + err.message);
-      })
-      .api_notifyWaitlistCustomers(wl_NotifyPayloads);
-  }
-
-  function showWlNotifyResult(successCount, failCount, failedDetails) {
-    let titleEl = document.getElementById('wlNotifyResultTitle');
-    let bodyEl = document.getElementById('wlNotifyResultBody');
-    let headerEl = document.querySelector('#wlNotifyResultModal .modal-header');
-
-    let hasFail = failCount > 0;
-    headerEl.className = 'modal-header ' + (hasFail ? 'bg-warning' : 'bg-success text-white');
-    titleEl.innerHTML = hasFail
-      ? `<i class="bi bi-exclamation-triangle-fill me-2"></i> 推播完成（有部分失敗）`
-      : `<i class="bi bi-check-circle-fill me-2"></i> 推播全部成功！`;
-
-    let html = `
-      <div class="row text-center mb-3">
-        <div class="col-6">
-          <div class="border rounded-3 p-3 bg-success-subtle">
-            <div class="display-6 fw-bold text-success">${successCount}</div>
-            <div class="fw-bold text-success">成功推播</div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="border rounded-3 p-3 ${hasFail ? 'bg-danger-subtle' : 'bg-light'}">
-            <div class="display-6 fw-bold ${hasFail ? 'text-danger' : 'text-muted'}">${failCount}</div>
-            <div class="fw-bold ${hasFail ? 'text-danger' : 'text-muted'}">推播失敗</div>
-          </div>
-        </div>
-      </div>`;
-
-    if (hasFail && failedDetails && failedDetails.length > 0) {
-      html += `
-        <div class="alert alert-warning">
-          <strong><i class="bi bi-info-circle-fill"></i> 以下客人需要您手動聯繫：</strong>
-          <ul class="mt-2 mb-0">
-            ${failedDetails.map(d => `<li>${wl_escHTML(d)}</li>`).join('')}
-          </ul>
-          <div class="small mt-2 text-muted">
-            💡 失敗的客人尚未被標記為已通知，之後您可以在「🎯 有新配貨待通知」再推一次。
-          </div>
-        </div>`;
+        const d = await r.json();
+        wlCloseModal();
+        if (d.status === "SUCCESS") { alert("✅ " + d.message); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ wlCloseModal(); alert("網路錯誤"); }
     }
 
-    bodyEl.innerHTML = html;
-    new bootstrap.Modal(document.getElementById('wlNotifyResultModal')).show();
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：轉正式訂單
-  // ==========================================
-  function transferWlSelectedItems() {
-    const checked = document.querySelectorAll('.wl-cust-chk:checked');
-    if (checked.length === 0) return alert("請先勾選要轉單的客人！");
-
-    let allRecIds = [];
-    checked.forEach(chk => {
-      let recIds = chk.getAttribute('data-records').split(',').filter(Boolean);
-      allRecIds.push(...recIds);
-    });
-
-    if (allRecIds.length === 0) return alert("勾選的客人沒有可轉單的明細！");
-    if (!confirm(`🚀 確定要將這 ${allRecIds.length} 筆明細轉為正式訂單嗎？\n\n・未配滿的商品將自動拆單保留排隊順位\n・匯款後五碼（如有）會一併帶入正式單\n・庫存表的候補保留數量會自動釋放`)) return;
-
-    google.script.run
-      .withSuccessHandler(res => {
-        let parsed = typeof res === 'string' ? JSON.parse(res) : res;
-        if (parsed.status === "SUCCESS") {
-          alert("🎉 " + parsed.message);
-          loadWaitlistRadar();
-        } else {
-          alert("❌ 轉單失敗：" + parsed.message);
-        }
-      })
-      .api_transferWaitlistToOfficial(allRecIds);
-  }
-
-  // ==========================================
-  // 👤 客戶訂單 Tab：一鍵清場
-  // ==========================================
-  function clearWlOverdueItems() {
-    const checked = document.querySelectorAll('.wl-cust-chk:checked');
-    if (checked.length === 0) return alert("請先勾選要清場的客人！");
-
-    let allRecIds = [];
-    checked.forEach(chk => {
-      let recIds = chk.getAttribute('data-records').split(',').filter(Boolean);
-      allRecIds.push(...recIds);
-    });
-
-    if (!confirm(`⚠️ 確定要清場這 ${allRecIds.length} 筆逾期明細嗎？\n\n・這些明細會標記為「❌ 已取消放棄」\n・對應的候補保留數量會釋放回庫存\n・下次執行配貨時，可用庫存會分配給後面排隊的客人\n\n此操作不可復原！`)) return;
-
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res.status === "SUCCESS") {
-          alert("✅ " + res.message);
-          loadWaitlistRadar();
-        } else {
-          alert("❌ 清場失敗：" + res.message);
-        }
-      })
-      .api_clearOverdueWaitlist(allRecIds);
-  }
-
-  // ==========================================
-  // ✅ 已購買 Tab 渲染
-  // ==========================================
-  function renderWlPurchasedView() {
-    const container = document.getElementById('wlPurchasedContainer');
-    let filtered = wl_BrandFilter === 'ALL' ? wlGlobalPurchased : wlGlobalPurchased.filter(p => p.brand === wl_BrandFilter);
-
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="text-center py-5 text-theme-secondary fw-bold fs-5 bg-white shadow-sm rounded-3">目前此分類下沒有已結案的商品。</div>';
-      return;
+    function wlCloseModal() {
+      const modal = document.querySelector('.wl-modal-bg');
+      if (modal) modal.remove();
     }
-
-    let seriesMap = {};
-    filtered.forEach(p => {
-      let s = p.series || "未分類系列";
-      if (!seriesMap[s]) seriesMap[s] = [];
-      seriesMap[s].push(p);
-    });
-
-    let html = '';
-    let seriesIndex = 0;
-    Object.keys(seriesMap).sort().forEach(seriesName => {
-      let sIdx = seriesIndex++;
-      let itemsHtml = '';
-      seriesMap[seriesName].forEach((p, pIdx) => {
-        let queueHtml = p.queue.map(q => {
-          let lineBadge = q.hasUid ? `<span class="text-success fw-bold small">(已綁)</span>` : `<span class="text-danger fw-bold small">(未綁)</span>`;
-          return `
-            <tr class="table-success opacity-75">
-              <td><span style="font-size: 1.1rem;">✅</span></td>
-              <td class="fw-bold text-theme-primary text-start ps-4">${wl_escHTML(q.customerName)} ${lineBadge}</td>
-              <td class="fw-bold text-success fs-5">${q.allocQty}</td>
-              <td class="text-theme-secondary small">${wl_fmtTime(q.time)}</td>
-              <td class="small"><code>${wl_escHTML(q.officialOrderId || '—')}</code></td>
-            </tr>`;
-        }).join('');
-
-        itemsHtml += `
-          <div class="radar-card opacity-75">
-            <div class="radar-header" data-bs-toggle="collapse" data-bs-target="#wlCollapsePurchased_s${sIdx}_p${pIdx}">
-              <div class="d-flex align-items-center">
-                <span style="font-size: 1.2rem; margin-right: 8px;">✅</span>
-                <span class="fs-5 fw-bold text-theme-primary">${wl_escHTML(p.productName)}</span>
-              </div>
-              <span class="fw-bold text-success fs-6 me-3">已結案: ${p.queue.length} 筆</span>
-            </div>
-            <div id="wlCollapsePurchased_s${sIdx}_p${pIdx}" class="collapse">
-              <div class="p-0 border-top border-theme-secondary">
-                <table class="table queue-table m-0">
-                  <thead>
-                    <tr>
-                      <th style="width: 8%;">狀態</th>
-                      <th style="width: 30%; text-align: left !important; padding-left: 20px;">社群名稱</th>
-                      <th style="width: 12%;">配貨</th>
-                      <th style="width: 22%;">填單時間</th>
-                      <th style="width: 28%;">正式訂單號</th>
-                    </tr>
-                  </thead>
-                  <tbody>${queueHtml}</tbody>
-                </table>
-              </div>
-            </div>
-          </div>`;
-      });
-      html += `<div class="series-big-card"><div class="series-big-header"><div class="series-badge bg-success">${wl_escHTML(seriesName)} (已結案)</div></div><div class="series-body bg-white">${itemsHtml}</div></div>`;
-    });
-    container.innerHTML = html;
-  }
-
-  // ==========================================
-  // 📝 編輯候補規則
-  // ==========================================
-  function openEditRulesModal() {
-    const textarea = document.getElementById('wlRulesTextarea');
-    textarea.value = '讀取中...';
-    textarea.disabled = true;
-    new bootstrap.Modal(document.getElementById('wlEditRulesModal')).show();
-
-    google.script.run
-      .withSuccessHandler(res => {
-        textarea.disabled = false;
-        if (res.status === "SUCCESS") {
-          textarea.value = res.rules || '';
-        } else {
-          textarea.value = '';
-          alert("讀取規則失敗：" + res.message);
-        }
-        updateRulePreview();
-      })
-      .withFailureHandler(err => {
-        textarea.disabled = false;
-        textarea.value = '';
-        alert("連線錯誤：" + err.message);
-      })
-      .api_getWaitlistRulesForAdmin();
-  }
-
-  function updateRulePreview() {
-    const text = document.getElementById('wlRulesTextarea').value || '';
-    const list = document.getElementById('wlRulesPreviewList');
-    if (!text.trim()) {
-      list.innerHTML = '<li style="color:#aaa;padding-left:22px;">（規則尚未輸入）</li>';
-      return;
-    }
-    const segments = text.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
-    list.innerHTML = segments.map(s => {
-      const escaped = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
-      return `<li style="padding-left:22px;position:relative;margin-bottom:10px;"><span style="position:absolute;left:0;font-size:12px;top:2px;">💡</span>${escaped}</li>`;
-    }).join('');
-  }
-
-  function saveWaitlistRules() {
-    const rules = document.getElementById('wlRulesTextarea').value;
-    google.script.run
-      .withSuccessHandler(res => {
-        if (res.status === "SUCCESS") {
-          alert(res.message);
-          bootstrap.Modal.getInstance(document.getElementById('wlEditRulesModal')).hide();
-        } else {
-          alert("儲存失敗：" + res.message);
-        }
-      })
-      .withFailureHandler(err => {
-        alert("連線錯誤：" + err.message);
-      })
-      .api_saveWaitlistRules(rules);
-  }
-</script>
+  </script>
+</body>
+</html>
