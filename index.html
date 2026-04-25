@@ -531,12 +531,40 @@
       return palette[Math.abs(hash) % palette.length];
     }
 
-    // 格式化排隊時間
-    function wlFmtTime(iso) {
+    // 格式化排隊時間（短版：MM/DD）
+    function wlFmtDate(iso) {
       if (!iso) return '';
       const d = new Date(iso);
       if (isNaN(d.getTime())) return '';
       return (d.getMonth()+1) + '/' + d.getDate();
+    }
+
+    // 格式化填單時間（長版：MM/DD HH:MM:SS）
+    function wlFmtTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      const m = d.getMonth()+1;
+      const day = d.getDate();
+      const H = String(d.getHours()).padStart(2,'0');
+      const M = String(d.getMinutes()).padStart(2,'0');
+      const S = String(d.getSeconds()).padStart(2,'0');
+      return `${m}/${day} ${H}:${M}:${S}`;
+    }
+
+    // 從備註解析取消時間（備註格式為 [MM/dd HH:mm | ACT_CUST_CANCEL] 或 [yyyy-MM-dd HH:mm | ...]）
+    function wlParseCancelTime(note) {
+      if (!note) return '';
+      // 從尾部往前找最後一個 ACT_CUST_CANCEL / ACT_CUST_ABANDON / ACT_CUST_ABANDON_CASCADE 的時間戳
+      const lines = note.split('\n');
+      for (let i = lines.length - 1; i >= 0; i--) {
+        const line = lines[i];
+        if (/ACT_CUST_CANCEL|ACT_CUST_ABANDON/.test(line)) {
+          const m = line.match(/^\[([^\|]+?)\s*\|/);
+          if (m) return m[1].trim();
+        }
+      }
+      return '';
     }
 
     // 格式化清場截止時間
@@ -672,8 +700,8 @@
           let itemsHtml = g.items.map(i => `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
-                <div class="wl-v2-name">${escHTML(i.product)}</div>
-                <div class="wl-v2-meta"><span>需求 ${i.reqQty}</span><span>排隊於 ${wlFmtTime(i.queueTime)}</span></div>
+                <div class="wl-v2-name">${escHTML(i.product)} x${i.reqQty}</div>
+                <div class="wl-v2-meta"><span>填單於 ${wlFmtTime(i.queueTime)}</span></div>
               </div>
               <div class="wl-v2-actions">
                 <button class="wl-btn-cancel" onclick="wlCancelItem('${i.recordId}','${escAttr(i.product)}',${i.reqQty})">取消排隊</button>
@@ -713,13 +741,16 @@
         const groups = wlGroupByBrandSeries(data.cancelledItems);
         groups.forEach(g => {
           const c = wlGetBrandColor(g.brand);
-          let itemsHtml = g.items.map(i => `
+          let itemsHtml = g.items.map(i => {
+            const cancelTime = wlParseCancelTime(i.note) || wlFmtDate(i.queueTime);
+            return `
             <div class="wl-v2-item" style="opacity:0.6;">
               <div class="wl-v2-info">
                 <div class="wl-v2-name">${escHTML(i.product)}</div>
-                <div class="wl-v2-meta"><span>${wlFmtTime(i.queueTime)}</span></div>
+                <div class="wl-v2-meta"><span>${escHTML(cancelTime)} 取消</span></div>
               </div>
-            </div>`).join('');
+            </div>`;
+          }).join('');
           html += `
             <div class="wl-v2-card" style="opacity:0.85;">
               <div class="wl-v2-cardhead" style="background:${c.bg};">
