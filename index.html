@@ -118,6 +118,55 @@
     .wl-item:last-child{border-bottom:none;}
     .wl-cancel-btn{background:#fdf3f2;color:#a95a52;font-size:11px;padding:4px 12px;border-radius:6px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
 
+    /* 候補頁面新版 */
+    .wl-rules-box{background:linear-gradient(135deg,#fff9f0 0%,#fff4e5 100%);border:1px solid #f0d9b5;border-radius:12px;padding:16px;margin-bottom:20px;}
+    .wl-rules-box h3{font-size:14px;font-weight:900;color:#8b6f3d;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+    .wl-rules-box ul{list-style:none;padding:0;font-size:13px;line-height:1.7;color:#5c4423;margin:0;}
+    .wl-rules-box li{padding-left:22px;position:relative;margin-bottom:10px;}
+    .wl-rules-box li:last-child{margin-bottom:0;}
+    .wl-rules-box li::before{content:"💡";position:absolute;left:0;font-size:12px;top:2px;}
+    .wl-rules-box strong{color:#6b3d1a;font-weight:700;}
+    .wl-section-head{font-size:14px;font-weight:900;margin:18px 0 10px;display:flex;align-items:center;gap:8px;}
+    .wl-section-head .wl-count{background:#e0d8d0;color:#555;padding:1px 10px;border-radius:10px;font-size:12px;font-weight:700;}
+    .wl-section-alert{color:#dc3545;}
+    .wl-section-alert .wl-count{background:#dc3545;color:white;}
+    .wl-confirm-wrapper{border:2px solid #dc3545;border-radius:12px;padding:4px;background:linear-gradient(135deg,#fff5f5 0%,#ffe8e8 100%);margin-bottom:16px;box-shadow:0 4px 14px rgba(220,53,69,0.12);}
+    .wl-confirm-alert{background:#dc3545;color:white;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;}
+    .wl-v2-card{border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid #e0d8d0;}
+    .wl-v2-cardhead{padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px dashed rgba(0,0,0,0.12);}
+    .wl-v2-brand{font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;color:white;}
+    .wl-v2-series{font-size:13px;font-weight:900;color:#2c2c2f;}
+    .wl-v2-body{padding:4px 0;background:white;}
+    .wl-v2-item{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px dashed #eee;gap:8px;}
+    .wl-v2-item:last-child{border-bottom:none;}
+    .wl-v2-info{flex:1;min-width:0;}
+    .wl-v2-name{font-size:14px;font-weight:700;color:#2c2c2f;word-break:break-all;line-height:1.4;}
+    .wl-v2-meta{font-size:11px;color:#888;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;}
+    .wl-v2-actions{flex-shrink:0;display:flex;gap:6px;}
+    .wl-btn-cancel{background:#fdf3f2;color:#a95a52;border:1px solid #f3d2d0;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-btn-confirm{background:#e0f3e8;color:#1a5e37;border:1px solid #a8d9be;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-btn-abandon{background:#fde8e8;color:#8b1a1a;border:1px solid #f3c4c4;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .wl-link-orders{background:#f6f0ea;border:1px dashed #795238;border-radius:10px;padding:14px;text-align:center;font-size:13px;color:#795238;font-weight:700;cursor:pointer;margin-bottom:12px;}
+    .wl-collapse-head{padding:10px 14px;background:#f5f3ef;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#666;margin-bottom:12px;}
+    .wl-empty{background:white;border:2px dashed #e0d8d0;padding:40px 20px;border-radius:12px;text-align:center;color:#888;font-size:14px;font-weight:600;}
+    /* 放棄/取消 Modal */
+    .wl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2000;}
+    .wl-modal-card{background:white;border-radius:16px;max-width:400px;width:100%;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-height:90vh;display:flex;flex-direction:column;}
+    .wl-modal-head{padding:16px;text-align:center;font-size:16px;font-weight:900;flex-shrink:0;}
+    .wl-modal-head.danger{background:#dc3545;color:white;}
+    .wl-modal-head.warning{background:#ffa07a;color:white;}
+    .wl-modal-body{padding:18px;font-size:13.5px;line-height:1.7;color:#333;overflow-y:auto;flex:1;}
+    .wl-modal-actions{display:flex;gap:8px;padding:0 18px 18px;flex-shrink:0;}
+    .wl-modal-btn{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:14px;}
+    .wl-modal-btn-secondary{background:#e0d8d0;color:#333;}
+    .wl-modal-btn-danger{background:#dc3545;color:white;}
+    .wl-modal-btn-danger:disabled{background:#f8b4ba;cursor:not-allowed;}
+    .wl-affected-list{background:#fff3cd;border-left:3px solid #ffa500;padding:10px 12px;margin:12px 0;border-radius:4px;font-size:12.5px;}
+    .wl-affected-list ul{list-style:disc;padding-left:20px;margin-top:4px;}
+    .wl-rule-check{display:flex;align-items:flex-start;gap:8px;background:#f6f6f6;padding:10px 12px;border-radius:8px;margin:12px 0;}
+    .wl-rule-check input{margin-top:3px;transform:scale(1.2);}
+    .wl-rule-check label{font-size:12.5px;line-height:1.5;color:#555;cursor:pointer;}
+
     /* 新增品項 Modal */
     .additem-search{border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 14px;font-size:14px;width:100%;background:#fbfaf9;}
     .additem-row{padding:12px 14px;border-bottom:.5px solid #e0d8d0;display:flex;justify-content:space-between;align-items:center;gap:10px;}
@@ -152,20 +201,10 @@
   </div></div></div>
 
   <div id="homeArea" style="display:none;">
-    <div id="adminTopBar" style="display:none;background:linear-gradient(135deg,#795238 0%,#5e3f2b 100%);color:#fff;padding:12px 20px;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15);position:relative;z-index:100;">
-      <div style="display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;letter-spacing:0.5px;">
-        <span style="font-size:18px;">👑</span>
-        <span>管理員模式</span>
-      </div>
-      <button onclick="executeAdminClearCache()" style="background:rgba(255,255,255,0.95);color:#795238;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 4px rgba(0,0,0,.1);">
-        <span>🔄</span>
-        <span>清除前台 Cache</span>
-      </button>
-    </div>
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
     <div class="container pt-4">
       <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5><p class="small mt-2" style="color:#888;">歡迎來到您的專屬空間</p></div>
-      <a href="https://lin.ee/mty4uxjS" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
+      <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
       <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
       <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
         <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
@@ -209,7 +248,7 @@
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
     function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
-    window.switchBottomTab=function(pid,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));let t=document.getElementById(pid);if(t)t.classList.add('active');document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});};
+    window.switchBottomTab=function(pid,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));let t=document.getElementById(pid);if(t)t.classList.add('active');document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(pid==='pageWaitlist')loadWaitlistData();};
 
     // ===== LIFF =====
     window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
@@ -218,42 +257,9 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
-    
-    // ===== 管理員清除 Cache =====
-    async function executeAdminClearCache() {
-      if (!confirm("確定清除所有前台 Cache？\n（所有客人下次查詢會讀取最新資料）")) {
-        return;
-      }
-      const btn = event.target.closest('button');
-      const originalHTML = btn.innerHTML;
-      btn.innerHTML = '<span>⏳</span><span>清除中...</span>';
-      btn.disabled = true;
-      try {
-        const r = await fetch(GAS_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            action: 'adminClearCache',
-            lineUid: currentLineUid
-          })
-        });
-        const d = await r.json();
-        if (d.status === "SUCCESS") {
-          alert("✅ 前台 Cache 已清空\n頁面即將重新載入");
-          window.location.reload();
-        } else {
-          alert("清除失敗：" + d.message);
-          btn.innerHTML = originalHTML;
-          btn.disabled = false;
-        }
-      } catch (e) {
-        alert("網路錯誤：" + e.message);
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-      }
-    }
+
     // ===== 管理員搜尋 =====
     let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
     async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
@@ -476,24 +482,417 @@
         renderPoCards();
     }
 
-    // ===== 候補頁面 =====
-    async function loadWaitlistData(){ renderWL(); }    
-    
-    // 🌟 候補功能 Coming Soon 畫面 (簡化版)
-    function renderWL(data){
-      const c=document.getElementById('waitlistContainer');
-      c.innerHTML = `
-        <div class="text-start">
-          <h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);">
-            <i class="bi bi-hourglass-split me-2"></i>我的候補清單
-          </h6>
-          <div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;">
-            <h5 class="fw-bold m-0" style="color:var(--brand-brown); letter-spacing:1px;">🚀 Coming Soon...</h5>
+    // ===== 候補頁面（V2 完整版） =====
+    let wlCustomerData = null;
+
+    async function loadWaitlistData(){
+      const c = document.getElementById('waitlistContainer');
+      c.innerHTML = `<div class="loader-overlay"><div class="spinner-border"></div><p class="text-carousel">讀取候補清單中...</p></div>`;
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'getMyWaitlist', lineUid: currentLineUid})
+        });
+        const d = await r.json();
+        if (d.status === "SUCCESS") {
+          wlCustomerData = d.data;
+          renderWL(wlCustomerData);
+        } else if (d.status === "UNBOUND") {
+          c.innerHTML = `<div class="wl-empty">請先完成 LINE 綁定才能使用候補功能</div>`;
+        } else {
+          c.innerHTML = `<div class="wl-empty" style="color:#dc3545;">讀取失敗：${escHTML(d.message||'')}</div>`;
+        }
+      } catch(e){
+        c.innerHTML = `<div class="wl-empty" style="color:#dc3545;">連線錯誤，請重新整理</div>`;
+      }
+    }
+
+    // 🎨 品牌 hash 自動配色（前後端同一演算法）
+    function wlGetBrandColor(brand) {
+      const palette = [
+        { bg:'#fce8e8', text:'#8b1a1a' },
+        { bg:'#fff4e0', text:'#8a5a00' },
+        { bg:'#fffacc', text:'#685800' },
+        { bg:'#e4f5e4', text:'#1f5c1f' },
+        { bg:'#d9f1f1', text:'#0f5a5a' },
+        { bg:'#dfeafc', text:'#1a3d78' },
+        { bg:'#ece0f7', text:'#3e1d6e' },
+        { bg:'#fce0ec', text:'#702346' },
+        { bg:'#eae3d5', text:'#5a4423' },
+        { bg:'#e6e6e6', text:'#333333' }
+      ];
+      let hash = 0;
+      const s = String(brand||'');
+      for (let i = 0; i < s.length; i++) {
+        hash = ((hash << 5) - hash) + s.charCodeAt(i);
+        hash = hash & hash;
+      }
+      return palette[Math.abs(hash) % palette.length];
+    }
+
+    // 格式化排隊時間
+    function wlFmtTime(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return (d.getMonth()+1) + '/' + d.getDate();
+    }
+
+    // 格式化清場截止時間
+    function wlFmtDeadline(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    }
+
+    // 把規則文字轉成 <li> 清單（自動以空行分段）
+    function wlFormatRules(rules) {
+      if (!rules) {
+        return `
+          <li>候補 = <strong>委託我們為您代購</strong>。商品一旦順利買到，會直接為您保留，所以請您確實是想要這份商品再排隊唷</li>
+          <li>商品價格會依<strong>配到貨當下的匯率與運費</strong>計算，無法預先告知，如果對價格有疑慮，建議您先不要排隊</li>
+          <li>想法改變了也沒關係，隨時可以在這個頁面點「取消排隊」，<strong>越早取消越好</strong></li>
+          <li>當我們通知您配到貨了，若選擇「放棄」，為避免您繼續佔著其他排隊位置，<strong>系統會一併取消您其他的候補</strong>，請您謹慎考慮後再做決定</li>`;
+      }
+      return rules.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+        .map(p => `<li>${escHTML(p).replace(/\n/g, '<br>')}</li>`).join('');
+    }
+
+    // 依品牌系列分組候補項目
+    function wlGroupByBrandSeries(items) {
+      const map = {};
+      items.forEach(i => {
+        const key = `${i.brand}||${i.series}`;
+        if (!map[key]) map[key] = { brand: i.brand, series: i.series, items: [] };
+        map[key].items.push(i);
+      });
+      return Object.values(map);
+    }
+
+    // 主渲染
+    function renderWL(data) {
+      const c = document.getElementById('waitlistContainer');
+      if (!data) { c.innerHTML = `<div class="wl-empty">尚未載入</div>`; return; }
+
+      let html = `
+        <h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);">
+          <i class="bi bi-hourglass-split me-2"></i>我的候補清單
+        </h6>
+        <div class="wl-rules-box">
+          <h3>💛 關於候補的小提醒</h3>
+          <ul>${wlFormatRules(data.rules)}</ul>
+        </div>`;
+
+      const hasWaiting = data.waitingConfirm && data.waitingConfirm.length > 0;
+      const hasConfirmed = data.confirmedItems && data.confirmedItems.length > 0;
+      const hasQueue = data.queueItems && data.queueItems.length > 0;
+      const hasTransferred = data.transferredCount > 0;
+      const hasCancelled = data.cancelledItems && data.cancelledItems.length > 0;
+
+      // 🎯 已配到貨待確認
+      if (hasWaiting) {
+        const deadlineStr = data.clearDeadline ? wlFmtDeadline(data.clearDeadline) : '';
+        const deadlineTxt = deadlineStr ? `，請於 <strong>${escHTML(deadlineStr)}</strong> 前完成確認` : '';
+        html += `
+          <div class="wl-section-head wl-section-alert">
+            <span>🎯 配到貨！需要您確認</span>
+            <span class="wl-count">${data.waitingConfirm.length} 件</span>
+          </div>
+          <div class="wl-confirm-wrapper">
+            <div class="wl-confirm-alert">
+              ⚠️ 以下商品已為您買到${deadlineTxt}<br>
+              <span style="font-size:11px;opacity:0.9;">逾期未確認將視為放棄並連帶取消其他排隊</span>
+            </div>`;
+        const groups = wlGroupByBrandSeries(data.waitingConfirm);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">🎁 ${escHTML(i.product)} x${i.allocQty}</div>
+                <div class="wl-v2-meta" style="color:#a95a52;font-weight:700;"><span>✨ 已為您配到</span></div>
+              </div>
+              <div class="wl-v2-actions">
+                <button class="wl-btn-confirm" onclick="wlConfirmItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">✓ 確認保留</button>
+                <button class="wl-btn-abandon" onclick="wlAbandonItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">⚠ 放棄</button>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card" style="border:1px solid #f5c2c7;">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 🔒 已確認待轉單
+      if (hasConfirmed) {
+        html += `
+          <div class="wl-section-head" style="color:#6f42c1;">
+            <span>🔒 已確認，等待轉為正式訂單</span>
+            <span class="wl-count" style="background:#6f42c1;color:white;">${data.confirmedItems.length} 件</span>
+          </div>`;
+        const groups = wlGroupByBrandSeries(data.confirmedItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)} x${i.allocQty}</div>
+                <div class="wl-v2-meta"><span style="color:#6f42c1;font-weight:700;">✅ 已確認，稍後會幫您建立正式訂單</span></div>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+      }
+
+      // ⏳ 排隊中
+      if (hasQueue) {
+        html += `
+          <div class="wl-section-head">
+            <span>⏳ 排隊中</span>
+            <span class="wl-count">${data.queueItems.length} 件</span>
+          </div>`;
+        const groups = wlGroupByBrandSeries(data.queueItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)}</div>
+                <div class="wl-v2-meta"><span>需求 ${i.reqQty}</span><span>排隊於 ${wlFmtTime(i.queueTime)}</span></div>
+              </div>
+              <div class="wl-v2-actions">
+                <button class="wl-btn-cancel" onclick="wlCancelItem('${i.recordId}','${escAttr(i.product)}',${i.reqQty})">取消排隊</button>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+      }
+
+      // ✅ 已轉訂單（只提示）
+      if (hasTransferred) {
+        html += `
+          <div class="wl-section-head">
+            <span>✅ 已轉正式訂單</span>
+            <span class="wl-count">${data.transferredCount} 件</span>
+          </div>
+          <div class="wl-link-orders" onclick="switchToOrdersTab()">
+            🔄 請到「訂單」頁查看這些已轉正式訂單的後續
+          </div>`;
+      }
+
+      // ❌ 歷史取消（折疊）
+      if (hasCancelled) {
+        html += `
+          <div class="wl-collapse-head" onclick="wlToggleCancelled()">
+            <span>❌ 歷史取消紀錄</span>
+            <span id="wlCancelledToggle">${data.cancelledItems.length} 件 ▾</span>
+          </div>
+          <div id="wlCancelledList" style="display:none;">`;
+        const groups = wlGroupByBrandSeries(data.cancelledItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => `
+            <div class="wl-v2-item" style="opacity:0.6;">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)}</div>
+                <div class="wl-v2-meta"><span>${wlFmtTime(i.queueTime)}</span></div>
+              </div>
+            </div>`).join('');
+          html += `
+            <div class="wl-v2-card" style="opacity:0.85;">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 空狀態
+      if (!hasWaiting && !hasConfirmed && !hasQueue && !hasTransferred && !hasCancelled) {
+        html += `<div class="wl-empty">🎈 您目前沒有候補中的商品</div>`;
+      }
+
+      c.innerHTML = html;
+    }
+
+    function wlToggleCancelled() {
+      const el = document.getElementById('wlCancelledList');
+      const toggle = document.getElementById('wlCancelledToggle');
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        toggle.innerHTML = toggle.innerHTML.replace('▾', '▴');
+      } else {
+        el.style.display = 'none';
+        toggle.innerHTML = toggle.innerHTML.replace('▴', '▾');
+      }
+    }
+
+    function switchToOrdersTab() {
+      const ordersTab = document.querySelector('.bottom-nav-item[onclick*="pageOrders"]');
+      if (ordersTab) ordersTab.click();
+    }
+
+    // ===== 取消排隊 Modal =====
+    function wlCancelItem(recordId, productName, qty) {
+      const modalHtml = `
+        <div class="wl-modal-bg" id="wlCancelModal">
+          <div class="wl-modal-card">
+            <div class="wl-modal-head warning">🗑 確認取消排隊</div>
+            <div class="wl-modal-body">
+              您將取消以下候補排隊：
+              <div style="background:#fff8e1;border-radius:8px;padding:10px 12px;margin:10px 0;font-weight:700;">
+                ${escHTML(productName)} × ${qty}
+              </div>
+              <div style="font-size:12px;color:#888;">
+                ＊ 取消後無法復原，若還想購買須重新填單<br>
+                ＊ 此動作僅取消此品項，其他候補不受影響
+              </div>
+              <div class="wl-rule-check">
+                <input type="checkbox" id="wlChkCancel" onchange="document.getElementById('wlBtnCancelOk').disabled = !this.checked;">
+                <label for="wlChkCancel">我已閱讀並了解候補規則，確認要取消此品項的排隊</label>
+              </div>
+            </div>
+            <div class="wl-modal-actions">
+              <button class="wl-modal-btn wl-modal-btn-secondary" onclick="wlCloseModal()">返回</button>
+              <button class="wl-modal-btn wl-modal-btn-danger" id="wlBtnCancelOk" disabled onclick="wlExecCancel('${recordId}')">確定取消</button>
+            </div>
           </div>
         </div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
-    
-    async function cancelWL(id,nm){if(!confirm(`確定取消【${nm}】的候補？`))return;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'customerCancelWaitlist',lineUid:currentLineUid,waitlistItemId:id})});const d=await r.json();if(d.status==="SUCCESS"){alert("已取消。");loadWaitlistData();}else alert("失敗："+d.message);}catch(e){alert("網路錯誤");}}
+
+    async function wlExecCancel(recordId) {
+      const btn = document.getElementById('wlBtnCancelOk');
+      btn.disabled = true; btn.innerHTML = '處理中...';
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerCancelWaitlist', lineUid: currentLineUid, waitlistItemId: recordId})
+        });
+        const d = await r.json();
+        wlCloseModal();
+        if (d.status === "SUCCESS") { alert("✅ 已取消排隊"); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ wlCloseModal(); alert("網路錯誤"); }
+    }
+
+    // ===== 確認保留 =====
+    async function wlConfirmItem(recordId, productName, qty) {
+      if (!confirm(`確認保留此商品？\n\n${productName} × ${qty}\n\n確認後會由小幫手為您建立正式訂單並通知匯款。`)) return;
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerConfirmWaitlist', lineUid: currentLineUid, recordIds: JSON.stringify([recordId])})
+        });
+        const d = await r.json();
+        if (d.status === "SUCCESS") { alert("✅ 已確認保留"); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ alert("網路錯誤"); }
+    }
+
+    // ===== 放棄配貨（含連坐警告 Modal）=====
+    async function wlAbandonItem(recordId, productName, qty) {
+      // 先預覽連坐取消名單
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'previewAbandonCascade', lineUid: currentLineUid, waitlistItemId: recordId})
+        });
+        const d = await r.json();
+        if (d.status !== "SUCCESS") return alert("讀取失敗：" + d.message);
+
+        const cascaded = d.cascaded || [];
+        let cascadeHtml = '';
+        if (cascaded.length > 0) {
+          cascadeHtml = `
+            <div class="wl-affected-list">
+              <strong style="color:#856404;">🗑 將一併取消的其他候補（${cascaded.length} 件）：</strong>
+              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）'}</li>`).join('')}</ul>
+            </div>`;
+        }
+
+        const modalHtml = `
+          <div class="wl-modal-bg" id="wlAbandonModal">
+            <div class="wl-modal-card">
+              <div class="wl-modal-head danger">⚠️ 重要警告：放棄配貨</div>
+              <div class="wl-modal-body">
+                您即將放棄以下已為您配到的商品：
+                <div style="background:#fff8e1;border-radius:8px;padding:10px 12px;margin:10px 0;font-weight:700;">
+                  ${escHTML(productName)} × ${qty}
+                </div>
+                <div style="background:#ffe8e8;border-left:4px solid #dc3545;padding:12px;border-radius:4px;margin:14px 0;">
+                  <div style="color:#dc3545;font-weight:900;margin-bottom:6px;">⚠️ 此動作將同時取消您其他所有候補</div>
+                  <div style="font-size:12.5px;color:#5a1e1e;line-height:1.5;">
+                    為避免您繼續佔用排隊位置，系統會自動取消以下候補：
+                  </div>
+                </div>
+                ${cascadeHtml}
+                <div style="font-size:12px;color:#666;line-height:1.5;">
+                  如您只是暫時不需要這件商品，但仍希望保留其他候補，請點「返回」選「✓ 確認保留」。
+                </div>
+                <div class="wl-rule-check">
+                  <input type="checkbox" id="wlChkAbandon" onchange="document.getElementById('wlBtnAbandonOk').disabled = !this.checked;">
+                  <label for="wlChkAbandon">我已了解：放棄配貨會同時取消我其他所有候補，此決定不可復原</label>
+                </div>
+              </div>
+              <div class="wl-modal-actions">
+                <button class="wl-modal-btn wl-modal-btn-secondary" onclick="wlCloseModal()">返回</button>
+                <button class="wl-modal-btn wl-modal-btn-danger" id="wlBtnAbandonOk" disabled onclick="wlExecAbandon('${recordId}')">確定放棄並取消全部候補</button>
+              </div>
+            </div>
+          </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      } catch(e) { alert("網路錯誤"); }
+    }
+
+    async function wlExecAbandon(recordId) {
+      const btn = document.getElementById('wlBtnAbandonOk');
+      btn.disabled = true; btn.innerHTML = '處理中...';
+      try {
+        const r = await fetch(GAS_URL, {
+          method: "POST",
+          headers: {"Content-Type":"application/x-www-form-urlencoded"},
+          body: new URLSearchParams({action:'customerAbandonWaitlist', lineUid: currentLineUid, waitlistItemId: recordId})
+        });
+        const d = await r.json();
+        wlCloseModal();
+        if (d.status === "SUCCESS") { alert("✅ " + d.message); loadWaitlistData(); }
+        else alert("失敗：" + d.message);
+      } catch(e){ wlCloseModal(); alert("網路錯誤"); }
+    }
+
+    function wlCloseModal() {
+      const modal = document.querySelector('.wl-modal-bg');
+      if (modal) modal.remove();
+    }
   </script>
 </body>
 </html>
