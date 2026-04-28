@@ -214,7 +214,7 @@
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
     <div class="container pt-4">
       <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5><p class="small mt-2" style="color:#888;">歡迎來到您的專屬空間</p></div>
-      <a href="https://lin.ee/mty4uxj" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
+      <a href="https://lin.ee/mty4uxjS" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
       <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
       <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
         <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
@@ -603,13 +603,13 @@
       return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     }
 
-    // 從備註解析取消時間
+    // 從備註解析取消時間（含換貨情境）
     function wlParseCancelTime(note) {
       if (!note) return '';
       const lines = note.split('\n');
       for (let i = lines.length - 1; i >= 0; i--) {
         const line = lines[i];
-        if (/ACT_CUST_CANCEL|ACT_CUST_ABANDON/.test(line)) {
+        if (/ACT_CUST_CANCEL|ACT_CUST_ABANDON|ACT_SWAP_OUT/.test(line)) {
           const m = line.match(/^\[([^\|]+?)\s*\|/);
           if (m) return m[1].trim();
         }
@@ -739,16 +739,25 @@
         const groups = wlGroupByBrandSeries(data.queueItems);
         groups.forEach(g => {
           const c = wlGetBrandColor(g.brand);
-          let itemsHtml = g.items.map(i => `
+          let itemsHtml = g.items.map(i => {
+            // 🔄 換貨來的品項：顯示徽章與來源
+            const swapBadge = i.swapFromProduct
+              ? `<span style="display:inline-block;background:#EEEDFE;color:#3C3489;font-size:10.5px;padding:1px 7px;border-radius:4px;margin-left:6px;font-weight:600;">🔄 換貨</span>`
+              : '';
+            const swapMeta = i.swapFromProduct
+              ? `<span style="color:#3C3489;">由 ${escHTML(i.swapFromProduct)} 換貨</span>`
+              : `<span>填單於 ${wlFmtTime(i.queueTime)}</span>`;
+            return `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
-                <div class="wl-v2-name">${escHTML(i.product)} x${i.reqQty}</div>
-                <div class="wl-v2-meta"><span>填單於 ${wlFmtTime(i.queueTime)}</span></div>
+                <div class="wl-v2-name">${escHTML(i.product)} x${i.reqQty}${swapBadge}</div>
+                <div class="wl-v2-meta">${swapMeta}</div>
               </div>
               <div class="wl-v2-actions">
                 <button class="wl-btn-cancel" onclick="wlCancelItem('${i.recordId}','${escAttr(i.product)}',${i.reqQty})">取消排隊</button>
               </div>
-            </div>`).join('');
+            </div>`;
+          }).join('');
           html += `
             <div class="wl-v2-card">
               <div class="wl-v2-cardhead" style="background:${c.bg};">
@@ -785,11 +794,16 @@
           const c = wlGetBrandColor(g.brand);
           let itemsHtml = g.items.map(i => {
             const cancelTime = wlParseCancelTime(i.note) || wlFmtDate(i.queueTime);
+            // 🔄 若是換貨取消的：顯示「已換成 X」而非單純「取消」
+            const isSwap = !!i.swapToProduct;
+            const metaHtml = isSwap
+              ? `<span style="color:#3C3489;">📦 已換成 ${escHTML(i.swapToProduct)}</span><span style="margin-left:8px;color:#888;">${escHTML(cancelTime)}</span>`
+              : `<span>${escHTML(cancelTime)} 取消</span>`;
             return `
             <div class="wl-v2-item" style="opacity:0.6;">
               <div class="wl-v2-info">
                 <div class="wl-v2-name">${escHTML(i.product)}</div>
-                <div class="wl-v2-meta"><span>${escHTML(cancelTime)} 取消</span></div>
+                <div class="wl-v2-meta">${metaHtml}</div>
               </div>
             </div>`;
           }).join('');
