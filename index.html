@@ -72,11 +72,24 @@
     .tracker-container{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:0 10px;margin-top:15px;}
     .tracker-line{position:absolute;top:15px;left:30px;right:30px;height:3px;background:var(--track-bg);z-index:0;}
     .tracker-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;flex:1;}
-    .step-dot{width:32px;height:32px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;}
-    .step-dot.active{background:var(--track-active);border-color:var(--track-active);}
-    .step-dot.final{border-color:var(--track-final);}.step-dot.final.active{background:var(--track-final);}
+    .step-dot{width:36px;height:36px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;color:var(--track-muted);font-size:15px;line-height:1;}
+    .step-dot.active{background:var(--track-active);border-color:var(--track-active);color:var(--brand-white);}
+    .step-dot.final{border-color:var(--track-final);color:var(--track-final);}.step-dot.final.active{background:var(--track-final);border-color:var(--track-final);color:var(--brand-white);}
     .step-label{font-size:12px;font-weight:bold;color:var(--track-active);text-align:center;margin-bottom:4px;white-space:nowrap;}.step-label.muted{color:var(--track-muted);}.step-label.final{color:var(--track-final);}
     .step-pct{font-size:16px;font-weight:900;color:var(--brand-charcoal);}.step-pct.muted{color:var(--track-muted);}
+    /* 🆕 官方尚未出貨完成清單（在進度條框框內，總體進度下方） */
+    .unship-section{margin-top:16px;padding-top:14px;border-top:1px dashed #e0d8d0;}
+    .unship-section-title{font-size:12.5px;font-weight:800;color:#a96a3f;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+    .unship-row{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:8px;padding:9px 11px;margin-bottom:7px;}
+    .unship-row:last-child{margin-bottom:0;}
+    .unship-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
+    .unship-name{font-size:12.5px;font-weight:800;color:var(--brand-charcoal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .unship-shipped-label{font-size:10.5px;font-weight:800;color:#2d6a3e;white-space:nowrap;}
+    .unship-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#f8d7da;}
+    .unship-bar-shipped{background:#2d6a3e;}
+    .unship-bar-pending{background:#d97766;}
+    .unship-pending-label{text-align:right;font-size:10.5px;font-weight:800;color:#a96a3f;margin-top:5px;}
+    .unship-pending-label .all-waiting{margin-left:4px;font-size:0.9em;opacity:0.85;}
     .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
     .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
     .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
@@ -410,17 +423,58 @@
               const h2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
               const n1 = (h1 && h2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
               const n2 = (h1 && h2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
-              function mkTrack(t, s1, s2, s3, s4, title) {
+              // 🆕 渲染「官方尚未出貨完成清單」雙色橫條
+              //   參數：isB1=true→非預購款，false→預購款
+              //   過濾條件：1) 屬於該批次 2) 未全數出貨 (purchased > step1) 3) 客人有買的品項
+              function mkUnshippedList(isB1) {
+                if (!p.itemProgress || !Array.isArray(p.itemProgress) || p.itemProgress.length === 0) return '';
+                // 用標準化名稱建立「客人有買的品項」集合（去重）
+                const customerNames = new Set();
+                (o.items || []).forEach(it => {
+                  let n = String(it.name || '').replace(/\s+/g,'').toLowerCase();
+                  if (n) customerNames.add(n);
+                });
+                if (customerNames.size === 0) return '';
+                const listed = p.itemProgress.filter(ip => {
+                  if (isB1 && ip.isPreorder) return false;
+                  if (!isB1 && !ip.isPreorder) return false;
+                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; // 已全數出貨
+                  let n = String(ip.name || '').replace(/\s+/g,'').toLowerCase();
+                  return customerNames.has(n);
+                });
+                if (listed.length === 0) return '';
+                const rows = listed.map(ip => {
+                  let shippedPct = ip.purchased > 0 ? Math.round((ip.step1 || 0) / ip.purchased * 100) : 0;
+                  if (shippedPct > 100) shippedPct = 100;
+                  if (shippedPct < 0) shippedPct = 0;
+                  let unshippedPct = 100 - shippedPct;
+                  let allWaiting = unshippedPct === 100 ? `<span class="all-waiting">(全數等待中)</span>` : '';
+                  return `<div class="unship-row">
+                    <div class="unship-row-head">
+                      <div class="unship-name"><i class="bi bi-box-seam me-1"></i>${escHTML(ip.name)}</div>
+                      <div class="unship-shipped-label">已出貨 ${shippedPct}%</div>
+                    </div>
+                    <div class="unship-bar"><div class="unship-bar-shipped" style="width:${shippedPct}%"></div><div class="unship-bar-pending" style="width:${unshippedPct}%"></div></div>
+                    <div class="unship-pending-label">未出貨 ${unshippedPct}%${allWaiting}</div>
+                  </div>`;
+                }).join('');
+                return `<div class="unship-section">
+                  <div class="unship-section-title"><i class="bi bi-exclamation-circle-fill"></i>官方【尚未】出貨完成清單</div>
+                  ${rows}
+                </div>`;
+              }
+              function mkTrack(t, s1, s2, s3, s4, title, isB1) {
                 const p1 = Math.round(s1 / t * 100) || 0;
                 const p2 = Math.max(0, Math.round((s2 - s3) / t * 100)) || 0;
                 const p3 = Math.max(0, Math.round((s3 - s4) / t * 100)) || 0;
                 const p4 = Math.round(s4 / t * 100) || 0;
                 const a1 = s1 > 0 ? 'active' : '', a2 = s2 > 0 ? 'active' : '', a3 = s3 > 0 ? 'active' : '', a4 = s4 > 0 ? 'active' : '';
                 const ns = s1 === 0 ? `<div style="margin-top:20px;padding:12px;background:#FFF3CD;color:#856404;border-radius:8px;font-size:14px;font-weight:bold;text-align:center;border:1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
-                return `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}</div>`;
+                const ul = mkUnshippedList(isB1);
+                return `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"><i class="bi bi-truck"></i></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"><i class="bi bi-building"></i></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"><i class="bi bi-airplane"></i></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"><i class="bi bi-house-door"></i></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}${ul}</div>`;
               }
-              if (h1) { const t = p.b1.purchased || p.b1.totalPurchased; pch += mkTrack(t, p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0), p.b1.step2 || 0, p.b1.step3 || 0, p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0), n1); }
-              if (h2) { const t = p.b2.purchased || p.b2.totalPurchased; pch += mkTrack(t, p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0), p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0), p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0), p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0), n2); }
+              if (h1) { const t = p.b1.purchased || p.b1.totalPurchased; pch += mkTrack(t, p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0), p.b1.step2 || 0, p.b1.step3 || 0, p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0), n1, true); }
+              if (h2) { const t = p.b2.purchased || p.b2.totalPurchased; pch += mkTrack(t, p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0), p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0), p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0), p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0), n2, false); }
               if (pch) ph = `<div id="${pi}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${pi}')">🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i></div><div id="${pi}" class="progress-content">${pch}</div>`;
             }
 
