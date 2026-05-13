@@ -88,6 +88,8 @@
     .edit-btn:hover{background:var(--brand-brown);color:var(--brand-white);border-color:var(--brand-brown);}
     /* 🆕 尚未出貨標籤（部分出貨情境下標在品項旁） */
     .unshipped-tag{display:inline-block;margin-left:6px;font-size:11px;color:#a96a3f;background:#fef3e8;border:1px solid #e8d4bf;padding:1px 7px;border-radius:10px;font-weight:700;letter-spacing:.3px;vertical-align:middle;}
+    /* 🆕 已全數出貨完成狀態條（綠色，只在 allShipped 時顯示） */
+    .ship-complete-bar{display:flex;align-items:center;gap:6px;background:#e7f2ea;color:#2d6a3e;border:1px solid #c5dccb;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:700;margin-bottom:10px;letter-spacing:.3px;}
     .total-row{display:flex;justify-content:space-between;padding-top:15px;border-top:2px solid #e0d8d0;font-size:1.15rem;font-weight:900;color:var(--brand-charcoal);}
     .total-price{color:#dc3545;}
     .bank-info{background:#fbfaf9;border:1px solid #e0d8d0;padding:20px;margin:0 20px 20px;border-radius:12px;text-align:left;}
@@ -383,16 +385,18 @@
                 ? `<div class="wl-grp-flow"><div class="wl-grp-flow-title">📦 候補貨況&公告</div><div class="wl-grp-flow-body">${escHTML(g.flowNote)}</div></div>`
                 : '';
               const itemsHtml = g.items.map(i => {
-                // 🆕 部分出貨情境才標「尚未出貨」
+                // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
                 const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}${usTag}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`;
+                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
               }).join('');
               return `<div class="wl-grp"><div class="wl-grp-head"><span class="wl-grp-dot"></span>${escHTML(g.brand)}${seriesLabel}</div>${flowHtml}${itemsHtml}<div class="wl-grp-subtotal"><span>此系列小計</span><span>$${g.subtotal}</span></div></div>`;
             }).join('');
 
             const eb = (!ip && !o.isMerged) ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            db = `${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
+            const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
+            db = `${shipBar}${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           } else {
             // 候補單（單一品牌）：顯示 flowNote
             if (isWL) {
@@ -422,13 +426,15 @@
 
             // 一般單與單品牌候補：用既有 details-box
             const ih = o.items.map(i => {
-              // 🆕 部分出貨情境才標「尚未出貨」
+              // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
               const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-              return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}${usTag}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`;
+              return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
             }).join('');
             const eb = (!ip && !o.isMerged) ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            db = `<div class="details-box shadow-sm mb-3">${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
+            const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
+            db = `<div class="details-box shadow-sm mb-3">${shipBar}${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           }
 
           // === 銀行資訊區 ===
