@@ -85,11 +85,13 @@
     .unship-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
     .unship-name{font-size:12.5px;font-weight:800;color:var(--brand-charcoal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .unship-shipped-label{font-size:10.5px;font-weight:800;color:#2d6a3e;white-space:nowrap;}
-    .unship-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#f8d7da;}
-    .unship-bar-shipped{background:#2d6a3e;}
-    .unship-bar-pending{background:#d97766;}
+    .unship-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#ede9e3;}
+    .unship-bar-shipped{background:#5a9d6d;}
+    .unship-bar-pending{background:transparent;}
     .unship-pending-label{text-align:right;font-size:10.5px;font-weight:800;color:#a96a3f;margin-top:5px;}
     .unship-pending-label .all-waiting{margin-left:4px;font-size:0.9em;opacity:0.85;}
+    /* 🆕 該批次客人品項全數已被官方出完 → 安撫綠色提示 */
+    .ship-all-done{background:#e7f2ea;color:#2d6a3e;border:1px solid #c5dccb;padding:10px 12px;border-radius:8px;font-size:12.5px;font-weight:700;display:flex;align-items:flex-start;line-height:1.55;}
     .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
     .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
     .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
@@ -421,28 +423,44 @@
               const p = o.progress;
               const h1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
               const h2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
-              const n1 = (h1 && h2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
-              const n2 = (h1 && h2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
-              // 🆕 渲染「官方尚未出貨完成清單」雙色橫條
-              //   參數：isB1=true→非預購款，false→預購款
-              //   過濾條件：1) 屬於該批次 2) 未全數出貨 (purchased > step1) 3) 客人有買的品項
+              const n1 = (h1 && h2) ? "📦 [非預購款] 全體貨況" : "📦 全體貨況";
+              const n2 = (h1 && h2) ? "🚚 [預購款] 全體貨況" : "🚚 全體貨況";
+              // 🆕 渲染「官方尚未出貨完成清單」雙色橫條（依批次分流，依客人購買品項過濾）
+              //   邏輯：
+              //   (a) 客人此批次完全沒買 → 不顯示任何訊息
+              //   (b) 客人此批次有買，但「該客人這個品項已被官方出貨給他」 → 排除（避免造成「我已收到怎麼還在未出貨清單」的困惑）
+              //   (c) 客人此批次仍有未收到的品項 → 列出對應的雙色橫條
+              //   (d) 客人此批次有買、但「他的部分都已被官方出完」 → 改顯示綠色安撫訊息
               function mkUnshippedList(isB1) {
-                if (!p.itemProgress || !Array.isArray(p.itemProgress) || p.itemProgress.length === 0) return '';
-                // 用標準化名稱建立「客人有買的品項」集合（去重）
-                const customerNames = new Set();
+                if (!p.itemProgress || !Array.isArray(p.itemProgress)) return '';
+                const norm = (s) => String(s || '').replace(/\s+/g, '').toLowerCase();
+                // 該批次內客人買的所有品項 / 還沒收到的品項
+                const allCustomerNames = new Set();
+                const pendingCustomerNames = new Set();
                 (o.items || []).forEach(it => {
-                  let n = String(it.name || '').replace(/\s+/g,'').toLowerCase();
-                  if (n) customerNames.add(n);
+                  let n = norm(it.name);
+                  if (!n) return;
+                  // 用品項名是否含「預購」判斷該品項屬 b1 或 b2，跟戰情中心一致
+                  let itemIsPreorder = String(it.name || '').indexOf('預購') > -1;
+                  if (isB1 && itemIsPreorder) return;
+                  if (!isB1 && !itemIsPreorder) return;
+                  allCustomerNames.add(n);
+                  if (!it.isShipped) pendingCustomerNames.add(n);
                 });
-                if (customerNames.size === 0) return '';
+                if (allCustomerNames.size === 0) return ''; // (a) 該批次客人沒品項
+                // 篩選需要列出的：官方還沒全出 + 客人那部分還沒收到
                 const listed = p.itemProgress.filter(ip => {
                   if (isB1 && ip.isPreorder) return false;
                   if (!isB1 && !ip.isPreorder) return false;
-                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; // 已全數出貨
-                  let n = String(ip.name || '').replace(/\s+/g,'').toLowerCase();
-                  return customerNames.has(n);
+                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; // 官方已全出
+                  return pendingCustomerNames.has(norm(ip.name)); // 客人這部分未收到
                 });
-                if (listed.length === 0) return '';
+                if (listed.length === 0) {
+                  // (d) 客人此批次品項已全被官方出完 → 綠色安撫
+                  return `<div class="unship-section">
+                    <div class="ship-all-done"><i class="bi bi-check-circle-fill me-1"></i>您的訂單品項，官方已全數出貨完成，待到台灣後會陸續安排出貨</div>
+                  </div>`;
+                }
                 const rows = listed.map(ip => {
                   let shippedPct = ip.purchased > 0 ? Math.round((ip.step1 || 0) / ip.purchased * 100) : 0;
                   if (shippedPct > 100) shippedPct = 100;
