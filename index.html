@@ -91,8 +91,8 @@
     .unship-pending-label{text-align:right;font-size:10.5px;font-weight:800;color:#a96a3f;margin-top:5px;}
     .unship-pending-label .all-waiting{margin-left:4px;font-size:0.9em;opacity:0.85;}
     /* 🆕 該批次客人品項全數已出 → 內斂版安撫提示（無綠底，避免與卡片頂部 ship-complete-bar 視覺打架） */
-    .ship-batch-done{display:flex;align-items:flex-start;gap:6px;font-size:12.5px;font-weight:700;color:#5e3f2b;line-height:1.55;padding:2px 2px 0;}
-    .ship-batch-done i{color:#5a9d6d;flex-shrink:0;margin-top:2px;font-size:13.5px;}
+    .ship-batch-done{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;font-weight:700;color:#5e3f2b;line-height:1.6;padding:2px 2px 0;}
+    .ship-batch-done i{color:#5a9d6d;flex-shrink:0;font-size:14px;line-height:inherit;}
     .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
     .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
     .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
@@ -458,14 +458,16 @@
                 });
                 if (listed.length === 0) {
                   // 區分兩種「無未出貨清單」情境，文案不同
-                  const batchLabel = isB1 ? '非預購款' : '預購款';
+                  // 同時有預購+非預購時加 [批次] 標籤；只有單一批次時不加
+                  const hasBothBatches = h1 && h2;
+                  const batchLabel = hasBothBatches ? (isB1 ? '[非預購款]' : '[預購款]') : '';
                   let msg;
                   if (pendingCustomerNames.size === 0) {
                     // (d-1) 客人這批次品項都已收到 → 短版
-                    msg = `您的[${batchLabel}]訂單品項，已全數出貨完成。`;
+                    msg = `您的${batchLabel}訂單品項，已全數出貨完成。`;
                   } else {
                     // (d-2) 客人還沒收到，但官方已全數出完 → 長版（等待台灣到貨後安排）
-                    msg = `您的[${batchLabel}]訂單品項，官方已全數出貨完成，待到台灣後會陸續安排出貨`;
+                    msg = `您的${batchLabel}訂單品項，官方已全數出貨完成，待到台灣後會陸續安排出貨`;
                   }
                   return `<div class="unship-section">
                     <div class="ship-batch-done"><i class="bi bi-check-circle-fill"></i><span>${msg}</span></div>
