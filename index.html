@@ -344,6 +344,32 @@
 
     // ===== 後五碼修改 =====
     async function promptEditLast5(oid,cur){if(event)event.stopPropagation();let v=prompt("請輸入匯款帳號最後五碼：",cur||"");if(v===null)return;v=v.trim();if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}else{alert("失敗："+d.message);checkMemberStatus();}}catch(e){alert("網路錯誤");checkMemberStatus();}}
+    // 🆕 合併卡 bulk 改五碼：把同一個五碼套用到該卡內所有「未完成匯款」的單上
+    //   應用情境：客人把多張同品牌+系列訂單合併成一筆轉帳
+    async function promptEditLast5Bulk(brand, series, cur, mergedCount){
+      if(event)event.stopPropagation();
+      const confirmMsg = `此筆訂單由 ${mergedCount} 張原始單合併\n修改後將套用至所有「未完成匯款」的單\n（已完成匯款的單不受影響）\n\n確定要修改嗎？`;
+      if(!confirm(confirmMsg)) return;
+      let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
+      if(v===null)return;
+      v=v.trim();
+      if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
+      const c=document.getElementById('regularOrdersContainer');
+      c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;
+      try{
+        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
+        const d=await r.json();
+        if(d.status==="SUCCESS"){
+          let msg = `✅ 已更新 ${d.updatedCount} 筆訂單`;
+          if(d.skippedCount && d.skippedCount > 0) msg += `\n（${d.skippedCount} 筆已完成匯款的單未變更）`;
+          alert(msg);
+          checkMemberStatus();
+        } else {
+          alert("失敗："+d.message);
+          checkMemberStatus();
+        }
+      } catch(e){alert("網路錯誤");checkMemberStatus();}
+    }
     function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
     function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
 
@@ -408,7 +434,13 @@
               return `<div class="wl-grp"><div class="wl-grp-head"><span class="wl-grp-dot"></span>${escHTML(g.brand)}${seriesLabel}</div>${flowHtml}${itemsHtml}<div class="wl-grp-subtotal"><span>此系列小計</span><span>$${g.subtotal}</span></div></div>`;
             }).join('');
 
-            const eb = (!ip && !o.isMerged) ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
+            const eb = !ip ? (
+              o.canBulkEditLast5
+                ? `<span class="edit-btn" onclick="promptEditLast5Bulk('${(o.brand||'').replace(/'/g,'&#39;')}','${(o.series||'').replace(/'/g,'&#39;')}','${o.last5}',${o.mergedCount})"><i class="bi bi-pencil-square"></i> 修改</span>`
+                : (o.editableOrderId
+                    ? `<span class="edit-btn" onclick="promptEditLast5('${o.editableOrderId}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`
+                    : '')
+            ) : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
             // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
@@ -514,7 +546,13 @@
               const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
               return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
             }).join('');
-            const eb = (!ip && !o.isMerged) ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
+            const eb = !ip ? (
+              o.canBulkEditLast5
+                ? `<span class="edit-btn" onclick="promptEditLast5Bulk('${(o.brand||'').replace(/'/g,'&#39;')}','${(o.series||'').replace(/'/g,'&#39;')}','${o.last5}',${o.mergedCount})"><i class="bi bi-pencil-square"></i> 修改</span>`
+                : (o.editableOrderId
+                    ? `<span class="edit-btn" onclick="promptEditLast5('${o.editableOrderId}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`
+                    : '')
+            ) : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
             // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
@@ -962,7 +1000,7 @@
               : '';
             const swapMeta = i.swapFromProduct
               ? `<span style="color:#3C3489;">由 ${escHTML(i.swapFromProduct)} 換貨</span>`
-              : `<span>填單於 ${wlFmtTime(i.queueTime)}</span>`;
+              : `<span>填單於 ${wlFmtDate(i.queueTime)}</span>`;
             return `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
