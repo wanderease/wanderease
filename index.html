@@ -23,6 +23,15 @@
     .loader-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;text-align:center;}
     .spinner-border{color:var(--brand-brown);}
     .text-carousel{font-size:14px;font-weight:bold;color:var(--brand-charcoal);margin-top:15px;min-height:20px;}
+    /* 🆕 全螢幕 modal loader（用於敏感操作如改五碼，保留底層內容不被清空） */
+    @keyframes lmSpin{to{transform:rotate(360deg);}}
+    @keyframes lmFadeIn{from{opacity:0;}to{opacity:1;}}
+    .lm-backdrop{position:fixed;inset:0;background:rgba(245,240,232,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9999;animation:lmFadeIn .18s ease-out;}
+    .lm-backdrop.show{display:flex;}
+    .lm-card{background:var(--brand-white);border-radius:14px;padding:26px 34px;box-shadow:0 12px 32px rgba(91,74,63,.22);text-align:center;min-width:220px;max-width:90vw;}
+    .lm-ring{width:32px;height:32px;border:3px solid #e0d8d0;border-top-color:var(--brand-brown);border-radius:50%;margin:0 auto 14px;animation:lmSpin .8s linear infinite;}
+    .lm-title{font-size:14px;font-weight:800;color:var(--brand-charcoal);letter-spacing:.3px;}
+    .lm-sub{font-size:11.5px;color:#a0907a;margin-top:5px;font-weight:600;}
     @media(min-width:768px){#adminArea,.page-content{max-width:600px;margin:0 auto;}}
 
     /* 底部導航 */
@@ -211,6 +220,14 @@
   </style>
 </head>
 <body>
+  <!-- 🆕 Modal loader（敏感操作用，保留底層內容） -->
+  <div class="lm-backdrop" id="lmBackdrop" role="status" aria-live="polite">
+    <div class="lm-card">
+      <div class="lm-ring"></div>
+      <div class="lm-title" id="lmTitle">處理中</div>
+      <div class="lm-sub" id="lmSub">請稍候，不要關閉視窗</div>
+    </div>
+  </div>
   <div id="maintenanceArea" style="display:none;text-align:center;padding:80px 20px;background:var(--brand-bg);height:100vh;">
     <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
     <h3 class="fw-bold mb-4" style="color:var(--brand-brown);letter-spacing:2px;">系統升級維護中</h3>
@@ -343,9 +360,31 @@
     async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
 
     // ===== 後五碼修改 =====
-    async function promptEditLast5(oid,cur){if(event)event.stopPropagation();let v=prompt("請輸入匯款帳號最後五碼：",cur||"");if(v===null)return;v=v.trim();if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}else{alert("失敗："+d.message);checkMemberStatus();}}catch(e){alert("網路錯誤");checkMemberStatus();}}
-    // 🆕 合併卡 bulk 改五碼：把同一個五碼套用到該卡內所有「未完成匯款」的單上
-    //   應用情境：客人把多張同品牌+系列訂單合併成一筆轉帳
+    // 🆕 全螢幕 modal loader 控制
+    function showLoaderModal(title, sub){
+      document.getElementById('lmTitle').textContent = title || '處理中';
+      document.getElementById('lmSub').textContent  = sub   || '請稍候，不要關閉視窗';
+      document.getElementById('lmBackdrop').classList.add('show');
+    }
+    function hideLoaderModal(){
+      document.getElementById('lmBackdrop').classList.remove('show');
+    }
+    async function promptEditLast5(oid,cur){
+      if(event)event.stopPropagation();
+      let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
+      if(v===null)return;
+      v=v.trim();
+      if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
+      showLoaderModal('更新匯款資訊中', '請稍候，不要關閉視窗');
+      try{
+        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
+        const d=await r.json();
+        hideLoaderModal();
+        if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}
+        else{alert("失敗："+d.message);checkMemberStatus();}
+      }catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
+    }
+    // 🆕 合併卡 bulk 改五碼
     async function promptEditLast5Bulk(brand, series, cur, mergedCount){
       if(event)event.stopPropagation();
       const confirmMsg = `此筆訂單由 ${mergedCount} 張原始單合併\n修改後將套用至所有「未完成匯款」的單\n（已完成匯款的單不受影響）\n\n確定要修改嗎？`;
@@ -354,11 +393,11 @@
       if(v===null)return;
       v=v.trim();
       if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
-      const c=document.getElementById('regularOrdersContainer');
-      c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;
+      showLoaderModal('更新匯款資訊中', `正在同步至 ${mergedCount} 筆原始訂單`);
       try{
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
+        hideLoaderModal();
         if(d.status==="SUCCESS"){
           let msg = `✅ 已更新 ${d.updatedCount} 筆訂單`;
           if(d.skippedCount && d.skippedCount > 0) msg += `\n（${d.skippedCount} 筆已完成匯款的單未變更）`;
@@ -368,7 +407,7 @@
           alert("失敗："+d.message);
           checkMemberStatus();
         }
-      } catch(e){alert("網路錯誤");checkMemberStatus();}
+      } catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
     }
     function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
     function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
