@@ -380,11 +380,11 @@
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
         if(d.status==="SUCCESS"){
-          optimisticUpdateLast5OnDom(v); // 🆕 立即把畫面上「尚未提供 / 舊五碼」改成新值
+          optimisticUpdateLast5OnDom(v);
           showLoaderModal('更新成功，重新載入中', '請稍候');
-          await checkMemberStatus();     // 🆕 等 reload 完才解開 modal，避免客人在空檔重複按
+          await checkMemberStatus();
           hideLoaderModal();
-          alert("✅ 修改成功！");
+          // 不再 alert：modal 全程已經明確告知「更新成功 → 重新載入完成」，再彈 alert 是冗餘
         } else {
           hideLoaderModal();
           alert("失敗："+d.message);
@@ -406,13 +406,14 @@
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
         if(d.status==="SUCCESS"){
-          optimisticUpdateLast5OnDom(v); // 🆕 立即更新 DOM
-          showLoaderModal('更新成功，重新載入中', '請稍候');
-          await checkMemberStatus();     // 🆕 等 reload 完才解開 modal
+          optimisticUpdateLast5OnDom(v);
+          // 🆕 副標帶上實際更新數量，讓客人在重新載入過程中就知道結果
+          let subMsg = `已更新 ${d.updatedCount} 筆訂單`;
+          if(d.skippedCount && d.skippedCount > 0) subMsg += `（${d.skippedCount} 筆已完成匯款的單未變更）`;
+          showLoaderModal('更新成功，重新載入中', subMsg);
+          await checkMemberStatus();
           hideLoaderModal();
-          let msg = `✅ 已更新 ${d.updatedCount} 筆訂單`;
-          if(d.skippedCount && d.skippedCount > 0) msg += `\n（${d.skippedCount} 筆已完成匯款的單未變更）`;
-          alert(msg);
+          // 不再 alert：副標已經顯示更新筆數，再彈 alert 是冗餘
         } else {
           hideLoaderModal();
           alert("失敗："+d.message);
