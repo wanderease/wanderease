@@ -379,9 +379,17 @@
       try{
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
-        hideLoaderModal();
-        if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}
-        else{alert("失敗："+d.message);checkMemberStatus();}
+        if(d.status==="SUCCESS"){
+          optimisticUpdateLast5OnDom(v); // 🆕 立即把畫面上「尚未提供 / 舊五碼」改成新值
+          showLoaderModal('更新成功，重新載入中', '請稍候');
+          await checkMemberStatus();     // 🆕 等 reload 完才解開 modal，避免客人在空檔重複按
+          hideLoaderModal();
+          alert("✅ 修改成功！");
+        } else {
+          hideLoaderModal();
+          alert("失敗："+d.message);
+          checkMemberStatus();
+        }
       }catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
     }
     // 🆕 合併卡 bulk 改五碼
@@ -397,17 +405,42 @@
       try{
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
-        hideLoaderModal();
         if(d.status==="SUCCESS"){
+          optimisticUpdateLast5OnDom(v); // 🆕 立即更新 DOM
+          showLoaderModal('更新成功，重新載入中', '請稍候');
+          await checkMemberStatus();     // 🆕 等 reload 完才解開 modal
+          hideLoaderModal();
           let msg = `✅ 已更新 ${d.updatedCount} 筆訂單`;
           if(d.skippedCount && d.skippedCount > 0) msg += `\n（${d.skippedCount} 筆已完成匯款的單未變更）`;
           alert(msg);
-          checkMemberStatus();
         } else {
+          hideLoaderModal();
           alert("失敗："+d.message);
           checkMemberStatus();
         }
       } catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
+    }
+    // 🆕 樂觀更新：把畫面上所有「last5-value」「尚未提供」字串立即換成新五碼
+    //   這樣即使 reload 慢，客人也不會看到舊資料（避免在 alert 阻塞的空檔重複按修改）
+    //   注意：只是視覺暫時更新，最終仍依賴 checkMemberStatus reload 回來的真實值
+    function optimisticUpdateLast5OnDom(newLast5){
+      try {
+        // 蓋掉所有 last5-value（卡片內已填的五碼）
+        document.querySelectorAll('.last5-value').forEach(el => {
+          // 保留可能存在的「修改」按鈕（避免覆蓋按鈕 DOM）；只改文字節點
+          let editBtn = el.querySelector('.edit-btn');
+          el.textContent = newLast5 + ' ';
+          if (editBtn) el.appendChild(editBtn);
+        });
+        // 蓋掉「尚未提供」狀態的 row（last5-row 內含 .text-muted）
+        document.querySelectorAll('.last5-row .text-muted.fst-italic').forEach(el => {
+          let editBtn = el.querySelector('.edit-btn');
+          el.classList.remove('text-muted','fst-italic');
+          el.className = 'last5-value';
+          el.textContent = newLast5 + ' ';
+          if (editBtn) el.appendChild(editBtn);
+        });
+      } catch(err) {/* 樂觀更新失敗無傷大雅，reload 後仍會校正 */}
     }
     function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
     function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
