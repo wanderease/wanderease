@@ -23,15 +23,6 @@
     .loader-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;text-align:center;}
     .spinner-border{color:var(--brand-brown);}
     .text-carousel{font-size:14px;font-weight:bold;color:var(--brand-charcoal);margin-top:15px;min-height:20px;}
-    /* 🆕 全螢幕 modal loader（用於敏感操作如改五碼，保留底層內容不被清空） */
-    @keyframes lmSpin{to{transform:rotate(360deg);}}
-    @keyframes lmFadeIn{from{opacity:0;}to{opacity:1;}}
-    .lm-backdrop{position:fixed;inset:0;background:rgba(245,240,232,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9999;animation:lmFadeIn .18s ease-out;}
-    .lm-backdrop.show{display:flex;}
-    .lm-card{background:var(--brand-white);border-radius:14px;padding:26px 34px;box-shadow:0 12px 32px rgba(91,74,63,.22);text-align:center;min-width:220px;max-width:90vw;}
-    .lm-ring{width:32px;height:32px;border:3px solid #e0d8d0;border-top-color:var(--brand-brown);border-radius:50%;margin:0 auto 14px;animation:lmSpin .8s linear infinite;}
-    .lm-title{font-size:14px;font-weight:800;color:var(--brand-charcoal);letter-spacing:.3px;}
-    .lm-sub{font-size:11.5px;color:#a0907a;margin-top:5px;font-weight:600;}
     @media(min-width:768px){#adminArea,.page-content{max-width:600px;margin:0 auto;}}
 
     /* 底部導航 */
@@ -81,27 +72,11 @@
     .tracker-container{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding:0 10px;margin-top:15px;}
     .tracker-line{position:absolute;top:15px;left:30px;right:30px;height:3px;background:var(--track-bg);z-index:0;}
     .tracker-step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;flex:1;}
-    .step-dot{width:36px;height:36px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;color:var(--track-muted);font-size:15px;line-height:1;}
-    .step-dot.active{background:var(--track-active);border-color:var(--track-active);color:var(--brand-white);}
-    .step-dot.final{border-color:var(--track-final);color:var(--track-final);}.step-dot.final.active{background:var(--track-final);border-color:var(--track-final);color:var(--brand-white);}
+    .step-dot{width:32px;height:32px;border-radius:50%;background:var(--brand-white);border:3px solid var(--track-muted);display:flex;justify-content:center;align-items:center;box-shadow:0 0 0 4px var(--brand-white);margin-bottom:8px;}
+    .step-dot.active{background:var(--track-active);border-color:var(--track-active);}
+    .step-dot.final{border-color:var(--track-final);}.step-dot.final.active{background:var(--track-final);}
     .step-label{font-size:12px;font-weight:bold;color:var(--track-active);text-align:center;margin-bottom:4px;white-space:nowrap;}.step-label.muted{color:var(--track-muted);}.step-label.final{color:var(--track-final);}
     .step-pct{font-size:16px;font-weight:900;color:var(--brand-charcoal);}.step-pct.muted{color:var(--track-muted);}
-    /* 🆕 官方尚未出貨完成清單（在進度條框框內，總體進度下方） */
-    .unship-section{margin-top:16px;padding-top:14px;border-top:1px dashed #e0d8d0;}
-    .unship-section-title{font-size:12.5px;font-weight:800;color:#a96a3f;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
-    .unship-row{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:8px;padding:9px 11px;margin-bottom:7px;}
-    .unship-row:last-child{margin-bottom:0;}
-    .unship-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
-    .unship-name{font-size:12.5px;font-weight:800;color:var(--brand-charcoal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-    .unship-shipped-label{font-size:10.5px;font-weight:800;color:#2d6a3e;white-space:nowrap;}
-    .unship-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#ede9e3;}
-    .unship-bar-shipped{background:#5a9d6d;}
-    .unship-bar-pending{background:transparent;}
-    .unship-pending-label{text-align:right;font-size:10.5px;font-weight:800;color:#a96a3f;margin-top:5px;}
-    .unship-pending-label .all-waiting{margin-left:4px;font-size:0.9em;opacity:0.85;}
-    /* 🆕 該批次客人品項全數已出 → 內斂版安撫提示（無綠底，避免與卡片頂部 ship-complete-bar 視覺打架） */
-    .ship-batch-done{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;font-weight:700;color:#5e3f2b;line-height:1.6;padding:2px 2px 0;}
-    .ship-batch-done i{color:#5a9d6d;flex-shrink:0;font-size:14px;line-height:inherit;}
     .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
     .item-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #e0d8d0;font-size:14.5px;color:var(--brand-charcoal);}
     .item-name{font-weight:700;line-height:1.4;}.item-qty{color:#888;margin-left:8px;font-size:12px;font-weight:600;}
@@ -111,10 +86,6 @@
     .last5-value{color:var(--brand-charcoal);font-weight:700;display:flex;align-items:center;gap:8px;}
     .edit-btn{cursor:pointer;color:var(--brand-brown);font-size:13px;font-weight:700;padding:4px 8px;background:#f6f0ea;border-radius:4px;border:1px solid #e0d8d0;z-index:10;position:relative;}
     .edit-btn:hover{background:var(--brand-brown);color:var(--brand-white);border-color:var(--brand-brown);}
-    /* 🆕 尚未出貨標籤（部分出貨情境下標在品項旁） */
-    .unshipped-tag{display:inline-block;margin-left:6px;font-size:11px;color:#a96a3f;background:#fef3e8;border:1px solid #e8d4bf;padding:1px 7px;border-radius:10px;font-weight:700;letter-spacing:.3px;vertical-align:middle;}
-    /* 🆕 已全數出貨完成狀態條（綠色，只在 allShipped 時顯示） */
-    .ship-complete-bar{display:flex;align-items:center;gap:6px;background:#e7f2ea;color:#2d6a3e;border:1px solid #c5dccb;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:700;margin-bottom:10px;letter-spacing:.3px;}
     .total-row{display:flex;justify-content:space-between;padding-top:15px;border-top:2px solid #e0d8d0;font-size:1.15rem;font-weight:900;color:var(--brand-charcoal);}
     .total-price{color:#dc3545;}
     .bank-info{background:#fbfaf9;border:1px solid #e0d8d0;padding:20px;margin:0 20px 20px;border-radius:12px;text-align:left;}
@@ -220,14 +191,6 @@
   </style>
 </head>
 <body>
-  <!-- 🆕 Modal loader（敏感操作用，保留底層內容） -->
-  <div class="lm-backdrop" id="lmBackdrop" role="status" aria-live="polite">
-    <div class="lm-card">
-      <div class="lm-ring"></div>
-      <div class="lm-title" id="lmTitle">處理中</div>
-      <div class="lm-sub" id="lmSub">請稍候，不要關閉視窗</div>
-    </div>
-  </div>
   <div id="maintenanceArea" style="display:none;text-align:center;padding:80px 20px;background:var(--brand-bg);height:100vh;">
     <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
     <h3 class="fw-bold mb-4" style="color:var(--brand-brown);letter-spacing:2px;">系統升級維護中</h3>
@@ -360,89 +323,7 @@
     async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
 
     // ===== 後五碼修改 =====
-    // 🆕 全螢幕 modal loader 控制
-    function showLoaderModal(title, sub){
-      document.getElementById('lmTitle').textContent = title || '處理中';
-      document.getElementById('lmSub').textContent  = sub   || '請稍候，不要關閉視窗';
-      document.getElementById('lmBackdrop').classList.add('show');
-    }
-    function hideLoaderModal(){
-      document.getElementById('lmBackdrop').classList.remove('show');
-    }
-    async function promptEditLast5(oid,cur){
-      if(event)event.stopPropagation();
-      let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
-      if(v===null)return;
-      v=v.trim();
-      if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
-      showLoaderModal('更新匯款資訊中', '請稍候，不要關閉視窗');
-      try{
-        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
-        const d=await r.json();
-        if(d.status==="SUCCESS"){
-          optimisticUpdateLast5OnDom(v);
-          showLoaderModal('更新成功，重新載入中', '請稍候');
-          await checkMemberStatus();
-          hideLoaderModal();
-          // 不再 alert：modal 全程已經明確告知「更新成功 → 重新載入完成」，再彈 alert 是冗餘
-        } else {
-          hideLoaderModal();
-          alert("失敗："+d.message);
-          checkMemberStatus();
-        }
-      }catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
-    }
-    // 🆕 合併卡 bulk 改五碼
-    async function promptEditLast5Bulk(brand, series, cur, mergedCount){
-      if(event)event.stopPropagation();
-      const confirmMsg = `此筆訂單由 ${mergedCount} 張原始單合併\n修改後將套用至所有「未完成匯款」的單\n（已完成匯款的單不受影響）\n\n確定要修改嗎？`;
-      if(!confirm(confirmMsg)) return;
-      let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
-      if(v===null)return;
-      v=v.trim();
-      if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
-      showLoaderModal('更新匯款資訊中', `正在同步至 ${mergedCount} 筆原始訂單`);
-      try{
-        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
-        const d=await r.json();
-        if(d.status==="SUCCESS"){
-          optimisticUpdateLast5OnDom(v);
-          // 🆕 副標帶上實際更新數量，讓客人在重新載入過程中就知道結果
-          let subMsg = `已更新 ${d.updatedCount} 筆訂單`;
-          if(d.skippedCount && d.skippedCount > 0) subMsg += `（${d.skippedCount} 筆已完成匯款的單未變更）`;
-          showLoaderModal('更新成功，重新載入中', subMsg);
-          await checkMemberStatus();
-          hideLoaderModal();
-          // 不再 alert：副標已經顯示更新筆數，再彈 alert 是冗餘
-        } else {
-          hideLoaderModal();
-          alert("失敗："+d.message);
-          checkMemberStatus();
-        }
-      } catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
-    }
-    // 🆕 樂觀更新：把畫面上所有「last5-value」「尚未提供」字串立即換成新五碼
-    //   這樣即使 reload 慢，客人也不會看到舊資料（避免在 alert 阻塞的空檔重複按修改）
-    //   注意：只是視覺暫時更新，最終仍依賴 checkMemberStatus reload 回來的真實值
-    function optimisticUpdateLast5OnDom(newLast5){
-      try {
-        // 蓋掉所有 last5-value（卡片內已填的五碼）
-        document.querySelectorAll('.last5-value').forEach(el => {
-          // 保留可能存在的「修改」按鈕（避免覆蓋按鈕 DOM）；只改文字節點
-          let editBtn = el.querySelector('.edit-btn');
-          el.textContent = newLast5 + ' ';
-          if (editBtn) el.appendChild(editBtn);
-        });
-        // 蓋掉「尚未提供」狀態的 row（last5-row 內含 .text-muted）
-        document.querySelectorAll('.last5-row .text-muted.fst-italic').forEach(el => {
-          let editBtn = el.querySelector('.edit-btn');
-          el.classList.remove('text-muted','fst-italic');
-          el.className = 'last5-value';
-          el.textContent = newLast5 + ' ';
-          if (editBtn) el.appendChild(editBtn);
-        });
-      } catch(err) {/* 樂觀更新失敗無傷大雅，reload 後仍會校正 */}
-    }
+    async function promptEditLast5(oid,cur){if(event)event.stopPropagation();let v=prompt("請輸入匯款帳號最後五碼：",cur||"");if(v===null)return;v=v.trim();if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="text-carousel">📡 傳輸中...</div></div>`;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){alert("✅ 修改成功！");checkMemberStatus();}else{alert("失敗："+d.message);checkMemberStatus();}}catch(e){alert("網路錯誤");checkMemberStatus();}}
     function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
     function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
 
@@ -499,25 +380,15 @@
               const flowHtml = g.flowNote
                 ? `<div class="wl-grp-flow"><div class="wl-grp-flow-title">📦 候補貨況&公告</div><div class="wl-grp-flow-body">${escHTML(g.flowNote)}</div></div>`
                 : '';
-              const itemsHtml = g.items.map(i => {
-                // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
-                const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
-              }).join('');
+              const itemsHtml = g.items.map(i =>
+                `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`
+              ).join('');
               return `<div class="wl-grp"><div class="wl-grp-head"><span class="wl-grp-dot"></span>${escHTML(g.brand)}${seriesLabel}</div>${flowHtml}${itemsHtml}<div class="wl-grp-subtotal"><span>此系列小計</span><span>$${g.subtotal}</span></div></div>`;
             }).join('');
 
-            const eb = !ip ? (
-              o.canBulkEditLast5
-                ? `<span class="edit-btn" onclick="promptEditLast5Bulk('${(o.brand||'').replace(/'/g,'&#39;')}','${(o.series||'').replace(/'/g,'&#39;')}','${o.last5}',${o.mergedCount})"><i class="bi bi-pencil-square"></i> 修改</span>`
-                : (o.editableOrderId
-                    ? `<span class="edit-btn" onclick="promptEditLast5('${o.editableOrderId}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`
-                    : '')
-            ) : '';
+            const eb = !ip ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
-            const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
-            db = `${shipBar}${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            db = `${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           } else {
             // 候補單（單一品牌）：顯示 flowNote
             if (isWL) {
@@ -529,107 +400,29 @@
               const p = o.progress;
               const h1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
               const h2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
-              const n1 = (h1 && h2) ? "📦 [非預購款] 全體貨況" : "📦 全體貨況";
-              const n2 = (h1 && h2) ? "🚚 [預購款] 全體貨況" : "🚚 全體貨況";
-              // 🆕 渲染「官方尚未出貨完成清單」雙色橫條（依批次分流，依客人購買品項過濾）
-              //   邏輯：
-              //   (a) 客人此批次完全沒買 → 不顯示任何訊息
-              //   (b) 客人此批次有買，但「該客人這個品項已被官方出貨給他」 → 排除（避免造成「我已收到怎麼還在未出貨清單」的困惑）
-              //   (c) 客人此批次仍有未收到的品項 → 列出對應的雙色橫條
-              //   (d) 客人此批次有買、但「他的部分都已被官方出完」 → 改顯示綠色安撫訊息
-              function mkUnshippedList(isB1) {
-                if (!p.itemProgress || !Array.isArray(p.itemProgress)) return '';
-                const norm = (s) => String(s || '').replace(/\s+/g, '').toLowerCase();
-                // 該批次內客人買的所有品項 / 還沒收到的品項
-                const allCustomerNames = new Set();
-                const pendingCustomerNames = new Set();
-                (o.items || []).forEach(it => {
-                  let n = norm(it.name);
-                  if (!n) return;
-                  // 用品項名是否含「預購」判斷該品項屬 b1 或 b2，跟戰情中心一致
-                  let itemIsPreorder = String(it.name || '').indexOf('預購') > -1;
-                  if (isB1 && itemIsPreorder) return;
-                  if (!isB1 && !itemIsPreorder) return;
-                  allCustomerNames.add(n);
-                  if (!it.isShipped) pendingCustomerNames.add(n);
-                });
-                if (allCustomerNames.size === 0) return ''; // (a) 該批次客人沒品項
-                // 篩選需要列出的：官方還沒全出 + 客人那部分還沒收到
-                const listed = p.itemProgress.filter(ip => {
-                  if (isB1 && ip.isPreorder) return false;
-                  if (!isB1 && !ip.isPreorder) return false;
-                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; // 官方已全出
-                  return pendingCustomerNames.has(norm(ip.name)); // 客人這部分未收到
-                });
-                if (listed.length === 0) {
-                  // 區分兩種「無未出貨清單」情境，文案不同
-                  // 同時有預購+非預購時加 [批次] 標籤；只有單一批次時不加
-                  const hasBothBatches = h1 && h2;
-                  const batchLabel = hasBothBatches ? (isB1 ? '[非預購款]' : '[預購款]') : '';
-                  let msg;
-                  if (pendingCustomerNames.size === 0) {
-                    // (d-1) 客人這批次品項都已收到 → 短版
-                    msg = `您的${batchLabel}訂單品項，已全數出貨完成。`;
-                  } else {
-                    // (d-2) 客人還沒收到，但官方已全數出完 → 長版（等待台灣到貨後安排）
-                    msg = `您的${batchLabel}訂單品項，官方已全數出貨完成，待到台灣後會陸續安排出貨`;
-                  }
-                  return `<div class="unship-section">
-                    <div class="ship-batch-done"><i class="bi bi-check-circle-fill"></i><span>${msg}</span></div>
-                  </div>`;
-                }
-                const rows = listed.map(ip => {
-                  let shippedPct = ip.purchased > 0 ? Math.round((ip.step1 || 0) / ip.purchased * 100) : 0;
-                  if (shippedPct > 100) shippedPct = 100;
-                  if (shippedPct < 0) shippedPct = 0;
-                  let unshippedPct = 100 - shippedPct;
-                  let allWaiting = unshippedPct === 100 ? `<span class="all-waiting">(全數等待中)</span>` : '';
-                  return `<div class="unship-row">
-                    <div class="unship-row-head">
-                      <div class="unship-name"><i class="bi bi-box-seam me-1"></i>${escHTML(ip.name)}</div>
-                      <div class="unship-shipped-label">已出貨 ${shippedPct}%</div>
-                    </div>
-                    <div class="unship-bar"><div class="unship-bar-shipped" style="width:${shippedPct}%"></div><div class="unship-bar-pending" style="width:${unshippedPct}%"></div></div>
-                    <div class="unship-pending-label">未出貨 ${unshippedPct}%${allWaiting}</div>
-                  </div>`;
-                }).join('');
-                return `<div class="unship-section">
-                  <div class="unship-section-title"><i class="bi bi-exclamation-circle-fill"></i>官方【尚未】出貨完成清單</div>
-                  ${rows}
-                </div>`;
-              }
-              function mkTrack(t, s1, s2, s3, s4, title, isB1) {
+              const n1 = (h1 && h2) ? "📦 [非預購款] 貨況" : "📦 貨況進度";
+              const n2 = (h1 && h2) ? "🚚 [預購款] 貨況" : "🚚 貨況進度";
+              function mkTrack(t, s1, s2, s3, s4, title) {
                 const p1 = Math.round(s1 / t * 100) || 0;
                 const p2 = Math.max(0, Math.round((s2 - s3) / t * 100)) || 0;
                 const p3 = Math.max(0, Math.round((s3 - s4) / t * 100)) || 0;
                 const p4 = Math.round(s4 / t * 100) || 0;
                 const a1 = s1 > 0 ? 'active' : '', a2 = s2 > 0 ? 'active' : '', a3 = s3 > 0 ? 'active' : '', a4 = s4 > 0 ? 'active' : '';
                 const ns = s1 === 0 ? `<div style="margin-top:20px;padding:12px;background:#FFF3CD;color:#856404;border-radius:8px;font-size:14px;font-weight:bold;text-align:center;border:1px dashed #ffe8a1;">⏳ 官方尚未出貨</div>` : '';
-                const ul = mkUnshippedList(isB1);
-                return `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"><i class="bi bi-truck"></i></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"><i class="bi bi-building"></i></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"><i class="bi bi-airplane"></i></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"><i class="bi bi-house-door"></i></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}${ul}</div>`;
+                return `<div class="progress-wrapper mb-3"><div class="progress-title"><span>${title}</span></div><div class="tracker-container"><div class="tracker-line"></div><div class="tracker-step"><div class="step-dot ${a1}"></div><div class="step-label ${a1?'':'muted'}">官方出貨</div><div class="step-pct ${a1?'':'muted'}">${p1}%</div></div><div class="tracker-step"><div class="step-dot ${a2}"></div><div class="step-label ${a2?'':'muted'}">泰國到貨</div><div class="step-pct ${a2?'':'muted'}">${p2}%</div></div><div class="tracker-step"><div class="step-dot ${a3}"></div><div class="step-label ${a3?'':'muted'}">海關查驗</div><div class="step-pct ${a3?'':'muted'}">${p3}%</div></div><div class="tracker-step"><div class="step-dot final ${a4}"></div><div class="step-label final ${a4?'':'muted'}">台灣到貨</div><div class="step-pct final ${a4?'':'muted'}">${p4}%</div></div></div>${ns}</div>`;
               }
-              if (h1) { const t = p.b1.purchased || p.b1.totalPurchased; pch += mkTrack(t, p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0), p.b1.step2 || 0, p.b1.step3 || 0, p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0), n1, true); }
-              if (h2) { const t = p.b2.purchased || p.b2.totalPurchased; pch += mkTrack(t, p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0), p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0), p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0), p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0), n2, false); }
+              if (h1) { const t = p.b1.purchased || p.b1.totalPurchased; pch += mkTrack(t, p.b1.step1 !== undefined ? p.b1.step1 : (p.b1.shipped || 0), p.b1.step2 || 0, p.b1.step3 || 0, p.b1.step4 !== undefined ? p.b1.step4 : (p.b1.twArrived || 0), n1); }
+              if (h2) { const t = p.b2.purchased || p.b2.totalPurchased; pch += mkTrack(t, p.b2.step1 !== undefined ? p.b2.step1 : (p.b2.shipped || 0), p.b2.step2 !== undefined ? p.b2.step2 : (p.b2.flight || 0), p.b2.step3 !== undefined ? p.b2.step3 : (p.b2.flight || 0), p.b2.step4 !== undefined ? p.b2.step4 : (p.b2.twArrived || 0), n2); }
               if (pch) ph = `<div id="${pi}-btn" class="progress-toggle-btn" onclick="toggleProgressCard('${pi}')">🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i></div><div id="${pi}" class="progress-content">${pch}</div>`;
             }
 
             // 一般單與單品牌候補：用既有 details-box
-            const ih = o.items.map(i => {
-              // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
-              const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-              return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
-            }).join('');
-            const eb = !ip ? (
-              o.canBulkEditLast5
-                ? `<span class="edit-btn" onclick="promptEditLast5Bulk('${(o.brand||'').replace(/'/g,'&#39;')}','${(o.series||'').replace(/'/g,'&#39;')}','${o.last5}',${o.mergedCount})"><i class="bi bi-pencil-square"></i> 修改</span>`
-                : (o.editableOrderId
-                    ? `<span class="edit-btn" onclick="promptEditLast5('${o.editableOrderId}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>`
-                    : '')
-            ) : '';
+            const ih = o.items.map(i =>
+              `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span></div><div class="fw-bold">$${i.amount}</div></div>`
+            ).join('');
+            const eb = !ip ? `<span class="edit-btn" onclick="promptEditLast5('${o.key}','${o.last5}')"><i class="bi bi-pencil-square"></i> 修改</span>` : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
-            const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
-            db = `<div class="details-box shadow-sm mb-3">${shipBar}${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            db = `<div class="details-box shadow-sm mb-3">${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           }
 
           // === 銀行資訊區 ===
@@ -741,7 +534,22 @@
     }
 
     // ===== 改單操作 =====
-    function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
+    function poInvTotal(mid,invId,overrideRid,overrideQty){
+      // 計算「同一 inventoryId」在本主單中的投影總量（含 pending 編輯與加單），用於限購總量判斷
+      let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return overrideQty||0;
+      let ed=pendingEdits[mid]||[];let total=0;
+      po.items.forEach(it=>{
+        if(it.inventoryId!==invId)return;
+        if(it.isCancelled||it.isWaitlisted||it.isSwapped)return;
+        if(ed.find(e=>e.type==='DELETE'&&e.recordId===it.recordId))return;
+        if(it.recordId===overrideRid){total+=overrideQty;return;}
+        let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===it.recordId);
+        total+=(md?md.newQty:it.reqQty);
+      });
+      ed.filter(e=>e.type==='ADD'&&e.inventoryId===invId).forEach(a=>{total+=a.qty;});
+      return total;
+    }
+    function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0){let po=poData.preorders.find(p=>p.masterId===mid);let it=po?po.items.find(i=>i.recordId===rid):null;let invId=it?it.inventoryId:null;if(invId){if(poInvTotal(mid,invId,rid,nq)>maxQ){alert(`此品項限購 ${maxQ} 件（同品項合計）`);return;}}else if(nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;if(ac<=1){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty});renderPoCards();}
     function poUndo(mid,i){let a=pendingEdits[mid];if(a)a.splice(i,1);renderPoCards();}
 
@@ -759,7 +567,7 @@
     function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;renderAddList(getFullAvailableProducts(po),'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
     function filterAddItems(kw){let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),kw.toLowerCase());}
     function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.length>0?f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;let lim=p.maxQty>0?`<span style="font-size:10px;color:#a95a52;"> (限購${p.maxQty})</span>`:'';return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}${lim}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1,${p.maxQty||0})">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1,${p.maxQty||0})">+</div></div></div>`;}).join(''):(kw?'<div class="p-4 text-center text-muted fw-bold">找不到符合的品項</div>':'<div class="p-4 text-center fw-bold" style="color:#795238;">此系列所有品項皆已訂購<br><span class="text-muted fw-normal" style="font-size:12px;">如需調整數量，請直接在訂單上操作 +/-</span></div>');}
-    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
+    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>0){let po=poData.preorders.find(p=>p.masterId===addItemMasterId);let ed=pendingEdits[addItemMasterId]||[];let existing=0;if(po){po.items.forEach(it=>{if(it.inventoryId!==id)return;if(it.isCancelled||it.isWaitlisted||it.isSwapped)return;if(ed.find(e=>e.type==='DELETE'&&e.recordId===it.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===it.recordId);existing+=(md?md.newQty:it.reqQty);});}if(existing+nq>maxQ){alert(`此品項限購 ${maxQ} 件（同品項合計）`);return;}}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
     function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;let existingDel=ed.findIndex(e=>e.type==='DELETE'&&po&&po.items.find(i=>i.recordId===e.recordId&&i.inventoryId===id));if(existingDel>-1){let delEntry=ed[existingDel];let origItem=po.items.find(i=>i.recordId===delEntry.recordId);if(origItem&&s.qty===origItem.reqQty){ed.splice(existingDel,1);}else if(origItem){ed.splice(existingDel,1);ed.push({type:'MODIFY',recordId:delEntry.recordId,product:s.name,oldQty:origItem.reqQty,newQty:s.qty});}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
     
     // 🌟 樂觀更新 (Optimistic UI)：客人按下送出後瞬間切換畫面，系統在背景默默處理
@@ -1073,7 +881,7 @@
               : '';
             const swapMeta = i.swapFromProduct
               ? `<span style="color:#3C3489;">由 ${escHTML(i.swapFromProduct)} 換貨</span>`
-              : `<span>填單於 ${wlFmtDate(i.queueTime)}</span>`;
+              : `<span>填單於 ${wlFmtTime(i.queueTime)}</span>`;
             return `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
