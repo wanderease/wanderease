@@ -470,14 +470,25 @@
       let ih='';
       // === EDITING ===
       if(s==='EDITING'){
-        po.items.filter(i=>!i.isSwapped).forEach(i=>{
-          if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
-          let dl=ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId);
-          if(dl){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${i.reqQty}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
-          let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId),dq=md?md.newQty:i.reqQty,isMod=md&&md.newQty!==md.oldQty;
+        // 依品項合併裂列：同 inventoryId 的多筆明細顯示為一列總量（背景仍多筆，維持排隊公平）
+        let gOrder=[],gMap={};
+        po.items.filter(i=>!i.isSwapped&&!i.isWaitlisted).forEach(i=>{
+          let k=poGroupKey(i);
+          if(!gMap[k]){gMap[k]={key:k,recs:[],product:i.product,price:i.price,maxQty:i.maxQty||0,allCancelled:true};gOrder.push(k);}
+          gMap[k].recs.push(i);
+          if(!i.isCancelled)gMap[k].allCancelled=false;
+        });
+        gOrder.forEach(k=>{
+          let g=gMap[k];
+          if(g.allCancelled){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(g.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
+          let activeRecs=g.recs.filter(r=>!r.isCancelled);
+          let origTotal=activeRecs.reduce((s,r)=>s+(r.reqQty||0),0);
+          let dq=poGroupDisplayedQty(po.masterId,activeRecs);
+          if(dq<=0){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(g.product)} x${origTotal}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
+          let isMod=dq!==origTotal;
           let rs=isMod?'background:#e6f1fb;border-radius:6px;border:none;margin:2px 0;padding:6px;':'';
-          let limitLabel=i.maxQty>0?`<span style="font-size:9px;color:#a95a52;margin-left:4px;">限購${i.maxQty}</span>`:'';
-          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(i.product)}${limitLabel}</span><span class="po-iprice" style="margin-right:6px;">$${i.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},-1,${i.maxQty||0})">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},1,${i.maxQty||0})">+</div></div><button class="po-del-btn" onclick="poDelItem('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty})">刪除</button></div>`;
+          let limitLabel=g.maxQty>0?`<span style="font-size:9px;color:#a95a52;margin-left:4px;">限購${g.maxQty}</span>`:'';
+          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(g.product)}${limitLabel}</span><span class="po-iprice" style="margin-right:6px;">$${g.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poGroupEditQty('${po.masterId}','${k}',-1)">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poGroupEditQty('${po.masterId}','${k}',1)">+</div></div><button class="po-del-btn" onclick="poGroupDel('${po.masterId}','${k}')">刪除</button></div>`;
         });
         ed.filter(e=>e.type==='ADD').forEach(a=>{ih+=`<div class="po-irow" style="background:#eaf3de;border-radius:6px;border:none;margin:2px 0;padding:6px;"><span class="po-iname" style="color:#27500a;">+ ${escHTML(a.product)} x${a.qty}</span><span class="po-iprice" style="color:#3b6d11;">$${a.price}</span></div>`;});
         let total=0;po.items.forEach(i=>{if(i.isCancelled||ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId);total+=(md?md.newQty:i.reqQty)*i.price;});ed.filter(e=>e.type==='ADD').forEach(a=>{total+=a.qty*a.price;});
@@ -550,6 +561,52 @@
       return total;
     }
     function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0){let po=poData.preorders.find(p=>p.masterId===mid);let it=po?po.items.find(i=>i.recordId===rid):null;let invId=it?it.inventoryId:null;if(invId){if(poInvTotal(mid,invId,rid,nq)>maxQ){alert(`此品項限購 ${maxQ} 件（同品項合計）`);return;}}else if(nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
+
+    // ===== 同品項裂列合併：群組化編輯（保留排隊公平，背景仍為多筆明細）=====
+    // 群組鍵：有 inventoryId 者依品項合併；無者各自獨立（行為等同單列）
+    function poGroupKey(it){return it.inventoryId?('inv_'+it.inventoryId):('solo_'+it.recordId);}
+    // 群組目前畫面顯示總量（套用 pending 編輯，排除 pending ADD 與已取消明細）
+    function poGroupDisplayedQty(mid,recs){let ed=pendingEdits[mid]||[];let t=0;recs.forEach(it=>{if(ed.find(e=>e.type==='DELETE'&&e.recordId===it.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===it.recordId);t+=(md?md.newQty:it.reqQty);});return t;}
+    // 套用群組目標總量 → 從「原始狀態」重算整組 MODIFY/DELETE（不累加，避免狀態漂移）
+    function poApplyGroupQty(mid,recs,desired){
+      if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ids=recs.map(r=>r.recordId);
+      // 先清掉這些 record 既有的 MODIFY/DELETE
+      for(let i=a.length-1;i>=0;i--){if((a[i].type==='MODIFY'||a[i].type==='DELETE')&&ids.indexOf(a[i].recordId)>-1)a.splice(i,1);}
+      // 依排隊時間排序（最舊在前）
+      let sorted=recs.slice().sort((x,y)=>String(x.sortTime||'').localeCompare(String(y.sortTime||'')));
+      let origTotal=sorted.reduce((s,r)=>s+(r.reqQty||0),0);
+      if(desired<origTotal){
+        // 📉 減量：從最新排隊時間的明細先扣，保住最早順位
+        let remaining=origTotal-desired;
+        for(let i=sorted.length-1;i>=0&&remaining>0;i--){let r=sorted[i];
+          if(remaining>=r.reqQty){a.push({type:'DELETE',recordId:r.recordId,product:r.product,oldQty:r.reqQty});remaining-=r.reqQty;}
+          else{a.push({type:'MODIFY',recordId:r.recordId,product:r.product,oldQty:r.reqQty,newQty:r.reqQty-remaining});remaining=0;}
+        }
+      }else if(desired>origTotal){
+        // 📈 加量：套在最舊明細上，由後端拆單押新時間戳記
+        let diff=desired-origTotal;let r=sorted[0];
+        a.push({type:'MODIFY',recordId:r.recordId,product:r.product,oldQty:r.reqQty,newQty:r.reqQty+diff});
+      }
+      renderPoCards();
+    }
+    function poGroupActiveRecs(mid,invKey){let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return[];return po.items.filter(it=>!it.isCancelled&&!it.isWaitlisted&&!it.isSwapped&&poGroupKey(it)===invKey);}
+    function poGroupEditQty(mid,invKey,d){
+      let recs=poGroupActiveRecs(mid,invKey);if(recs.length===0)return;
+      let cur=poGroupDisplayedQty(mid,recs);let nq=Math.max(1,cur+d);let maxQ=recs[0].maxQty||0;
+      if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件（同品項合計）`);return;}
+      poApplyGroupQty(mid,recs,nq);
+    }
+    function poGroupDel(mid,invKey){
+      let recs=poGroupActiveRecs(mid,invKey);if(recs.length===0)return;
+      let po=poData.preorders.find(p=>p.masterId===mid);let ed=pendingEdits[mid]||[];
+      // 刪掉此群組後是否整單歸零（含其他群組與 pending ADD）
+      let activeKeys=new Set();
+      po.items.forEach(it=>{if(it.isCancelled||it.isWaitlisted||it.isSwapped)return;if(ed.find(e=>e.type==='DELETE'&&e.recordId===it.recordId))return;activeKeys.add(poGroupKey(it));});
+      activeKeys.delete(invKey);
+      let willBeEmpty=activeKeys.size===0&&!ed.some(e=>e.type==='ADD');
+      if(willBeEmpty){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}
+      poApplyGroupQty(mid,recs,0);
+    }
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;if(ac<=1){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty});renderPoCards();}
     function poUndo(mid,i){let a=pendingEdits[mid];if(a)a.splice(i,1);renderPoCards();}
 
