@@ -579,13 +579,13 @@
         // 📉 減量：從最新排隊時間的明細先扣，保住最早順位
         let remaining=origTotal-desired;
         for(let i=sorted.length-1;i>=0&&remaining>0;i--){let r=sorted[i];
-          if(remaining>=r.reqQty){a.push({type:'DELETE',recordId:r.recordId,product:r.product,oldQty:r.reqQty});remaining-=r.reqQty;}
-          else{a.push({type:'MODIFY',recordId:r.recordId,product:r.product,oldQty:r.reqQty,newQty:r.reqQty-remaining});remaining=0;}
+          if(remaining>=r.reqQty){a.push({type:'DELETE',recordId:r.recordId,product:r.product,inventoryId:r.inventoryId,oldQty:r.reqQty});remaining-=r.reqQty;}
+          else{a.push({type:'MODIFY',recordId:r.recordId,product:r.product,inventoryId:r.inventoryId,oldQty:r.reqQty,newQty:r.reqQty-remaining});remaining=0;}
         }
       }else if(desired>origTotal){
         // 📈 加量：套在最舊明細上，由後端拆單押新時間戳記
         let diff=desired-origTotal;let r=sorted[0];
-        a.push({type:'MODIFY',recordId:r.recordId,product:r.product,oldQty:r.reqQty,newQty:r.reqQty+diff});
+        a.push({type:'MODIFY',recordId:r.recordId,product:r.product,inventoryId:r.inventoryId,oldQty:r.reqQty,newQty:r.reqQty+diff});
       }
       renderPoCards();
     }
@@ -632,50 +632,67 @@
         let ed=pendingEdits[mid];
         if(!ed||!ed.length)return;
         if(!confirm('確定送出所有修改？'))return;
-        
-        // 1. 瞬間套用修改結果到畫面資料上 (樂觀更新)
-        let po = poData.preorders.find(p => p.masterId === mid);
-        if(po) {
-            ed.forEach(e => {
-                if(e.type === 'MODIFY') {
-                    let it = po.items.find(i => i.recordId === e.recordId);
-                    if(it) it.reqQty = e.newQty;
-                } else if(e.type === 'DELETE') {
-                    let it = po.items.find(i => i.recordId === e.recordId);
-                    if(it) it.isCancelled = true;
-                } else if(e.type === 'ADD') {
-                    po.items.push({
-                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), // 暫時的假ID
-                        inventoryId: e.inventoryId,
-                        product: e.product,
-                        price: e.price,
-                        reqQty: e.qty,
-                        allocQty: 0
-                    });
-                }
-            });
-        }
 
-        // 2. 發送給背景處理 (不卡畫面)
-        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
-        fetch(GAS_URL,{
-            method:"POST",
-            headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
-        }).then(r => r.json()).then(d => {
-            if(d.status === "SUCCESS") {
-                // 背景處理成功後，偷偷把真實資料拉回來覆蓋假資料
-                loadPreorderData(); 
-            } else {
-                alert("❌ 系統背景處理異常：" + d.message);
-                loadPreorderData(); // 發生錯誤時重置畫面
+        // 🛡️ 整段包進 try/catch：任何前置例外都明確提示，杜絕「按了完全沒反應」
+        try {
+            // 防呆：基本資料齊全才送，避免 lineUid 遺失導致後端判無權限卻無聲
+            if(!currentLineUid){
+                alert("⚠️ 連線階段異常（無法識別您的身分），請關閉後重新開啟頁面再試一次。");
+                return;
             }
-        }).catch(e => console.error("背景連線異常:", e));
 
-        // 3. 瞬間提示成功，清除預覽並重新渲染卡片
-        alert("✅ 已完成送出！");
-        delete pendingEdits[mid];
-        renderPoCards();
+            // 1. 樂觀更新畫面資料（容錯：單筆異常不應中斷整批）
+            let po = poData.preorders.find(p => p.masterId === mid);
+            if(po) {
+                ed.forEach(e => {
+                    try {
+                        if(e.type === 'MODIFY') {
+                            let it = po.items.find(i => i.recordId === e.recordId);
+                            if(it) it.reqQty = e.newQty;
+                        } else if(e.type === 'DELETE') {
+                            let it = po.items.find(i => i.recordId === e.recordId);
+                            if(it) it.isCancelled = true;
+                        } else if(e.type === 'ADD') {
+                            po.items.push({
+                                recordId: 'temp_' + Math.random().toString(36).substr(2, 9),
+                                inventoryId: e.inventoryId, product: e.product, price: e.price,
+                                reqQty: e.qty, allocQty: 0
+                            });
+                        }
+                    } catch(itemErr){ console.error("樂觀更新單筆失敗（不影響送出）:", e, itemErr); }
+                });
+            }
+
+            // 2. 送背景處理
+            let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
+            fetch(GAS_URL,{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
+            }).then(r => r.json()).then(d => {
+                if(d.status === "SUCCESS") {
+                    loadPreorderData();
+                } else {
+                    // 後端明確回錯（如超過限購、棄單達上限）→ 告知客人，不再無聲
+                    alert("❌ 修改未成功：" + (d.message || "請稍後再試或聯繫客服"));
+                    loadPreorderData();
+                }
+            }).catch(e => {
+                console.error("背景連線異常:", e);
+                alert("⚠️ 連線異常，您的修改可能未送出，請重新整理確認。");
+                loadPreorderData();
+            });
+
+            // 3. 樂觀提示
+            alert("✅ 已送出，系統處理中...");
+            delete pendingEdits[mid];
+            renderPoCards();
+
+        } catch(err) {
+            // 任何前置例外都攔下並明確提示（這就是過去「完全沒反應」的根因所在）
+            console.error("submitEdits 發生例外:", err);
+            alert("⚠️ 送出時發生問題，請重新整理頁面後再試一次。\n（若持續發生請截圖聯繫客服）");
+        }
     }
 
     // ===== 二選一操作 =====
