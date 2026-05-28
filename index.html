@@ -1096,23 +1096,52 @@
         });
       }
 
-      // ✅ 已轉訂單（只提示）
+      // ✅ 已轉訂單（折疊、含明細、依轉換時間新→舊）
       if (hasTransferred) {
+        const tItems = data.transferredItems || [];
         html += `
-          <div class="wl-section-head">
-            <span>✅ 已轉正式訂單</span>
-            <span class="wl-count">${data.transferredCount} 件</span>
+          <div class="wl-collapse-head" onclick="wlToggleTransferred()">
+            <span>✅ 已轉訂單</span>
+            <span id="wlTransferredToggle">${data.transferredCount} 件 ▾</span>
           </div>
-          <div class="wl-link-orders" onclick="switchToOrdersTab()">
-            🔄 請到「訂單」頁查看這些已轉正式訂單的後續
+          <div id="wlTransferredList" style="display:none;">`;
+        const groups = wlGroupByBrandSeries(tItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => {
+            const dateStr = wlFmtDate(i.convertTime || i.queueTime);
+            return `
+            <div class="wl-v2-item">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)} <span style="color:#888;">x${i.reqQty}</span></div>
+                <div class="wl-v2-meta">
+                  <span style="color:#0F6E56;background:#9FE1CB;padding:1px 8px;border-radius:8px;font-size:11px;">已轉為正式訂單</span>
+                  <span style="margin-left:8px;color:#888;">${escHTML(dateStr)}</span>
+                </div>
+              </div>
+            </div>`;
+          }).join('');
+          html += `
+            <div class="wl-v2-card">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `
+            <div class="wl-link-orders" onclick="switchToOrdersTab()">
+              🔄 請到首頁查看訂單後續
+            </div>
           </div>`;
       }
 
-      // ❌ 歷史取消（折疊）
+      // ❌ 我取消的候補（折疊、顯示日期+時間）
       if (hasCancelled) {
         html += `
           <div class="wl-collapse-head" onclick="wlToggleCancelled()">
-            <span>❌ 歷史取消紀錄</span>
+            <span>❌ 我取消的候補</span>
             <span id="wlCancelledToggle">${data.cancelledItems.length} 件 ▾</span>
           </div>
           <div id="wlCancelledList" style="display:none;">`;
@@ -1121,7 +1150,6 @@
           const c = wlGetBrandColor(g.brand);
           let itemsHtml = g.items.map(i => {
             const cancelTime = wlParseCancelTime(i.note) || wlFmtDate(i.queueTime);
-            // 🔄 若是換貨取消的：顯示「已換成 X」而非單純「取消」
             const isSwap = !!i.swapToProduct;
             const metaHtml = isSwap
               ? `<span style="color:#3C3489;">📦 已換成 ${escHTML(i.swapToProduct)}</span><span style="margin-left:8px;color:#888;">${escHTML(cancelTime)}</span>`
@@ -1157,6 +1185,18 @@
     function wlToggleCancelled() {
       const el = document.getElementById('wlCancelledList');
       const toggle = document.getElementById('wlCancelledToggle');
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        toggle.innerHTML = toggle.innerHTML.replace('▾', '▴');
+      } else {
+        el.style.display = 'none';
+        toggle.innerHTML = toggle.innerHTML.replace('▴', '▾');
+      }
+    }
+
+    function wlToggleTransferred() {
+      const el = document.getElementById('wlTransferredList');
+      const toggle = document.getElementById('wlTransferredToggle');
       if (el.style.display === 'none') {
         el.style.display = 'block';
         toggle.innerHTML = toggle.innerHTML.replace('▾', '▴');
