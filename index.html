@@ -656,12 +656,30 @@
     // 🎯 預購卡片
     // =============================================
     async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};renderPoCards();}}catch(e){}}
-    function renderPoCards(){const c=document.getElementById('preorderCardsContainer');if(!poData.preorders||!poData.preorders.length){c.innerHTML='';return;}c.innerHTML=poData.preorders.map((po,i)=>buildPoCard(po,i)).join('');}
+    function renderPoCards(){const c=document.getElementById('preorderCardsContainer');let list=(poData.mergedPreorders&&poData.mergedPreorders.length>=0&&poData.mergedPreorders!==undefined)?poData.mergedPreorders:(poData.preorders||[]);if(poData.mergedPreorders===undefined)list=poData.preorders||[];if(!list||!list.length){c.innerHTML='';return;}c.innerHTML=list.map((po,i)=>buildPoCard(po,i)).join('');}
+
+    // ===== 🆕 合併卡編輯輔助（跨主單路由） =====
+    function poCurList(){ return (poData.mergedPreorders!==undefined) ? (poData.mergedPreorders||[]) : (poData.preorders||[]); }
+    function poCardMids(po){ return (po.masterIds&&po.masterIds.length)?po.masterIds:[po.masterId]; }
+    function poCardEdits(po){ let r=[]; poCardMids(po).forEach(m=>{(pendingEdits[m]||[]).forEach((e,idx)=>r.push(Object.assign({_mid:m,_idx:idx},e)));}); return r; }
+    function poCardSweep(po){ let r=[]; poCardMids(po).forEach(m=>{(pendingSweep[m]||[]).forEach((d,idx)=>r.push(Object.assign({_mid:m,_idx:idx},d)));}); return r; }
+    function poItemSrcs(i){ return (i.sources&&i.sources.length)?i.sources:[{recordId:i.recordId,masterId:i.masterId,reqQty:i.reqQty,allocQty:i.allocQty}]; }
+    function poSrcEff(src){ let a=pendingEdits[src.masterId]||[]; if(a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))return 0; let m=a.find(e=>e.type==='MODIFY'&&e.recordId===src.recordId); return m?m.newQty:src.reqQty; }
+    function poItemEff(i){ return poItemSrcs(i).reduce((s,src)=>s+poSrcEff(src),0); }
+    function poItemOrig(i){ return poItemSrcs(i).reduce((s,src)=>s+(src.reqQty||0),0); }
+    function poItemFullyDeleted(i){ return poItemSrcs(i).every(src=>(pendingEdits[src.masterId]||[]).find(e=>e.type==='DELETE'&&e.recordId===src.recordId)); }
+    function _poSetSrc(src,newQty,prod){ let mid=src.masterId; if(!pendingEdits[mid])pendingEdits[mid]=[]; let a=pendingEdits[mid]; let di=a.findIndex(e=>e.type==='DELETE'&&e.recordId===src.recordId); if(di>-1)a.splice(di,1); let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId); if(newQty===src.reqQty){if(ex>-1)a.splice(ex,1);} else if(newQty<=0){if(ex>-1)a.splice(ex,1); if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:prod,oldQty:src.reqQty});} else {if(ex>-1)a[ex].newQty=newQty; else a.push({type:'MODIFY',recordId:src.recordId,product:prod,oldQty:src.reqQty,newQty:newQty});} }
+    function poFindItem(cardIdx,repRid){ let po=poCurList()[cardIdx]; if(!po)return null; let it=(po.items||[]).find(x=>x.recordId===repRid); return it?{po:po,it:it}:null; }
+    function poCardByMid(mid){ return poCurList().find(p=>poCardMids(p).includes(mid)); }
+    // 改數量：加→加購(最新)、減→加購先扣再原單；底層各自路由到來源主單
+    function poMergedQty(cardIdx,repRid,delta,maxQ){ let f=poFindItem(cardIdx,repRid); if(!f)return; let it=f.it; let srcs=poItemSrcs(it); let total=poItemEff(it); if(delta>0){ if(maxQ>0&&total+1>maxQ){alert(`此品項限購 ${maxQ} 件`);return;} let last=srcs[srcs.length-1]; _poSetSrc(last,poSrcEff(last)+1,it.product);} else { if(total<=1)return; for(let k=srcs.length-1;k>=0;k--){let eff=poSrcEff(srcs[k]); if(eff>0){_poSetSrc(srcs[k],eff-1,it.product);break;}} } renderPoCards(); }
+    // 刪除整品項：底層兩筆一起刪
+    function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length; if(activeCnt<=1){let c=poData.cancelCount||0; if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;} if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;} srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
     function getCountdown(ds){if(!ds)return'';let t=new Date(ds.replace(/-/g,'/')).getTime()-Date.now();if(t<=0)return'已截止';let d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4);return d>0?`剩餘 ${d} 天 ${h} 小時`:`剩餘 ${h} 小時 ${m} 分`;}
     function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
 
     function buildPoCard(po,idx){
-      let s=po.stage,ed=pendingEdits[po.masterId]||[],dec=pendingSweep[po.masterId]||[];
+      let s=po.stage,ed=poCardEdits(po),dec=poCardSweep(po);
       let bc,hbg,sub,badge;
       switch(s){
         case'EDITING':bc='#795238';hbg='#fff';sub=`📝 結單倒數：${getCountdown(po.stageInfo.orderCloseTime)}`;badge=`<span class="po-badge" style="background:#795238;color:#fff;">可修改</span>`;break;
@@ -679,17 +697,18 @@
       if(s==='EDITING'){
         po.items.filter(i=>!i.isSwapped).forEach(i=>{
           if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
-          let dl=ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId);
-          if(dl){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${i.reqQty}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
-          let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId),dq=md?md.newQty:i.reqQty,isMod=md&&md.newQty!==md.oldQty;
+          if(poItemFullyDeleted(i)){ih+=`<div class="po-irow" style="opacity:.4;text-decoration:line-through;"><span>${escHTML(i.product)} x${poItemOrig(i)}</span><span style="text-decoration:none;font-size:10px;font-weight:700;color:#dc3545;background:#fdf3f2;padding:1px 8px;border-radius:4px;">已選刪除</span></div>`;return;}
+          let dq=poItemEff(i),isMod=dq!==poItemOrig(i);
           let rs=isMod?'background:#e6f1fb;border-radius:6px;border:none;margin:2px 0;padding:6px;':'';
           let limitLabel=i.maxQty>0?`<span style="font-size:9px;color:#a95a52;margin-left:4px;">限購${i.maxQty}</span>`:'';
-          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(i.product)}${limitLabel}</span><span class="po-iprice" style="margin-right:6px;">$${i.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},-1,${i.maxQty||0})">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poEditQty('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty},${dq},1,${i.maxQty||0})">+</div></div><button class="po-del-btn" onclick="poDelItem('${po.masterId}','${i.recordId}','${escAttr(i.product)}',${i.reqQty})">刪除</button></div>`;
+          let waveTxt='';
+          if(i.sources&&i.sources.length>1){let parts=i.sources.map((src,wi)=>{let eff=poSrcEff(src);return eff>0?`${wi===0?'原單':'加購'}×${eff}`:null;}).filter(x=>x).join(' + ');if(parts)waveTxt=`<div style="font-size:11px;color:#888;margin:-2px 0 4px 2px;">${parts}</div>`;}
+          ih+=`<div class="po-irow" style="${rs}"><span class="po-iname" ${isMod?'style="color:#0c447c;"':''}>${escHTML(i.product)}${limitLabel}</span><span class="po-iprice" style="margin-right:6px;">$${i.price}</span><div class="qty-ctrl"><div class="qty-btn" onclick="poMergedQty(${idx},'${i.recordId}',-1,${i.maxQty||0})">-</div><div class="qty-val">${dq}</div><div class="qty-btn" onclick="poMergedQty(${idx},'${i.recordId}',1,${i.maxQty||0})">+</div></div><button class="po-del-btn" onclick="poMergedDel(${idx},'${i.recordId}')">刪除</button></div>${waveTxt}`;
         });
         ed.filter(e=>e.type==='ADD').forEach(a=>{ih+=`<div class="po-irow" style="background:#eaf3de;border-radius:6px;border:none;margin:2px 0;padding:6px;"><span class="po-iname" style="color:#27500a;">+ ${escHTML(a.product)} x${a.qty}</span><span class="po-iprice" style="color:#3b6d11;">$${a.price}</span></div>`;});
-        let total=0;po.items.forEach(i=>{if(i.isCancelled||ed.find(e=>e.type==='DELETE'&&e.recordId===i.recordId))return;let md=ed.find(e=>e.type==='MODIFY'&&e.recordId===i.recordId);total+=(md?md.newQty:i.reqQty)*i.price;});ed.filter(e=>e.type==='ADD').forEach(a=>{total+=a.qty*a.price;});
+        let total=0;po.items.forEach(i=>{if(i.isCancelled||poItemFullyDeleted(i))return;total+=poItemEff(i)*i.price;});ed.filter(e=>e.type==='ADD').forEach(a=>{total+=a.qty*a.price;});
         ih+=`<div class="po-sum"><span>商品小計</span><span>$${total.toLocaleString()}</span></div>`;
-        ih+=`<div class="po-add-btn" onclick="openAddItemModal('${po.masterId}')">+ 新增品項</div>`;
+        ih+=`<div class="po-add-btn" onclick="openAddItemModal('${po.addTargetMasterId||po.masterId}')">+ 新增品項</div>`;
       }
       // === SWEEP ===
       else if(s==='SWEEP'){
@@ -705,7 +724,8 @@
             if (i.allocQty > 0) {
               ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty} (已確認)</span><span class="po-iprice">$${i.price}</span></div>`;
             }
-            let dc = dec.find(d => d.recordId === i.recordId);
+            let ss = i.shortageSource || {recordId:i.recordId, masterId:i.masterId, reqQty:i.reqQty, allocQty:i.allocQty};
+            let dc = dec.find(d => d.recordId === ss.recordId);
             if (dc) {
               let tg = dc.action === 'CANCEL' ? '已選取消' : '已選候補';
               let tbg = dc.action === 'CANCEL' ? 'background:#fdf3f2;color:#dc3545' : 'background:#fff3cd;color:#856404';
@@ -714,7 +734,7 @@
               let bg = i.allocQty > 0 ? 'background:#fff3cd;' : 'background:#fdf3f2;';
               let tc = i.allocQty > 0 ? 'color:#d97706;' : 'color:#dc3545;';
               let sym = i.allocQty > 0 ? '⚠️' : '❌';
-              ih+=`<div class="po-irow po-shortage-row" style="${bg}"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;${tc}">${sym} ${escHTML(i.product)} x${sh} (缺貨)</div><div style="font-size:11px;color:#888;">$${i.price}</div></div><div style="display:flex;gap:4px;flex-shrink:0;"><button class="po-del-btn" style="background:#ffc107;color:#412402;" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','${escAttr(po.brand)}','${escAttr(po.series)}',${i.reqQty},${i.allocQty},'WAITLIST')">轉候補</button><button class="po-del-btn" onclick="sweepSel('${po.masterId}','${i.recordId}','${escAttr(i.product)}','','',${i.reqQty},${i.allocQty},'CANCEL')">取消</button></div></div>`;
+              ih+=`<div class="po-irow po-shortage-row" style="${bg}"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;${tc}">${sym} ${escHTML(i.product)} x${sh} (缺貨)</div><div style="font-size:11px;color:#888;">$${i.price}</div></div><div style="display:flex;gap:4px;flex-shrink:0;"><button class="po-del-btn" style="background:#ffc107;color:#412402;" onclick="sweepSel('${ss.masterId}','${ss.recordId}','${escAttr(i.product)}','${escAttr(po.brand)}','${escAttr(po.series)}',${ss.reqQty},${ss.allocQty},'WAITLIST')">轉候補</button><button class="po-del-btn" onclick="sweepSel('${ss.masterId}','${ss.recordId}','${escAttr(i.product)}','','',${ss.reqQty},${ss.allocQty},'CANCEL')">取消</button></div></div>`;
             }
           }
         });
@@ -732,8 +752,8 @@
 
       // 預覽
       let pv='';
-      if(s==='EDITING'&&ed.length>0){let pi=ed.map((e,ei)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${po.masterId}',${ei})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits('${po.masterId}')">確認送出修改</button></div>`;}
-      if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d,di)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${po.masterId}',${di})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep('${po.masterId}')">確認送出</button></div>`;}
+      if(s==='EDITING'&&ed.length>0){let pi=ed.map((e)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits(${idx})">確認送出修改</button></div>`;}
+      if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${d._mid}',${d._idx})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep(${idx})">確認送出</button></div>`;}
       let nt='';if(s==='SWEEP_DONE')nt=`<div class="po-notice" style="background:#fff3cd;color:#633806;border:1px dashed #efc777;">⚠️ 目前暫未開放匯款，開放後將另行通知</div>`;
       let notes='';let fn=fmtPoNote(po.note);if(fn)notes=`<div class="po-notes">${fn}</div>`;
 
@@ -747,70 +767,47 @@
 
     function getFullAvailableProducts(po){
       let list=[...(po.availableProducts||[])];
-      let ed=pendingEdits[po.masterId]||[];
+      let ed=poCardEdits(po);
       ed.filter(e=>e.type==='DELETE').forEach(del=>{
-        let item=po.items.find(i=>i.recordId===del.recordId);
+        let item=(po.items||[]).find(i=>poItemSrcs(i).some(src=>src.recordId===del.recordId));
         if(item&&item.inventoryId&&!list.find(p=>p.inventoryId===item.inventoryId)){
           list.push({inventoryId:item.inventoryId,name:item.product,price:item.price,maxQty:item.maxQty||0});
         }
       });
       return list;
     }
-    function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;renderAddList(getFullAvailableProducts(po),'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
-    function filterAddItems(kw){let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),kw.toLowerCase());}
+    function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poCardByMid(mid);if(!po)return;renderAddList(getFullAvailableProducts(po),'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
+    function filterAddItems(kw){let po=poCardByMid(addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),kw.toLowerCase());}
     function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.length>0?f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;let lim=p.maxQty>0?`<span style="font-size:10px;color:#a95a52;"> (限購${p.maxQty})</span>`:'';return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}${lim}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1,${p.maxQty||0})">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1,${p.maxQty||0})">+</div></div></div>`;}).join(''):(kw?'<div class="p-4 text-center text-muted fw-bold">找不到符合的品項</div>':'<div class="p-4 text-center fw-bold" style="color:#795238;">此系列所有品項皆已訂購<br><span class="text-muted fw-normal" style="font-size:12px;">如需調整數量，請直接在訂單上操作 +/-</span></div>');}
-    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
-    function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];let po=poData.preorders.find(p=>p.masterId===addItemMasterId);Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;let existingDel=ed.findIndex(e=>e.type==='DELETE'&&po&&po.items.find(i=>i.recordId===e.recordId&&i.inventoryId===id));if(existingDel>-1){let delEntry=ed[existingDel];let origItem=po.items.find(i=>i.recordId===delEntry.recordId);if(origItem&&s.qty===origItem.reqQty){ed.splice(existingDel,1);}else if(origItem){ed.splice(existingDel,1);ed.push({type:'MODIFY',recordId:delEntry.recordId,product:s.name,oldQty:origItem.reqQty,newQty:s.qty});}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}}else{ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});}});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
+    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poCardByMid(addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
+    function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
     
     // 🌟 樂觀更新 (Optimistic UI)：客人按下送出後瞬間切換畫面，系統在背景默默處理
-    function submitEdits(mid){
-        let ed=pendingEdits[mid];
-        if(!ed||!ed.length)return;
+    function submitEdits(cardIdx){
+        let po = poCurList()[cardIdx]; if(!po) return;
+        let mids = poCardMids(po);
+        let hasAny = mids.some(m => (pendingEdits[m]||[]).length>0);
+        if(!hasAny) return;
         if(!confirm('確定送出所有修改？'))return;
-        
-        // 1. 瞬間套用修改結果到畫面資料上 (樂觀更新)
-        let po = poData.preorders.find(p => p.masterId === mid);
-        if(po) {
-            ed.forEach(e => {
-                if(e.type === 'MODIFY') {
-                    let it = po.items.find(i => i.recordId === e.recordId);
-                    if(it) it.reqQty = e.newQty;
-                } else if(e.type === 'DELETE') {
-                    let it = po.items.find(i => i.recordId === e.recordId);
-                    if(it) it.isCancelled = true;
-                } else if(e.type === 'ADD') {
-                    po.items.push({
-                        recordId: 'temp_' + Math.random().toString(36).substr(2, 9), // 暫時的假ID
-                        inventoryId: e.inventoryId,
-                        product: e.product,
-                        price: e.price,
-                        reqQty: e.qty,
-                        allocQty: 0
-                    });
-                }
-            });
-        }
 
-        // 2. 發送給背景處理 (不卡畫面)
-        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
-        fetch(GAS_URL,{
-            method:"POST",
-            headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
-        }).then(r => r.json()).then(d => {
-            if(d.status === "SUCCESS") {
-                // 背景處理成功後，偷偷把真實資料拉回來覆蓋假資料
-                loadPreorderData(); 
-            } else {
-                alert("❌ 系統背景處理異常：" + d.message);
-                loadPreorderData(); // 發生錯誤時重置畫面
-            }
-        }).catch(e => console.error("背景連線異常:", e));
+        // 按來源主單分批送出（合併卡可能橫跨兩張主單）
+        mids.forEach(mid => {
+            let ed = pendingEdits[mid];
+            if(!ed || !ed.length) return;
+            let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
+            fetch(GAS_URL,{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
+            }).then(r => r.json()).then(d => {
+                if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message);
+            }).catch(e => console.error("背景連線異常:", e));
+        });
 
-        // 3. 瞬間提示成功，清除預覽並重新渲染卡片
-        alert("✅ 已完成送出！");
-        delete pendingEdits[mid];
+        mids.forEach(mid => delete pendingEdits[mid]);
+        alert("✅ 已完成送出！畫面更新中…");
         renderPoCards();
+        setTimeout(loadPreorderData, 1500);
     }
 
     // ===== 二選一操作 =====
@@ -818,38 +815,30 @@
     function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
     
     // 🌟 樂觀更新 (Optimistic UI)
-    function submitSweep(mid){
-        let dec=pendingSweep[mid];
-        if(!dec||!dec.length)return;
+    function submitSweep(cardIdx){
+        let po = poCurList()[cardIdx]; if(!po) return;
+        let mids = poCardMids(po);
+        let hasAny = mids.some(m => (pendingSweep[m]||[]).length>0);
+        if(!hasAny) return;
         if(!confirm('確定送出您的決定？'))return;
-        
-        // 1. 瞬間套用修改結果
-        let po = poData.preorders.find(p => p.masterId === mid);
-        if(po) {
-            dec.forEach(d => {
-                let it = po.items.find(i => i.recordId === d.recordId);
-                if(it) {
-                    if(d.action === 'CANCEL') it.isCancelled = true; 
-                    else if(d.action === 'WAITLIST') it.isWaitlisted = true;
-                }
-            });
-        }
 
-        // 2. 發送給背景處理
-        let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
-        fetch(GAS_URL,{
-            method:"POST",
-            headers:{"Content-Type":"application/x-www-form-urlencoded"},
-            body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
-        }).then(r => r.json()).then(d => {
-            if(d.status === "SUCCESS") loadPreorderData();
-            else { alert("❌ 系統背景處理異常：" + d.message); loadPreorderData(); }
-        }).catch(e => console.error("背景連線異常:", e));
+        mids.forEach(mid => {
+            let dec = pendingSweep[mid];
+            if(!dec || !dec.length) return;
+            let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
+            fetch(GAS_URL,{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
+            }).then(r => r.json()).then(d => {
+                if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message);
+            }).catch(e => console.error("背景連線異常:", e));
+        });
 
-        // 3. 瞬間提示成功並渲染畫面
-        alert("✅ 已完成送出！");
-        delete pendingSweep[mid];
+        mids.forEach(mid => delete pendingSweep[mid]);
+        alert("✅ 已完成送出！畫面更新中…");
         renderPoCards();
+        setTimeout(loadPreorderData, 1500);
     }
 
     // ===== 候補頁面（V2 完整版） =====
