@@ -281,17 +281,18 @@
     .frame-ship{background:linear-gradient(135deg,var(--ship-soft) 0%,var(--ship-soft-2) 100%);}
     .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
 
-    /* 訂單/候補框統計 cell：用 CSS Grid 三等分（最可靠的等寬實現）*/
+    /* 訂單/候補框統計 cell：用 CSS Grid 三等分（最可靠的等寬實現）
+       ⚠ 注意：不能用 .alert（會跟 Bootstrap .alert class 衝突，被加上額外 padding/border） */
     .order-stats-inline{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px;position:relative;z-index:1;width:100%;}
-    .order-stat-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;}
-    .order-stat-cell.alert{background:rgba(255,235,180,.42);}
+    .order-stat-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;margin:0;border:none;}
+    .order-stat-cell.is-alert{background:rgba(255,235,180,.42);}
     .order-stat-cell .n{font-size:20px;font-weight:800;line-height:1;}
     .order-stat-cell .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:10px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;box-sizing:border-box;}
 
     .wait-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px;position:relative;z-index:1;width:100%;}
-    .wait-stat{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 5px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;}
-    .wait-stat.alert{background:rgba(255,235,180,.42);}
+    .wait-stat{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 5px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;margin:0;border:none;}
+    .wait-stat.is-alert{background:rgba(255,235,180,.42);}
     .wait-stat .n{font-size:20px;font-weight:800;line-height:1;}
     .wait-stat .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
@@ -1012,7 +1013,7 @@
           document.getElementById('ordFrameCount').innerText = `${total} 筆`;
           document.getElementById('ordFrameTitle').innerText = unpaid > 0 ? `${unpaid} 張訂單尚未匯款` : (shipping > 0 ? `${shipping} 張訂單待出貨` : `已完成 ${done} 張訂單`);
           document.getElementById('ordStatsRow').innerHTML = `
-            <div class="order-stat-cell ${unpaid>0?'alert':''}"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
+            <div class="order-stat-cell ${unpaid>0?'is-alert':''}"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
             <div class="order-stat-cell"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
             <div class="order-stat-cell"><div class="n">${done}</div><div class="l">已完成</div></div>
           `;
