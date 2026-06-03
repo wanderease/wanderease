@@ -217,6 +217,112 @@
     .additem-row.sel{background:#eaf3de;}
     .additem-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:13px;}
     .additem-price{font-size:12px;color:#888;}
+
+    /* ========================================
+       🆕 v2 改版新樣式
+       ======================================== */
+    :root{
+      --pre-soft:#b08bdf; --pre-soft-2:#8a6db5;
+      --ord-soft:#7fa9d8; --ord-soft-2:#5a87b8;
+      --ship-soft:#7dc89e; --ship-soft-2:#5fab7e;
+      --wait-soft:#e4b878; --wait-soft-2:#c79753;
+    }
+    /* 頂部 Header 4 個導航 */
+    .top-nav-row{display:flex;gap:6px;padding:11px 14px 0;}
+    .top-nav-item{flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;border:none;color:#fff;-webkit-tap-highlight-color:transparent;}
+    .top-nav-item:active{background:rgba(255,255,255,.28);}
+    .top-nav-item .tni-ic{font-size:18px;line-height:1;display:block;}
+    .top-nav-item .tni-l{font-size:10px;opacity:.95;margin-top:3px;font-weight:600;}
+    .top-nav-item.cs{background:rgba(252,211,77,.28);}
+    .top-nav-item.cs .tni-ic{color:#fef08a;}
+
+    /* 三頁滑動容器 */
+    .swipe-wrap{position:relative;}
+    .page-tabs{display:flex;background:#fff;padding:8px 11px 4px;gap:5px;border-bottom:1px solid #f0ebe5;position:sticky;top:0;z-index:50;}
+    .page-tab{flex:1;padding:8px 4px;text-align:center;border-radius:9px;cursor:pointer;border:none;background:transparent;-webkit-tap-highlight-color:transparent;}
+    .page-tab .pt-l{font-size:11.5px;font-weight:700;color:#888;display:flex;align-items:center;justify-content:center;gap:5px;}
+    .page-tab .pt-l i{font-size:13px;}
+    .page-tab.active{background:var(--brand-bg);}
+    .page-tab.active .pt-l{color:var(--brand-brown);}
+    .page-tab.alert .pt-l::after{content:'';display:inline-block;width:6px;height:6px;background:#dc3545;border-radius:50%;margin-left:3px;}
+    .swipe-dots{display:flex;gap:6px;justify-content:center;padding:6px 0;background:#fff;}
+    .swipe-dot{width:7px;height:7px;border-radius:50%;background:#d0c7be;transition:.25s;}
+    .swipe-dot.active{background:var(--brand-brown);width:22px;border-radius:5px;}
+
+    /* 滑動 viewport */
+    .swipe-viewport{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+    .swipe-viewport::-webkit-scrollbar{display:none;}
+    .swipe-page{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;min-width:100%;}
+
+    /* 4 個大框（紫/藍/綠/橘黃）*/
+    .big-frame{border-radius:16px;padding:14px;margin-bottom:11px;color:#fff;position:relative;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.07);}
+    .big-frame .watermark{position:absolute;right:10px;top:8px;font-size:54px;opacity:.22;line-height:1;transform:rotate(8deg);pointer-events:none;}
+    .big-frame .frame-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:1;gap:8px;}
+    .big-frame .frame-tag{font-size:11px;background:rgba(255,255,255,.28);padding:3px 10px;border-radius:9px;font-weight:600;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+    .big-frame .frame-tag i{font-size:13px;}
+    .big-frame .frame-count{font-size:10.5px;opacity:.92;}
+    .big-frame .frame-title{font-size:14px;font-weight:700;margin-bottom:10px;position:relative;z-index:1;padding-right:55px;}
+    .frame-preorder{background:linear-gradient(135deg,var(--pre-soft) 0%,var(--pre-soft-2) 100%);}
+    .frame-order{background:linear-gradient(135deg,var(--ord-soft) 0%,var(--ord-soft-2) 100%);}
+    .frame-ship{background:linear-gradient(135deg,var(--ship-soft) 0%,var(--ship-soft-2) 100%);}
+    .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
+
+    /* 訂單框統計 cell */
+    .order-stats-inline{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
+    .order-stat-cell{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:7px 4px;text-align:center;}
+    .order-stat-cell.alert{background:rgba(252,211,77,.35);}
+    .order-stat-cell .n{font-size:16px;font-weight:700;line-height:1;}
+    .order-stat-cell .l{font-size:9.5px;opacity:.92;margin-top:3px;}
+    .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;}
+
+    /* 出貨框內容 */
+    .ship-info-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
+    .ship-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:7px 9px;}
+    .ship-cell .lbl{font-size:9.5px;opacity:.92;}
+    .ship-cell .val{font-size:15px;font-weight:700;margin-top:1px;}
+    .ship-series-list{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:10.5px;line-height:1.8;margin-bottom:9px;position:relative;z-index:1;}
+    .ship-series-list .item{display:flex;justify-content:space-between;gap:8px;}
+    .ship-series-list .badge-tw{font-size:9px;background:rgba(255,255,255,.3);padding:1px 6px;border-radius:4px;flex-shrink:0;}
+    .ship-cta-primary{display:block;background:#fff;color:var(--ship-soft-2);text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;margin-bottom:6px;border:none;width:100%;}
+    .ship-cta-secondary{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;border:1px solid rgba(255,255,255,.35);width:100%;}
+
+    /* 候補框統計 */
+    .wait-stats{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
+    .wait-stat{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:7px 5px;text-align:center;}
+    .wait-stat.alert{background:rgba(255,255,255,.35);}
+    .wait-stat .n{font-size:16px;font-weight:700;line-height:1;}
+    .wait-stat .l{font-size:9.5px;opacity:.92;margin-top:3px;}
+    .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
+
+    /* 尚未出貨列表（按系列分組）*/
+    .unship-page-section{background:#fff;border-radius:12px;padding:12px;margin-top:7px;}
+    .unship-page-title{font-size:13px;font-weight:700;color:var(--brand-brown);margin-bottom:11px;display:flex;align-items:center;gap:5px;}
+    .unship-page-title .count{font-size:11px;background:#f5f3ef;color:var(--brand-brown);padding:1px 8px;border-radius:8px;font-weight:600;}
+    .unship-group{margin-bottom:9px;}
+    .unship-group:last-child{margin-bottom:0;}
+    .unship-group-head{display:flex;align-items:center;gap:6px;padding:6px 9px;background:#faf5f0;border-left:3px solid var(--brand-brown);border-radius:5px;margin-bottom:5px;}
+    .unship-group-name{font-size:11.5px;font-weight:700;color:var(--brand-brown);}
+    .unship-group-count{font-size:10px;color:#888;margin-left:auto;}
+    .unship-row-item{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;font-size:11px;color:#555;border-bottom:1px dashed #f0ebe5;}
+    .unship-row-item:last-child{border-bottom:none;}
+    .unship-row-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;}
+    .unship-row-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;white-space:nowrap;}
+    .unship-row-tag.delay{background:#fee2e2;color:#991b1b;}
+    .unship-row-tag.wait{background:#fef3c7;color:#92400e;}
+
+    /* 預購框「+ 新增品項」改用卡內展開（補強 modal 已存在的 fallback）*/
+    .po-add-inline-box{background:#fffbf2;border:1.5px dashed var(--brand-brown);border-radius:9px;padding:10px;margin-top:5px;}
+    .po-add-inline-title{font-size:12px;font-weight:700;color:var(--brand-brown);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+    .po-add-inline-close{font-size:14px;color:#888;cursor:pointer;background:none;border:none;padding:0;}
+
+    /* 第一頁專屬內距：viewport 內每頁加 padding */
+    .swipe-page-inner{padding:12px 14px 90px;}
+
+    /* 隱藏舊底部 nav（但保留容器以防 JS 引用，把 display:none） */
+    .bottom-nav{display:none!important;}
+
+    /* admin search wrap 縮小 */
+    body{padding-bottom:20px;}
   </style>
 </head>
 <body>
@@ -265,21 +371,105 @@
     </div>
     <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
     <div class="container pt-4">
-      <div class="text-center mb-4"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5><p class="small mt-2" style="color:#888;">歡迎來到您的專屬空間</p></div>
-      <a href="https://lin.ee/mty4uxjS" target="_blank" class="btn-contact-line mb-3"><i class="bi bi-chat-dots-fill me-1"></i> 聯絡我們 (官方 LINE)</a>
+      <div class="text-center mb-3"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5></div>
+      <!-- 🆕 頂部 4 個導航（開團/現貨/規則/客服）-->
+      <div class="top-nav-row" style="padding:0 6px 14px;">
+        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('promos')"><span class="tni-ic">🔥</span><span class="tni-l">開團</span></button>
+        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('instock')"><span class="tni-ic">🛍️</span><span class="tni-l">現貨</span></button>
+        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('rules')"><span class="tni-ic">📝</span><span class="tni-l">規則</span></button>
+        <button class="top-nav-item cs" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="openLineContact()"><span class="tni-ic">💬</span><span class="tni-l">客服</span></button>
+      </div>
       <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
       <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
         <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
         <div class="input-group mb-2 shadow-sm" style="border-radius:10px;overflow:hidden;"><select id="adminSearchType" class="form-select bg-light fw-bold" style="max-width:130px;border:1px solid var(--brand-brown);color:#555;"><option value="name">社群名稱</option><option value="phone">手機號碼</option><option value="email">Email</option></select><input type="text" id="adminSearchKeyword" class="form-control fw-bold" style="border:1px solid var(--brand-brown);" placeholder="請輸入關鍵字..."></div>
         <button class="btn-brand mt-2" onclick="executeAdminSearch()"><i class="bi bi-file-earmark-text me-1"></i> 調閱客人的單</button>
       </div></div>
-
-      <div id="pageOrders" class="page-content active"><div id="preorderCardsContainer"></div><div id="regularOrdersContainer"></div></div>
-      <div id="pageWaitlist" class="page-content"><div id="waitlistContainer"></div></div>
-      <div id="pagePromos" class="page-content"></div>
-      <div id="pageInstock" class="page-content"></div>
-      <div id="pageRules" class="page-content"></div>
     </div>
+
+    <!-- 🆕 三頁滑動容器 -->
+    <div class="swipe-wrap" style="max-width:600px;margin:0 auto;">
+      <div class="page-tabs">
+        <button class="page-tab active" id="pageTab0" onclick="switchPageTab(0)"><span class="pt-l"><i class="bi bi-cart3" style="color:var(--pre-soft-2);"></i> 預購 / 訂單</span></button>
+        <button class="page-tab" id="pageTab1" onclick="switchPageTab(1)"><span class="pt-l"><i class="bi bi-truck" style="color:var(--ship-soft-2);"></i> 出貨</span></button>
+        <button class="page-tab" id="pageTab2" onclick="switchPageTab(2)"><span class="pt-l"><i class="bi bi-hourglass-split" style="color:var(--wait-soft-2);"></i> 候補</span></button>
+      </div>
+      <div class="swipe-dots">
+        <div class="swipe-dot active" id="swipeDot0"></div>
+        <div class="swipe-dot" id="swipeDot1"></div>
+        <div class="swipe-dot" id="swipeDot2"></div>
+      </div>
+      <div class="swipe-viewport" id="swipeViewport">
+        <!-- 頁 1：預購 + 訂單 -->
+        <div class="swipe-page" id="swipePage0">
+          <div class="swipe-page-inner">
+            <!-- 預購紫框 -->
+            <div id="preFrameWrap" class="big-frame frame-preorder" style="display:none;">
+              <div class="watermark"><i class="bi bi-cart3"></i></div>
+              <div class="frame-head">
+                <span class="frame-tag"><i class="bi bi-cart3"></i> 我的預購</span>
+                <span class="frame-count" id="preFrameCount"></span>
+              </div>
+              <div class="frame-title" id="preFrameTitle"></div>
+              <div id="preorderCardsContainer"></div>
+            </div>
+            <!-- 訂單藍框 -->
+            <div id="ordFrameWrap" class="big-frame frame-order" style="display:none;">
+              <div class="watermark"><i class="bi bi-box-seam"></i></div>
+              <div class="frame-head">
+                <span class="frame-tag"><i class="bi bi-box-seam"></i> 我的訂單</span>
+                <span class="frame-count" id="ordFrameCount"></span>
+              </div>
+              <div class="frame-title" id="ordFrameTitle"></div>
+              <div class="order-stats-inline" id="ordStatsRow"></div>
+            </div>
+            <!-- 訂單卡列表（沿用現有 renderOrders 輸出）-->
+            <div id="regularOrdersContainer"></div>
+          </div>
+        </div>
+        <!-- 頁 2：出貨 -->
+        <div class="swipe-page" id="swipePage1">
+          <div class="swipe-page-inner">
+            <div id="shipFrameWrap" class="big-frame frame-ship" style="display:none;">
+              <div class="watermark"><i class="bi bi-truck"></i></div>
+              <div class="frame-head">
+                <span class="frame-tag"><i class="bi bi-truck"></i> 近期將出貨</span>
+                <span class="frame-count" id="shipFrameCount"></span>
+              </div>
+              <div class="ship-info-row" id="shipInfoRow"></div>
+              <div class="ship-series-list" id="shipSeriesList"></div>
+              <button class="ship-cta-primary" onclick="openShipMenuCheckout()"><i class="bi bi-cart-check"></i> 前往賣貨便下單</button>
+              <button class="ship-cta-secondary" onclick="toggleShipDetail()"><i class="bi bi-list-ul"></i> 查看出貨詳情</button>
+            </div>
+            <div id="unshipListSection"></div>
+            <div id="shipEmpty" style="display:none;text-align:center;padding:40px 16px;color:#888;font-size:13px;font-weight:600;background:#fff;border-radius:12px;">🚚 目前沒有近期出貨資訊</div>
+          </div>
+        </div>
+        <!-- 頁 3：候補 -->
+        <div class="swipe-page" id="swipePage2">
+          <div class="swipe-page-inner">
+            <div id="waitlistContainer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 隱藏舊 page-content（保留容器以保留 JS 參考相容性，但不顯示） -->
+    <div id="pageOrders" class="page-content active" style="display:none !important;"></div>
+    <div id="pageWaitlist" class="page-content" style="display:none !important;"></div>
+    <div id="pagePromos" class="page-content" style="display:none !important;"></div>
+    <div id="pageInstock" class="page-content" style="display:none !important;"></div>
+    <div id="pageRules" class="page-content" style="display:none !important;"></div>
+
+    <!-- 🆕 子畫面 overlay（開團/現貨/規則）-->
+    <div id="subOverlay" style="display:none;position:fixed;inset:0;background:var(--brand-bg);z-index:1500;overflow-y:auto;">
+      <div style="background:linear-gradient(135deg,#795238,#5e3f2b);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
+        <button onclick="closeSubOverlay()" style="background:rgba(255,255,255,.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;">‹</button>
+        <h5 class="fw-bold m-0" id="subOverlayTitle" style="letter-spacing:1px;"></h5>
+      </div>
+      <div class="container py-4" id="subOverlayBody"></div>
+    </div>
+
     <nav class="bottom-nav">
       <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this)" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
@@ -310,7 +500,62 @@
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
     function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
-    window.switchBottomTab=function(pid,btn){document.querySelectorAll('.page-content').forEach(p=>p.classList.remove('active'));let t=document.getElementById(pid);if(t)t.classList.add('active');document.querySelectorAll('.bottom-nav-item').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(pid==='pageWaitlist')loadWaitlistData();};
+    // 舊 switchBottomTab 改為 no-op（保留以防其他地方呼叫不報錯）
+    window.switchBottomTab=function(pid,btn){if(pid==='pageWaitlist'){switchPageTab(2);loadWaitlistData();}else if(pid==='pageOrders'){switchPageTab(0);}};
+
+    // 🆕 三頁滑動切換
+    window.switchPageTab=function(idx){
+      const vp=document.getElementById('swipeViewport');
+      if(!vp)return;
+      const pages=vp.querySelectorAll('.swipe-page');
+      if(!pages[idx])return;
+      vp.scrollTo({left:pages[idx].offsetLeft,behavior:'smooth'});
+      updatePageIndicator(idx);
+      // 切到候補時觸發載入（沿用現有 loadWaitlistData）
+      if(idx===2)loadWaitlistData();
+    };
+    function updatePageIndicator(idx){
+      for(let i=0;i<3;i++){
+        const tab=document.getElementById('pageTab'+i),dot=document.getElementById('swipeDot'+i);
+        if(tab)tab.classList.toggle('active',i===idx);
+        if(dot)dot.classList.toggle('active',i===idx);
+      }
+    }
+    // 監聽滾動同步 indicator
+    document.addEventListener('DOMContentLoaded',()=>{
+      const vp=document.getElementById('swipeViewport');
+      if(!vp)return;
+      let st;
+      vp.addEventListener('scroll',()=>{
+        clearTimeout(st);
+        st=setTimeout(()=>{
+          const idx=Math.round(vp.scrollLeft/vp.clientWidth);
+          updatePageIndicator(idx);
+          if(idx===2)loadWaitlistData();
+        },80);
+      });
+    });
+
+    // 🆕 子畫面 overlay（開團/現貨/規則）
+    window.showSubOverlay=function(type){
+      const ov=document.getElementById('subOverlay'),tt=document.getElementById('subOverlayTitle'),bd=document.getElementById('subOverlayBody');
+      if(!ov)return;
+      const src=document.getElementById('page'+(type==='promos'?'Promos':type==='instock'?'Instock':'Rules'));
+      const titleMap={promos:'🔥 最新開團',instock:'🛍️ 現貨賣場',rules:'📝 服務規則'};
+      tt.innerText=titleMap[type]||'';
+      bd.innerHTML=src?src.innerHTML:'';
+      ov.style.display='block';
+      document.body.style.overflow='hidden';
+    };
+    window.closeSubOverlay=function(){
+      const ov=document.getElementById('subOverlay');
+      if(ov)ov.style.display='none';
+      document.body.style.overflow='';
+    };
+    window.openLineContact=function(){
+      try{liff.openWindow({url:'https://lin.ee/mty4uxjS',external:false});}
+      catch(e){window.open('https://lin.ee/mty4uxjS','_blank');}
+    };
 
     // ===== LIFF =====
     window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
@@ -319,7 +564,7 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     // ===== 管理員清除 Cache =====
@@ -392,28 +637,22 @@
         }
       }catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
     }
-    // 🆕 合併卡 bulk 改五碼
+    // 🆕 合併卡 bulk 改五碼（前端不顯示「合併」字樣，後端仍同步至所有同系列未匯款單）
     async function promptEditLast5Bulk(brand, series, cur, mergedCount){
       if(event)event.stopPropagation();
-      const confirmMsg = `此筆訂單由 ${mergedCount} 張原始單合併\n修改後將套用至所有「未完成匯款」的單\n（已完成匯款的單不受影響）\n\n確定要修改嗎？`;
-      if(!confirm(confirmMsg)) return;
       let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
       if(v===null)return;
       v=v.trim();
       if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
-      showLoaderModal('更新匯款資訊中', `正在同步至 ${mergedCount} 筆原始訂單`);
+      showLoaderModal('更新匯款資訊中', '請稍候，不要關閉視窗');
       try{
         const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
         if(d.status==="SUCCESS"){
           optimisticUpdateLast5OnDom(v);
-          // 🆕 副標帶上實際更新數量，讓客人在重新載入過程中就知道結果
-          let subMsg = `已更新 ${d.updatedCount} 筆訂單`;
-          if(d.skippedCount && d.skippedCount > 0) subMsg += `（${d.skippedCount} 筆已完成匯款的單未變更）`;
-          showLoaderModal('更新成功，重新載入中', subMsg);
+          showLoaderModal('更新成功，重新載入中', '請稍候，不要關閉視窗');
           await checkMemberStatus();
           hideLoaderModal();
-          // 不再 alert：副標已經顯示更新筆數，再彈 alert 是冗餘
         } else {
           hideLoaderModal();
           alert("失敗："+d.message);
@@ -449,9 +688,9 @@
     // ===== 正式訂單渲染 =====
     function renderOrders(orders,promos,gp){
       const oc=document.getElementById('regularOrdersContainer');
-      let tt=`<h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-box-seam me-2"></i>您的訂單紀錄</h6>`;
-      if(window.lastAdminSearchText)tt=`<h6 class="fw-bold mb-3 ms-1" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>`;
-      if(!orders||!orders.length){oc.innerHTML=`<div class="text-start">${tt}<div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">📦 目前沒有訂單</h6></div></div>`;}
+      // 一般客人不再顯示「您的訂單紀錄」標題（已移至訂單藍框內），但 admin 搜尋結果仍保留標題
+      let tt = window.lastAdminSearchText ? `<h6 class="fw-bold mb-3 ms-1 mt-3" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>` : '';
+      if(!orders||!orders.length){oc.innerHTML=`<div class="text-start">${tt}<div class="p-4 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;margin-top:10px;"><h6 class="fw-bold m-0" style="color:#888;">📦 目前沒有訂單</h6></div></div>`;}
       else{
         let cards = orders.map((o, idx) => {
           const ci = `oc-${idx}`, pi = `pc-${idx}`;
@@ -635,7 +874,7 @@
           // === 銀行資訊區 ===
           let bh = '';
           if (ip) {
-            const nn = o.personalNote ? `<div class="done-note"><i class="bi bi-info-circle me-1"></i> 備註：${escHTML(o.personalNote)}</div>` : '';
+            const nn = o.personalNote ? `<div class="done-note">${escHTML(o.personalNote)}</div>` : '';
             bh = `<div class="bank-info text-center shadow-sm"><div class="fw-bold fs-5" style="color:#436b46;"><i class="bi bi-check-circle-fill me-2"></i>已完成匯款對帳</div>${nn}</div>`;
           } else if (o.groupBankInfo) {
             const dl = o.groupDeadline ? `<span class="bank-deadline">匯款期限：${escHTML(o.groupDeadline)}</span>` : '';
@@ -651,6 +890,128 @@
       const ic=document.getElementById('pageInstock');let ia=gp.instock;ic.innerHTML=ia&&ia.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6>${ia.map(s=>`<div style="background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;padding:15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left;"><div style="flex:1;min-width:0;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:${s.content?'6px':'0'};"><i class="bi bi-shop me-2"></i>${escHTML(s.title||'現貨賣場')}</h6>${s.content?`<div class="text-muted small" style="line-height:1.5;white-space:pre-wrap;">${escHTML(s.content)}</div>`:''}</div>${s.link?`<button style="background:var(--brand-brown);color:#fff;border:none;padding:10px 16px;font-size:14px;border-radius:8px;white-space:nowrap;font-weight:bold;cursor:pointer;" onclick="window.open('${s.link}','_blank')">👉 前往逛逛</button>`:''}</div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">尚未開放</h6></div></div>`;
       document.getElementById('pageRules').innerHTML=`<div class="text-start"><div class="card-order p-4 shadow-sm"><h6 class="fw-bold mb-3" style="color:var(--brand-charcoal);"><i class="bi bi-book me-2"></i>代購與服務規則</h6><div class="text-muted small" style="line-height:1.8;white-space:pre-wrap;">${escHTML(gp.rules.content||'尚無規則。')}</div></div></div>`;
     }
+
+    // =============================================
+    // 🆕 主頁 4 框統計 / 出貨頁渲染
+    // =============================================
+    function renderHomeFrames(orders, preorderData, shipData){
+      // ---- 預購框 ----
+      const preList = (preorderData && (preorderData.mergedPreorders !== undefined)) ? (preorderData.mergedPreorders || []) : (preorderData && preorderData.preorders || []);
+      const preW = document.getElementById('preFrameWrap');
+      if(preW){
+        if(preList.length > 0){
+          preW.style.display = 'block';
+          // 需關注數：EDITING / SWEEP 狀態
+          const needAttention = preList.filter(p => {
+            const s = (p.stage || '').toUpperCase();
+            return s === 'EDITING' || s === 'SWEEP';
+          }).length;
+          document.getElementById('preFrameCount').innerText = `${preList.length} 張`;
+          document.getElementById('preFrameTitle').innerText = needAttention > 0 ? `${needAttention} 張預購需要關注` : `${preList.length} 張預購進行中`;
+        } else {
+          preW.style.display = 'none';
+        }
+      }
+      // ---- 訂單框（統計）----
+      const ordW = document.getElementById('ordFrameWrap');
+      if(ordW){
+        const total = orders.length;
+        if(total > 0){
+          ordW.style.display = 'block';
+          let unpaid = 0, shipping = 0, done = 0;
+          orders.forEach(o => {
+            const ps = o.payStatus || '';
+            const ip = ps.includes('完成') || ps.includes('✅') || ps.includes('貨付');
+            if(!ip) unpaid++;
+            else {
+              if(o.progress && o.progress.allShipped) done++;
+              else shipping++;
+            }
+          });
+          document.getElementById('ordFrameCount').innerText = `${total} 筆`;
+          document.getElementById('ordFrameTitle').innerText = unpaid > 0 ? `${unpaid} 張訂單尚未匯款` : (shipping > 0 ? `${shipping} 張訂單待出貨` : `已完成 ${done} 張訂單`);
+          document.getElementById('ordStatsRow').innerHTML = `
+            <div class="order-stat-cell ${unpaid>0?'alert':''}"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
+            <div class="order-stat-cell"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
+            <div class="order-stat-cell"><div class="n">${done}</div><div class="l">已完成</div></div>
+          `;
+        } else {
+          ordW.style.display = 'none';
+        }
+      }
+      // ---- 出貨頁 ----
+      renderShipPage(shipData);
+    }
+
+    function renderShipPage(shipData){
+      const wrap = document.getElementById('shipFrameWrap');
+      const empty = document.getElementById('shipEmpty');
+      const unship = document.getElementById('unshipListSection');
+      if(!wrap) return;
+      // 後端尚未提供 shipData：先全部隱藏，留 empty
+      if(!shipData || (!shipData.upcoming && !shipData.unshipped)){
+        wrap.style.display = 'none';
+        if(empty) empty.style.display = 'block';
+        if(unship) unship.innerHTML = '';
+        return;
+      }
+      const up = shipData.upcoming || {};
+      const series = Array.isArray(up.series) ? up.series : [];
+      const totalItems = up.totalItems || 0;
+      const totalAmount = up.totalAmount || 0;
+      if(series.length > 0){
+        wrap.style.display = 'block';
+        if(empty) empty.style.display = 'none';
+        document.getElementById('shipFrameCount').innerText = `${series.length} 系列 · ${totalItems} 件`;
+        document.getElementById('shipInfoRow').innerHTML = `
+          <div class="ship-cell"><div class="lbl">待出件數</div><div class="val">${totalItems} 件</div></div>
+          <div class="ship-cell"><div class="lbl">賣貨便總額</div><div class="val">$${totalAmount}</div></div>
+        `;
+        document.getElementById('shipSeriesList').innerHTML = series.map(s => `
+          <div class="item"><span>• ${escHTML(s.name||'')} · ${s.count||0} 件</span>${s.arrived?'<span class="badge-tw">已到台</span>':'<span class="badge-tw" style="background:rgba(255,255,255,.45);">即將抵台</span>'}</div>
+        `).join('');
+      } else {
+        wrap.style.display = 'none';
+        if(empty) empty.style.display = 'block';
+      }
+      // 尚未出貨列表（按系列分組）
+      const unshipGroups = Array.isArray(shipData.unshipped) ? shipData.unshipped : [];
+      let totalUnship = 0;
+      unshipGroups.forEach(g => { totalUnship += (g.items||[]).length; });
+      if(unshipGroups.length > 0 && totalUnship > 0){
+        unship.innerHTML = `
+          <div class="unship-page-section">
+            <div class="unship-page-title"><i class="bi bi-hourglass-split"></i> 尚未出貨列表 <span class="count">共 ${totalUnship} 項</span></div>
+            ${unshipGroups.map(g => `
+              <div class="unship-group">
+                <div class="unship-group-head">
+                  <span class="unship-group-name">${escHTML(g.seriesName||'')}</span>
+                  <span class="unship-group-count">${(g.items||[]).length} 項</span>
+                </div>
+                ${(g.items||[]).map(it => `
+                  <div class="unship-row-item">
+                    <span class="unship-row-name">${escHTML(it.name||'')} ×${it.qty||1}</span>
+                    <span class="unship-row-tag ${it.status==='delay'?'delay':'wait'}">${it.status==='delay'?'延後出貨':'等待出貨'}</span>
+                  </div>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else {
+        unship.innerHTML = '';
+      }
+    }
+
+    window.toggleShipDetail=function(){
+      // 點「查看出貨詳情」滾動到尚未出貨列表
+      const el=document.getElementById('unshipListSection');
+      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    window.openShipMenuCheckout=function(){
+      // 前往賣貨便下單（後端待提供 URL，先 alert 引導）
+      alert('請依小幫手 LINE 訊息中的賣貨便連結下單，或洽客服。');
+    };
 
     // =============================================
     // 🎯 預購卡片
