@@ -281,18 +281,18 @@
     .frame-ship{background:linear-gradient(135deg,var(--ship-soft) 0%,var(--ship-soft-2) 100%);}
     .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
 
-    /* 訂單框統計 cell（box-sizing + box-shadow inset 避免 alert 框因 border 變寬）*/
-    .order-stats-inline{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;}
-    .order-stat-cell{flex:1 1 0;min-width:0;background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;}
-    .order-stat-cell.alert{background:rgba(255,235,180,.32);box-shadow:inset 0 0 0 1.5px rgba(255,235,180,.6);}
+    /* 訂單框統計 cell（避免任何會影響盒模型的屬性）*/
+    .order-stats-inline{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;width:100%;}
+    .order-stat-cell{flex:1 1 0;width:0;min-width:0;background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;}
+    .order-stat-cell.alert{background:rgba(255,235,180,.42);}
     .order-stat-cell .n{font-size:20px;font-weight:800;line-height:1;}
     .order-stat-cell .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:10px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;box-sizing:border-box;}
 
-    /* 候補框統計：跟訂單框統一樣式 */
-    .wait-stats{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;}
-    .wait-stat{flex:1 1 0;min-width:0;background:rgba(255,255,255,.2);border-radius:8px;padding:11px 5px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;}
-    .wait-stat.alert{background:rgba(255,235,180,.32);box-shadow:inset 0 0 0 1.5px rgba(255,235,180,.6);}
+    /* 候補框統計 */
+    .wait-stats{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;width:100%;}
+    .wait-stat{flex:1 1 0;width:0;min-width:0;background:rgba(255,255,255,.2);border-radius:8px;padding:11px 5px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;}
+    .wait-stat.alert{background:rgba(255,235,180,.42);}
     .wait-stat .n{font-size:20px;font-weight:800;line-height:1;}
     .wait-stat .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
@@ -574,7 +574,8 @@
       document.body.style.overflow='';
     };
     window.openLineContact=function(){
-      const url='https://lin.ee/mty4uxjS';
+      // 使用已驗證可用的官方 LINE 連結（與 friendshipModal 的「加入官方 LINE」按鈕同連結）
+      const url='https://lin.ee/mty4uxj';
       try{
         if(window.liff && liff.isInClient && liff.isInClient()){
           liff.openWindow({url:url,external:true});
@@ -629,7 +630,63 @@
     }
     // ===== 管理員搜尋 =====
     let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
-    async function executeAdminSearch(){const ty=document.getElementById('adminSearchType').value,kw=document.getElementById('adminSearchKeyword').value.trim();if(!kw)return alert("請輸入關鍵字！");const c=document.getElementById('regularOrdersContainer');c.innerHTML=`<div class="loader-overlay"><div class="spinner-border mb-3"></div><div id="carouselText" class="text-carousel">🔍 調閱中...</div></div>`;document.getElementById('preorderCardsContainer').innerHTML='';switchBottomTab('pageOrders',document.querySelector('.bottom-nav-item'));startFetchAnim("尋找客人中...");try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminSearch',lineUid:currentLineUid,searchType:ty,keyword:kw})});const d=await r.json();clearInterval(fetchInterval);if(d.status==="SUCCESS"){window.lastAdminSearchText=`【${kw}】的訂單`;renderOrders(d.data.orders,d.data.promos,d.data.globalPages);}else c.innerHTML=`<div class="card card-custom text-center p-4"><h6 class="fw-bold text-danger mb-2">❌ 查詢失敗</h6><p class="small fw-bold mb-0" style="white-space:pre-wrap;">${d.message}</p></div>`;}catch(e){clearInterval(fetchInterval);c.innerHTML=`<div class="alert alert-danger text-center">網路錯誤</div>`;}}
+    // 🆕 完整管理員模式：用 adminViewCustomer 取得目標客人完整資料，以客人視角全頁渲染
+    async function executeAdminSearch(){
+      const ty=document.getElementById('adminSearchType').value;
+      const kw=document.getElementById('adminSearchKeyword').value.trim();
+      if(!kw)return alert("請輸入關鍵字！");
+      showLoaderModal('調閱客人資料中', '請稍候...');
+      try{
+        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminViewCustomer',lineUid:currentLineUid,searchType:ty,keyword:kw})});
+        const d=await r.json();
+        hideLoaderModal();
+        if(d.status==="BOUND"){
+          // 儲存原本自己的 uid，以便結束模式時回復
+          if(!window._adminOriginalUid)window._adminOriginalUid=currentLineUid;
+          window._adminViewMode=true;
+          window._adminViewCustomer=d.viewingCustomer||{name:kw};
+          window.lastAdminSearchText=`【${d.viewingCustomer?d.viewingCustomer.name:kw}】的訂單`;
+          // 把目標客人 uid 設為當前操作對象（讓改五碼/取消候補等動作打到該客人）
+          // 注意：這些動作後端會檢查 admin 權限，可能需要後端額外配合
+          // 完整客人視角渲染
+          document.getElementById('welcomeMsg').innerText=`【管理員檢視】${d.viewingCustomer?d.viewingCustomer.name:kw}`;
+          renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});
+          poData=d.preorderData||{preorders:[],cancelCount:0};
+          pendingEdits={};pendingSweep={};
+          renderPoCards();
+          wlInitialData=d.waitlistData||{groups:[],cancelled:[]};
+          renderWL(wlInitialData);
+          renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);
+          // 顯示「結束模式」按鈕
+          showAdminViewExitBtn();
+          // 滾到頂部
+          window.scrollTo({top:0,behavior:'smooth'});
+        } else {
+          alert(d.message||"查詢失敗");
+        }
+      } catch(e){hideLoaderModal();alert("網路錯誤："+e.message);}
+    }
+    window.exitAdminViewMode=async function(){
+      if(!confirm('結束管理員檢視模式，回到您自己的資料？'))return;
+      window._adminViewMode=false;
+      window._adminViewCustomer=null;
+      window.lastAdminSearchText='';
+      const btn=document.getElementById('adminViewExitBtn');
+      if(btn)btn.remove();
+      showLoaderModal('返回中', '請稍候...');
+      await checkMemberStatus();
+      hideLoaderModal();
+    };
+    function showAdminViewExitBtn(){
+      let btn=document.getElementById('adminViewExitBtn');
+      if(btn)return;
+      btn=document.createElement('div');
+      btn.id='adminViewExitBtn';
+      btn.style.cssText='position:fixed;top:10px;right:10px;z-index:2500;background:#dc3545;color:#fff;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;gap:5px;';
+      btn.innerHTML='<i class="bi bi-x-circle"></i> 結束檢視模式';
+      btn.onclick=exitAdminViewMode;
+      document.body.appendChild(btn);
+    }
 
     // ===== 後五碼修改 =====
     // 🆕 全螢幕 modal loader 控制
