@@ -227,7 +227,21 @@
       --ship-soft:#7dc89e; --ship-soft-2:#5fab7e;
       --wait-soft:#e4b878; --wait-soft-2:#c79753;
     }
-    /* 頂部 Header 4 個導航 */
+    /* 整合 header 棕色漸層條（welcome + 4 個 SVG 導航）*/
+    .home-header-bar{background:linear-gradient(135deg,#8a6d52,#5a4738);padding:14px 14px 12px;color:#fff;text-align:left;}
+    .home-header-bar .hhb-greet{font-size:12px;opacity:.85;font-weight:600;}
+    .home-header-bar .hhb-name{font-size:18px;font-weight:700;margin-top:2px;}
+    .home-header-bar .hhb-nav-row{display:flex;gap:6px;margin-top:12px;}
+    .home-header-bar .hhb-nav-item{flex:1;background:rgba(255,255,255,.18);border-radius:10px;padding:9px 4px;text-align:center;cursor:pointer;border:none;color:#fff;-webkit-tap-highlight-color:transparent;transition:background .15s;}
+    .home-header-bar .hhb-nav-item:active{background:rgba(255,255,255,.32);}
+    .home-header-bar .hhb-nav-item .hhb-ic{font-size:20px;line-height:1;display:block;}
+    .home-header-bar .hhb-nav-item .hhb-l{font-size:11px;opacity:.95;margin-top:4px;font-weight:600;}
+    .home-header-bar .hhb-nav-item.cs{background:rgba(252,211,77,.28);}
+    .home-header-bar .hhb-nav-item.cs .hhb-ic{color:#fef08a;}
+    /* 隱藏原舊 header（被新 header-bar 取代）*/
+    #homeArea > .header-img{display:none;}
+
+    /* 頂部 Header 4 個導航（舊樣式保留以防殘留呼叫） */
     .top-nav-row{display:flex;gap:6px;padding:11px 14px 0;}
     .top-nav-item{flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;border:none;color:#fff;-webkit-tap-highlight-color:transparent;}
     .top-nav-item:active{background:rgba(255,255,255,.28);}
@@ -268,12 +282,20 @@
     .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
 
     /* 訂單框統計 cell */
-    .order-stats-inline{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
-    .order-stat-cell{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:7px 4px;text-align:center;}
-    .order-stat-cell.alert{background:rgba(252,211,77,.35);}
-    .order-stat-cell .n{font-size:16px;font-weight:700;line-height:1;}
-    .order-stat-cell .l{font-size:9.5px;opacity:.92;margin-top:3px;}
-    .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;}
+    .order-stats-inline{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;}
+    .order-stat-cell{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:9px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:55px;border:1.5px solid transparent;}
+    .order-stat-cell.alert{background:rgba(255,235,180,.32);border-color:rgba(255,235,180,.55);}
+    .order-stat-cell .n{font-size:18px;font-weight:800;line-height:1;}
+    .order-stat-cell .l{font-size:10px;opacity:.92;margin-top:5px;font-weight:600;}
+    .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
+
+    /* 候補框統計：跟訂單框統一樣式 */
+    .wait-stats{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;align-items:stretch;}
+    .wait-stat{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:9px 5px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:55px;border:1.5px solid transparent;}
+    .wait-stat.alert{background:rgba(255,235,180,.32);border-color:rgba(255,235,180,.55);}
+    .wait-stat .n{font-size:18px;font-weight:800;line-height:1;}
+    .wait-stat .l{font-size:10px;opacity:.92;margin-top:5px;font-weight:600;}
+    .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
 
     /* 出貨框內容 */
     .ship-info-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
@@ -286,13 +308,8 @@
     .ship-cta-primary{display:block;background:#fff;color:var(--ship-soft-2);text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;margin-bottom:6px;border:none;width:100%;}
     .ship-cta-secondary{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;border:1px solid rgba(255,255,255,.35);width:100%;}
 
-    /* 候補框統計 */
-    .wait-stats{display:flex;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
-    .wait-stat{flex:1;background:rgba(255,255,255,.2);border-radius:8px;padding:7px 5px;text-align:center;}
-    .wait-stat.alert{background:rgba(255,255,255,.35);}
-    .wait-stat .n{font-size:16px;font-weight:700;line-height:1;}
-    .wait-stat .l{font-size:9.5px;opacity:.92;margin-top:3px;}
-    .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
+    /* 候補框舊統計樣式已合併到上方訂單框 cell，保留 wait-action */
+    .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
 
     /* 尚未出貨列表（按系列分組）*/
     .unship-page-section{background:#fff;border-radius:12px;padding:12px;margin-top:7px;}
@@ -369,16 +386,18 @@
         <span>清除前台 Cache</span>
       </button>
     </div>
-    <div class="header-img header-img-mini"><h4 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h4></div>
-    <div class="container pt-4">
-      <div class="text-center mb-3"><h5 class="fw-bold" id="welcomeMsg" style="color:var(--brand-charcoal);"></h5></div>
-      <!-- 🆕 頂部 4 個導航（開團/現貨/規則/客服）-->
-      <div class="top-nav-row" style="padding:0 6px 14px;">
-        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('promos')"><span class="tni-ic">🔥</span><span class="tni-l">開團</span></button>
-        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('instock')"><span class="tni-ic">🛍️</span><span class="tni-l">現貨</span></button>
-        <button class="top-nav-item" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="showSubOverlay('rules')"><span class="tni-ic">📝</span><span class="tni-l">規則</span></button>
-        <button class="top-nav-item cs" style="background:linear-gradient(135deg,#a96a3f,#795238);" onclick="openLineContact()"><span class="tni-ic">💬</span><span class="tni-l">客服</span></button>
+    <!-- 🆕 整合頭部 header（welcome + 4 個導航 SVG 圖示 in one gradient bar）-->
+    <div class="home-header-bar">
+      <div class="hhb-greet">嗨嗨～</div>
+      <div class="hhb-name" id="welcomeMsg"></div>
+      <div class="hhb-nav-row">
+        <button class="hhb-nav-item" onclick="showSubOverlay('promos')"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
+        <button class="hhb-nav-item" onclick="showSubOverlay('instock')"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
+        <button class="hhb-nav-item" onclick="showSubOverlay('rules')"><span class="hhb-ic"><i class="bi bi-journal-text"></i></span><span class="hhb-l">規則</span></button>
+        <button class="hhb-nav-item cs" onclick="openLineContact()"><span class="hhb-ic"><i class="bi bi-chat-dots"></i></span><span class="hhb-l">客服</span></button>
       </div>
+    </div>
+    <div class="container pt-3">
       <div id="adminMaintenanceAlert" style="display:none;max-width:600px;margin:0 auto;"><div class="alert alert-danger fw-bold text-center mb-3 shadow-sm" style="border-radius:12px;border:2px solid #dc3545;"><i class="bi bi-tools me-2"></i>🚨 目前系統為維修模式</div></div>
       <div id="adminArea" style="display:none;" class="mb-4"><div class="card card-custom p-4" style="border:2px solid var(--brand-brown);background:#fffaf5;">
         <h6 class="fw-bold mb-3" style="color:var(--brand-brown);"><i class="bi bi-search me-2"></i>查詢客戶訂單</h6>
@@ -422,9 +441,12 @@
               </div>
               <div class="frame-title" id="ordFrameTitle"></div>
               <div class="order-stats-inline" id="ordStatsRow"></div>
+              <button id="ordViewAllBtn" class="order-view-all" onclick="toggleOrderList()"><i class="bi bi-list-ul"></i> 查看完整訂單列表 ›</button>
             </div>
-            <!-- 訂單卡列表（沿用現有 renderOrders 輸出）-->
-            <div id="regularOrdersContainer"></div>
+            <!-- 訂單卡列表（預設折疊，點「查看完整訂單列表」展開）-->
+            <div id="orderListWrap" style="display:none;">
+              <div id="regularOrdersContainer"></div>
+            </div>
           </div>
         </div>
         <!-- 頁 2：出貨 -->
@@ -923,10 +945,8 @@
             const ps = o.payStatus || '';
             const ip = ps.includes('完成') || ps.includes('✅') || ps.includes('貨付');
             if(!ip) unpaid++;
-            else {
-              if(o.progress && o.progress.allShipped) done++;
-              else shipping++;
-            }
+            else if(o.allShipped) done++;
+            else shipping++;
           });
           document.getElementById('ordFrameCount').innerText = `${total} 筆`;
           document.getElementById('ordFrameTitle').innerText = unpaid > 0 ? `${unpaid} 張訂單尚未匯款` : (shipping > 0 ? `${shipping} 張訂單待出貨` : `已完成 ${done} 張訂單`);
@@ -935,8 +955,11 @@
             <div class="order-stat-cell"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
             <div class="order-stat-cell"><div class="n">${done}</div><div class="l">已完成</div></div>
           `;
+          // 渲染後處理「查看完整訂單列表」按鈕的有無
+          renderOrdViewAllBtn(total);
         } else {
           ordW.style.display = 'none';
+          renderOrdViewAllBtn(0);
         }
       }
       // ---- 出貨頁 ----
@@ -1012,6 +1035,31 @@
       // 前往賣貨便下單（後端待提供 URL，先 alert 引導）
       alert('請依小幫手 LINE 訊息中的賣貨便連結下單，或洽客服。');
     };
+    // 🆕 訂單列表展開/收合
+    window.toggleOrderList=function(){
+      const wrap=document.getElementById('orderListWrap'),btn=document.getElementById('ordViewAllBtn');
+      if(!wrap||!btn)return;
+      if(wrap.style.display==='none'){
+        wrap.style.display='block';
+        btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起訂單列表';
+        setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}),50);
+      } else {
+        wrap.style.display='none';
+        btn.innerHTML='<i class="bi bi-list-ul"></i> 查看完整訂單列表 ›';
+      }
+    };
+    function renderOrdViewAllBtn(total){
+      const btn=document.getElementById('ordViewAllBtn');
+      if(!btn)return;
+      btn.style.display = total>0 ? 'block' : 'none';
+      // 預設保持折疊；如已展開則維持
+      const wrap=document.getElementById('orderListWrap');
+      if(wrap && wrap.style.display==='block'){
+        btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起訂單列表';
+      } else {
+        btn.innerHTML='<i class="bi bi-list-ul"></i> 查看完整訂單列表 ›';
+      }
+    }
 
     // =============================================
     // 🎯 預購卡片
