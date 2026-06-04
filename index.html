@@ -1053,7 +1053,7 @@
           <div class="ship-cell"><div class="lbl">賣貨便總額</div><div class="val">$${totalAmount}</div></div>
         `;
         document.getElementById('shipSeriesList').innerHTML = series.map(s => `
-          <div class="item"><span>• ${escHTML(s.name||'')} · ${s.count||0} 件</span>${s.arrived?'<span class="badge-tw">已到台</span>':'<span class="badge-tw" style="background:rgba(255,255,255,.45);">即將抵台</span>'}</div>
+          <div class="item"><span>• ${escHTML(s.name||'')} · ${s.count||0} 件</span>${s.arrived?'<span class="badge-tw">已抵台</span>':'<span class="badge-tw" style="background:rgba(255,255,255,.45);">尚未抵台</span>'}</div>
         `).join('');
       } else {
         wrap.style.display = 'none';
@@ -1073,12 +1073,23 @@
                   <span class="unship-group-name">${escHTML(g.seriesName||'')}</span>
                   <span class="unship-group-count">${(g.items||[]).length} 項</span>
                 </div>
-                ${(g.items||[]).map(it => `
+                ${(g.items||[]).map(it => {
+                  let tagHtml = '';
+                  if(it.expectedDate){
+                    tagHtml = `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`;
+                  } else if(it.status==='delay'){
+                    tagHtml = `<span class="unship-row-tag delay">延後出貨</span>`;
+                  } else if(it.status==='arrived'){
+                    tagHtml = `<span class="unship-row-tag" style="background:#d1fae5;color:#065f46;">✅ 已抵台</span>`;
+                  } else {
+                    tagHtml = `<span class="unship-row-tag wait">⏳ 尚未抵台</span>`;
+                  }
+                  return `
                   <div class="unship-row-item">
                     <span class="unship-row-name">${escHTML(it.name||'')} ×${it.qty||1}</span>
-                    <span class="unship-row-tag ${it.status==='delay'?'delay':'wait'}">${it.status==='delay'?'延後出貨':'等待出貨'}</span>
-                  </div>
-                `).join('')}
+                    ${tagHtml}
+                  </div>`;
+                }).join('')}
               </div>
             `).join('')}
           </div>
