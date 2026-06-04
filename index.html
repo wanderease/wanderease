@@ -299,14 +299,18 @@
 
     /* 出貨框內容 */
     .ship-info-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
-    .ship-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:7px 9px;}
+    .ship-cell{background:rgba(255,255,255,.22);border-radius:8px;padding:7px 9px;}
     .ship-cell .lbl{font-size:9.5px;opacity:.92;}
     .ship-cell .val{font-size:15px;font-weight:700;margin-top:1px;}
-    .ship-series-list{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;font-size:10.5px;line-height:1.8;margin-bottom:9px;position:relative;z-index:1;}
-    .ship-series-list .item{display:flex;justify-content:space-between;gap:8px;}
-    .ship-series-list .badge-tw{font-size:9px;background:rgba(255,255,255,.3);padding:1px 6px;border-radius:4px;flex-shrink:0;}
-    .ship-cta-primary{display:block;background:#fff;color:var(--ship-soft-2);text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;margin-bottom:6px;border:none;width:100%;}
-    .ship-cta-secondary{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:8px;border-radius:8px;font-weight:700;font-size:12px;position:relative;z-index:1;cursor:pointer;border:1px solid rgba(255,255,255,.35);width:100%;}
+    /* 系列卡片：白底加深、文字用深綠，提升可讀性 */
+    .ship-series-card{background:rgba(255,255,255,.92);border-radius:8px;padding:8px 10px;margin-bottom:7px;position:relative;z-index:1;}
+    .ship-series-card .sc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
+    .ship-series-card .sc-name{font-size:12px;font-weight:700;color:#2f6b50;}
+    .ship-series-card .sc-count{font-size:9.5px;background:#d8f0e4;color:#1a5c3f;padding:1px 7px;border-radius:4px;flex-shrink:0;font-weight:700;}
+    .ship-series-card .sc-items{font-size:11px;line-height:1.75;color:#4a4a4a;}
+    .ship-series-card .sc-item-row{display:flex;justify-content:space-between;gap:8px;}
+    .ship-series-card .sc-item-tag{font-size:9px;padding:0 6px;border-radius:4px;flex-shrink:0;font-weight:600;}
+    .ship-cta-primary{display:block;background:#fff;color:var(--ship-soft-2);text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;position:relative;z-index:1;cursor:pointer;border:none;width:100%;}
 
     /* 候補框舊統計樣式已合併到上方訂單框 cell，保留 wait-action */
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
@@ -460,7 +464,6 @@
               <div class="ship-info-row" id="shipInfoRow"></div>
               <div class="ship-series-list" id="shipSeriesList"></div>
               <button class="ship-cta-primary" onclick="openShipMenuCheckout()"><i class="bi bi-cart-check"></i> 前往賣貨便下單</button>
-              <button class="ship-cta-secondary" onclick="toggleShipDetail()"><i class="bi bi-list-ul"></i> 查看出貨詳情</button>
             </div>
             <div id="unshipListSection"></div>
             <div id="shipEmpty" style="display:none;text-align:center;padding:40px 16px;color:#888;font-size:13px;font-weight:600;background:#fff;border-radius:12px;">🚚 目前沒有近期出貨資訊</div>
@@ -1033,6 +1036,7 @@
       const empty = document.getElementById('shipEmpty');
       const unship = document.getElementById('unshipListSection');
       if(!wrap) return;
+      window._shipMyshipUrl = (shipData && shipData.myshipUrl) ? shipData.myshipUrl : '';
       // 後端尚未提供 shipData：先全部隱藏，留 empty
       if(!shipData || (!shipData.upcoming && !shipData.unshipped)){
         wrap.style.display = 'none';
@@ -1052,9 +1056,19 @@
           <div class="ship-cell"><div class="lbl">待出件數</div><div class="val">${totalItems} 件</div></div>
           <div class="ship-cell"><div class="lbl">賣貨便總額</div><div class="val">$${totalAmount}</div></div>
         `;
-        document.getElementById('shipSeriesList').innerHTML = series.map(s => `
-          <div class="item"><span>• ${escHTML(s.name||'')} · ${s.count||0} 件</span>${s.arrived?'<span class="badge-tw">已抵台</span>':'<span class="badge-tw" style="background:rgba(255,255,255,.45);">尚未抵台</span>'}</div>
-        `).join('');
+        document.getElementById('shipSeriesList').innerHTML = series.map(s => {
+          const itemsHtml = (Array.isArray(s.items) ? s.items : []).map(it =>
+            `<div class="sc-item-row"><span>• ${escHTML(it.name||'')} ×${it.qty||1}</span></div>`
+          ).join('');
+          return `
+          <div class="ship-series-card">
+            <div class="sc-head">
+              <span class="sc-name">${escHTML(s.name||'')}</span>
+              <span class="sc-count">${s.count||0} 件</span>
+            </div>
+            <div class="sc-items">${itemsHtml}</div>
+          </div>`;
+        }).join('');
       } else {
         wrap.style.display = 'none';
         if(empty) empty.style.display = 'block';
@@ -1099,14 +1113,19 @@
       }
     }
 
-    window.toggleShipDetail=function(){
-      // 點「查看出貨詳情」滾動到尚未出貨列表
-      const el=document.getElementById('unshipListSection');
-      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-    };
     window.openShipMenuCheckout=function(){
-      // 前往賣貨便下單（後端待提供 URL，先 alert 引導）
-      alert('請依小幫手 LINE 訊息中的賣貨便連結下單，或洽客服。');
+      const url = window._shipMyshipUrl || '';
+      if(url){
+        try{
+          if(window.liff && liff.isInClient && liff.isInClient()){
+            liff.openWindow({url:url,external:true});
+          } else {
+            window.open(url,'_blank');
+          }
+        }catch(e){window.open(url,'_blank');}
+      } else {
+        alert('賣貨便連結尚未設定，請洽客服或稍候。');
+      }
     };
     // 🆕 訂單列表展開/收合
     window.toggleOrderList=function(){
