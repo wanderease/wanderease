@@ -1088,16 +1088,9 @@
                   <span class="unship-group-count">${(g.items||[]).length} 項</span>
                 </div>
                 ${(g.items||[]).map(it => {
-                  let tagHtml = '';
-                  if(it.expectedDate){
-                    tagHtml = `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`;
-                  } else if(it.status==='delay'){
-                    tagHtml = `<span class="unship-row-tag delay">延後出貨</span>`;
-                  } else if(it.status==='arrived'){
-                    tagHtml = `<span class="unship-row-tag" style="background:#d1fae5;color:#065f46;">✅ 已抵台</span>`;
-                  } else {
-                    tagHtml = `<span class="unship-row-tag wait">⏳ 尚未抵台</span>`;
-                  }
+                  const tagHtml = it.expectedDate
+                    ? `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`
+                    : '';
                   return `
                   <div class="unship-row-item">
                     <span class="unship-row-name">${escHTML(it.name||'')} ×${it.qty||1}</span>
