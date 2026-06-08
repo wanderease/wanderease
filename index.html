@@ -1892,6 +1892,7 @@
   .instk-info{background:#eef4ff;border-radius:10px;padding:11px;font-size:12px;color:#2c5aa0;line-height:1.7;margin-top:10px;}
   .instk-ok-icon{width:48px;height:48px;border-radius:50%;background:#e6f7ee;color:#1a9d63;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;}
   .instk-empty{text-align:center;color:#aaa;padding:50px 0;}
+  .instk-coming{text-align:center;padding:70px 20px;}
   .instk-orderstrip{margin:10px 12px 0;background:#fff7e6;border:1px solid #ffe2a8;border-radius:10px;overflow:hidden;}
   .instk-orderstrip-head{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:13px;font-weight:bold;color:#915b00;}
   .instk-orderstrip-body{padding:0 13px 11px;border-top:1px dashed #ffe2a8;margin-top:2px;padding-top:9px;}
@@ -1957,6 +1958,12 @@
     const sc=document.getElementById('instkScroll');
     sc.innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
     post('getInstockProducts').then(function(res){
+      if(res&&res.status==='COMING_SOON'){
+        document.getElementById('instkBrandTabs').innerHTML='';
+        document.getElementById('instkOrderStrip').innerHTML='';
+        sc.innerHTML='<div class="instk-coming"><div style="font-size:42px;">🛍️</div><div style="font-size:20px;font-weight:bold;color:#7a6a78;margin-top:14px;">Coming Soon</div><div style="font-size:14px;color:#999;margin-top:8px;">現貨購物功能即將開放<br>敬請期待 ✨</div></div>';
+        return;
+      }
       if(!res||res.status!=='SUCCESS'){sc.innerHTML='<div class="instk-empty">載入失敗：'+(res?esc(res.message):'無回應')+'</div>';return;}
       DATA=res.data;
       if(!DATA.groups||!DATA.groups.length){sc.innerHTML='<div class="instk-empty">目前沒有現貨商品<br><span style="font-size:12px;">敬請期待下次促銷</span></div>';document.getElementById('instkBrandTabs').innerHTML='';return;}
@@ -2203,6 +2210,8 @@
         instkLoad();instkCloseSheet();
       }else if(res&&res.status==='BUSY'){
         alert('結帳人潮眾多，請稍候 3 秒再送出一次');
+      }else if(res&&res.status==='COMING_SOON'){
+        alert('現貨購物功能即將開放，敬請期待 ✨');
       }else if(res&&res.status==='NO_CUSTOMER'){
         alert('查無綁定資料，請先完成 LINE 綁定');
       }else{
