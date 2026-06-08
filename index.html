@@ -2853,6 +2853,23 @@
 </div>
 
 <script>
+  // 共用：明細按品牌/系列分組渲染（摘要列、首頁卡、訂單sheet 共用）
+  function instkRenderItemsByBrand(items){
+    const byBS={};
+    (items||[]).forEach(function(it){
+      const k=(it.brand||'其他')+'\u0001'+(it.series||'');
+      if(!byBS[k])byBS[k]=[];
+      byBS[k].push(it);
+    });
+    return Object.keys(byBS).map(function(k){
+      const parts=k.split('\u0001');
+      const rows=byBS[k].map(function(it){
+        return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0 2px 8px;"><span>'+esc(it.name)+' <span style="color:#b59;">'+esc(it.size)+'\u00d7'+it.qty+'</span></span><span>NT$'+(it.price*it.qty).toLocaleString()+'</span></div>';
+      }).join('');
+      return '<div style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:bold;color:#7a6a78;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>'+rows+'</div>';
+    }).join('');
+  }
+
 (function(){
   let DATA=null;          // {groups, batch}
   let activeBrand=null;
@@ -2904,9 +2921,7 @@
       if(!res||res.status!=='SUCCESS'||!res.data.orders||!res.data.orders.length){box.innerHTML='';return;}
       const d=res.data;
       let detail=d.orders.map(function(o){
-        return (o.items||[]).map(function(it){
-          return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0;"><span>'+esc(it.name)+' <span style="color:#b59;">'+esc(it.size)+'×'+it.qty+'</span></span><span>NT$'+(it.price*it.qty).toLocaleString()+'</span></div>';
-        }).join('');
+        return instkRenderItemsByBrand(o.items||[]);
       }).join('');
       box.innerHTML=
         '<div class="instk-orderstrip">'
@@ -3055,9 +3070,7 @@
       if(!res||res.status!=='SUCCESS'||!res.data.orders||!res.data.orders.length){box.innerHTML='';return;}
       const d=res.data;
       let detail=d.orders.map(function(o){
-        return (o.items||[]).map(function(it){
-          return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0;"><span>'+esc(it.name)+' <span style="color:#b59;">'+esc(it.size)+'×'+it.qty+'</span></span><span>NT$'+(it.price*it.qty).toLocaleString()+'</span></div>';
-        }).join('');
+        return instkRenderItemsByBrand(o.items||[]);
       }).join('');
       box.innerHTML=
         '<div style="background:#fff7e6;border:1px solid #ffe2a8;border-radius:14px;overflow:hidden;margin:10px 0;">'
@@ -3191,20 +3204,7 @@
       const orders=res.data.orders||[];
       if(!orders.length){document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty">本次促銷尚無訂單</div>';return;}
       let body=orders.map(function(o){
-        // 明細按品牌/系列分組
-        const byBS={};
-        (o.items||[]).forEach(function(it){
-          const k=(it.brand||'其他')+' / '+(it.series||'');
-          if(!byBS[k])byBS[k]=[];
-          byBS[k].push(it);
-        });
-        let itemsHtml=Object.keys(byBS).map(function(k){
-          const rows=byBS[k].map(function(it){
-            return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;padding:2px 0 2px 8px;"><span>'+esc(it.name)+' <span style="color:#aaa;">'+esc(it.size)+'×'+it.qty+'</span></span><span>$'+(it.price*it.qty).toLocaleString()+'</span></div>';
-          }).join('');
-          const parts=k.split(' / ');
-          return '<div style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:bold;color:#7a6a78;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>'+rows+'</div>';
-        }).join('');
+        let itemsHtml=instkRenderItemsByBrand(o.items||[]);
         return '<div style="border:1px solid #ece6df;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
           +'<div style="display:flex;justify-content:space-between;font-weight:700;color:#4A3C49;font-size:13px;margin-bottom:5px;"><span>第 '+o.index+' 筆 · '+o.itemCount+' 件</span><span>$'+(o.subtotal||0).toLocaleString()+'</span></div>'
           +itemsHtml+'</div>';
