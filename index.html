@@ -2853,6 +2853,14 @@
 </div>
 
 <script>
+(function(){
+  let DATA=null;          // {groups, batch}
+  let activeBrand=null;
+  let cart={};            // key=inventoryId → {inventoryId, name, size, price, qty, max}
+  let lightboxPhotos=[], lightboxIdx=0;
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
   // 共用：明細按品牌/系列分組渲染（摘要列、首頁卡、訂單sheet 共用）
   function instkRenderItemsByBrand(items){
     const byBS={};
@@ -2869,14 +2877,6 @@
       return '<div style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:bold;color:#7a6a78;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>'+rows+'</div>';
     }).join('');
   }
-
-(function(){
-  let DATA=null;          // {groups, batch}
-  let activeBrand=null;
-  let cart={};            // key=inventoryId → {inventoryId, name, size, price, qty, max}
-  let lightboxPhotos=[], lightboxIdx=0;
-
-  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   function post(action, extra){
     const body=new URLSearchParams(Object.assign({action:action,lineUid:currentLineUid},extra||{}));
     return fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
@@ -2968,7 +2968,7 @@
       g.items.forEach(function(c){
         const photo=c.photos&&c.photos.length?c.photos[0]:'';
         const cid=c.styleKey;
-        html+='<div class="instk-pcard" data-cid="'+esc(cid)+'">';
+        html+='<div class="instk-pcard" data-cid="'+esc(cid)+'" data-brand="'+esc(c.brand||'').replace(/"/g,'&quot;')+'" data-series="'+esc(c.series||'').replace(/"/g,'&quot;')+'">';
         // 左：圖（1/3，可放大）
         html+='<div class="instk-thumb" '+(photo?'style="background-image:url('+photo+');background-size:cover;background-position:center;"':'')+' onclick="instkOpenLightbox('+instkStash(c.photos||[])+')">'+(photo?'':'<i class="bi bi-image"></i>')+'<span class="instk-zoom"><i class="bi bi-zoom-in"></i></span></div>';
         // 右：資訊
@@ -3054,7 +3054,8 @@
     const name=sb.getAttribute('data-name'),size=sb.getAttribute('data-size');
     const price=parseInt(sb.getAttribute('data-price'),10),max=parseInt(sb.getAttribute('data-max'),10);
     const wantQty=parseInt(card.querySelector('.instk-qtyval').textContent,10)||1;
-    if(!cart[inv])cart[inv]={inventoryId:inv,name:name,size:size,price:price,qty:0,max:max};
+    const brand=card.getAttribute('data-brand')||'',series=card.getAttribute('data-series')||'';
+    if(!cart[inv])cart[inv]={inventoryId:inv,name:name,size:size,price:price,qty:0,max:max,brand:brand,series:series};
     if(cart[inv].qty+wantQty>max){alert('超過該尺寸庫存（剩 '+max+' 件，您購物車已有 '+cart[inv].qty+' 件）');return;}
     cart[inv].qty+=wantQty;
     instkUpdateCartBar();
@@ -3111,15 +3112,27 @@
     const arr=instkCartArr();
     if(!arr.length)return;
     document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-cart3"></i> 我的購物車';
-    let body=arr.map(function(i){
-      return '<div class="instk-citem"><div style="flex:1;">'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
-        +'<div style="display:flex;align-items:center;gap:8px;">'
-        +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',-1)">−</button>'
-        +'<span style="min-width:20px;text-align:center;font-weight:700;">'+i.qty+'</span>'
-        +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',1)">＋</button>'
-        +'<span style="min-width:60px;text-align:right;font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</span>'
-        +'<button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')"><i class="bi bi-trash"></i></button>'
-        +'</div></div>';
+    // 按品牌/系列分組
+    const grp={};
+    arr.forEach(function(i){
+      const k=(i.brand||'其他')+'\u0001'+(i.series||'');
+      if(!grp[k])grp[k]=[];
+      grp[k].push(i);
+    });
+    let body=Object.keys(grp).map(function(k){
+      const parts=k.split('\u0001');
+      const head='<div style="font-size:12px;font-weight:bold;color:#7a6a78;margin:6px 0 2px;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>';
+      const rows=grp[k].map(function(i){
+        return '<div class="instk-citem"><div style="flex:1;">'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
+          +'<div style="display:flex;align-items:center;gap:8px;">'
+          +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',-1)">−</button>'
+          +'<span style="min-width:20px;text-align:center;font-weight:700;">'+i.qty+'</span>'
+          +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',1)">＋</button>'
+          +'<span style="min-width:60px;text-align:right;font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</span>'
+          +'<button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')"><i class="bi bi-trash"></i></button>'
+          +'</div></div>';
+      }).join('');
+      return head+rows;
     }).join('');
     document.getElementById('instkSheetBody').innerHTML=body;
     const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
