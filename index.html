@@ -659,6 +659,7 @@
           renderPoCards();
           wlInitialData=d.waitlistData||{groups:[],cancelled:[]};
           renderWL(wlInitialData);
+          window.instkAdminData = d.instockData || null;  // 🆕 給管理員模式的 instkOpenCart 用
           renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);
           // 顯示「結束模式」按鈕
           showAdminViewExitBtn();
@@ -673,6 +674,7 @@
       if(!confirm('結束管理員檢視模式，回到您自己的資料？'))return;
       window._adminViewMode=false;
       window._adminViewCustomer=null;
+      window.instkAdminData=null;
       window.lastAdminSearchText='';
       const btn=document.getElementById('adminViewExitBtn');
       if(btn)btn.remove();
@@ -1346,6 +1348,12 @@
     let wlCustomerData = null;
 
     async function loadWaitlistData(){
+      // 🔑 管理員檢視模式：不重打 API（會用 currentLineUid 變成管理員自己的資料），
+      //    改用 executeAdminSearch 已載入的目標客人候補資料重新渲染
+      if (window._adminViewMode && wlInitialData) {
+        renderWL(wlInitialData);
+        return;
+      }
       const c = document.getElementById('waitlistContainer');
       c.innerHTML = `<div class="loader-overlay"><div class="spinner-border"></div><p class="text-carousel">讀取候補清單中...</p></div>`;
       try {
@@ -2368,12 +2376,68 @@
   window.instkOpenCart=function(){
     document.getElementById('instkCartOverlay').classList.add('open');
     document.body.style.overflow='hidden';
+    // 🔑 管理員檢視模式：不打商品 API、改顯示目標客人現貨訂單
+    if (window._adminViewMode) {
+      instkRenderAdminView();
+      return;
+    }
     instkLoad();
   };
   window.instkCloseCart=function(){
     document.getElementById('instkCartOverlay').classList.remove('open');
     document.body.style.overflow='';
   };
+
+  // 🔑 管理員模式：顯示目標客人現貨訂單（不顯示商品賣場、不可代下單）
+  function instkRenderAdminView(){
+    const sc = document.getElementById('instkScroll');
+    const tabs = document.getElementById('instkBrandTabs');
+    const strip = document.getElementById('instkOrderStrip');
+    if (tabs) tabs.innerHTML = '';
+    if (strip) strip.innerHTML = '';
+    const data = window.instkAdminData;
+    const custName = (window._adminViewCustomer && window._adminViewCustomer.name) || '客人';
+
+    if (!data || !data.orders || data.orders.length === 0) {
+      sc.innerHTML =
+        '<div class="instk-empty" style="padding:30px 16px;">' +
+        '<div style="font-size:36px;">📋</div>' +
+        '<div style="font-size:16px;font-weight:bold;color:#7a6a78;margin-top:10px;">' + esc(custName) + ' 目前沒有現貨訂單</div>' +
+        '<div style="font-size:12px;color:#999;margin-top:8px;">管理員檢視模式：僅顯示客人訂單，無法代下單</div>' +
+        '</div>';
+      return;
+    }
+
+    let html =
+      '<div style="padding:14px 14px 6px 14px;background:#fff3cd;border-bottom:1px solid #ffe69c;font-size:13px;color:#856404;">' +
+      '🔍 <strong>管理員檢視模式</strong>：以下是「' + esc(custName) + '」的現貨訂單（不可代下單）' +
+      '</div>';
+    html +=
+      '<div style="padding:14px;">' +
+      '<div style="font-size:14px;font-weight:bold;color:#7a6a78;margin-bottom:10px;">' +
+      '<i class="bi bi-bag-check"></i> 共 ' + data.totalOrders + ' 筆 · ' + data.grandCount + ' 件 · NT$' + data.grandTotal.toLocaleString() +
+      ' <span style="font-size:11px;color:#999;font-weight:normal;">（批次：' + esc(data.batch || '') + '）</span>' +
+      '</div>';
+
+    data.orders.forEach(function(o){
+      html +=
+        '<div style="background:#fff;border:1px solid #e0d8d0;border-radius:10px;padding:12px;margin-bottom:10px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px;">' +
+        '<span style="font-weight:bold;color:#7a6a78;">第 ' + o.index + ' 筆</span>' +
+        '<span style="font-weight:bold;color:#915b00;">NT$' + o.subtotal.toLocaleString() + ' · ' + o.itemCount + ' 件</span>' +
+        '</div>';
+      (o.items || []).forEach(function(it){
+        html +=
+          '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;border-top:1px dashed #f0e8e0;">' +
+          '<span>' + esc(it.name) + (it.size ? ' <span style="color:#b59;">' + esc(it.size) + '</span>' : '') + ' × ' + it.qty + '</span>' +
+          '<span style="color:#777;">NT$' + (it.price * it.qty).toLocaleString() + '</span>' +
+          '</div>';
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    sc.innerHTML = html;
+  }
 
   // ── 載入商品 ──
   function instkLoad(){
