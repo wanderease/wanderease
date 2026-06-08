@@ -395,7 +395,7 @@
       <div class="hhb-name" id="welcomeMsg"></div>
       <div class="hhb-nav-row">
         <button class="hhb-nav-item" onclick="showSubOverlay('promos')"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
-        <button class="hhb-nav-item" onclick="showSubOverlay('instock')"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
+        <button class="hhb-nav-item" onclick="instkOpenCart()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
         <button class="hhb-nav-item" onclick="showSubOverlay('rules')"><span class="hhb-ic"><i class="bi bi-journal-text"></i></span><span class="hhb-l">規則</span></button>
         <button class="hhb-nav-item cs" onclick="openLineContact()"><span class="hhb-ic"><i class="bi bi-chat-dots"></i></span><span class="hhb-l">客服</span></button>
       </div>
@@ -498,7 +498,7 @@
       <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this)" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos',this)"><span class="nav-icon">🔥</span><span class="nav-text">開團</span></div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pageInstock',this)"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
+      <div class="bottom-nav-item" onclick="instkOpenCart()"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageRules',this)"><span class="nav-icon">📝</span><span class="nav-text">規則</span></div>
     </nav>
   </div>
@@ -1088,9 +1088,16 @@
                   <span class="unship-group-count">${(g.items||[]).length} 項</span>
                 </div>
                 ${(g.items||[]).map(it => {
-                  const tagHtml = it.expectedDate
-                    ? `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`
-                    : '';
+                  let tagHtml = '';
+                  if(it.expectedDate){
+                    tagHtml = `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`;
+                  } else if(it.status==='delay'){
+                    tagHtml = `<span class="unship-row-tag delay">延後出貨</span>`;
+                  } else if(it.status==='arrived'){
+                    tagHtml = `<span class="unship-row-tag" style="background:#d1fae5;color:#065f46;">✅ 已抵台</span>`;
+                  } else {
+                    tagHtml = `<span class="unship-row-tag wait">⏳ 尚未抵台</span>`;
+                  }
                   return `
                   <div class="unship-row-item">
                     <span class="unship-row-name">${escHTML(it.name||'')} ×${it.qty||1}</span>
@@ -1830,5 +1837,304 @@
       if (modal) modal.remove();
     }
   </script>
+
+<!-- ===== 現貨購物車（自動插入）===== -->
+<!-- 現貨購物車 overlay。依賴 currentLineUid、GAS_URL。識別字以 INSTK_/instk 前綴。 -->
+<style>
+  #instkCartOverlay{position:fixed;inset:0;background:#faf8f6;z-index:9999;display:none;flex-direction:column;}
+  #instkCartOverlay.open{display:flex;}
+  .instk-top{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-bottom:1px solid #ece6df;flex-shrink:0;}
+  .instk-top h6{margin:0;font-weight:900;color:#4A3C49;flex:1;font-size:16px;}
+  .instk-top .instk-close,.instk-top .instk-myorders{background:none;border:none;font-size:20px;color:#6b626d;cursor:pointer;}
+  .instk-brandtabs{display:flex;gap:6px;padding:9px 12px;overflow-x:auto;background:#fff;border-bottom:1px solid #ece6df;flex-shrink:0;}
+  .instk-brandtab{white-space:nowrap;padding:5px 14px;font-size:13px;border-radius:16px;border:1px solid #e0d8d0;background:#fff;color:#6b626d;cursor:pointer;}
+  .instk-brandtab.active{background:#7a6a78;color:#fff;border-color:#7a6a78;}
+  .instk-scroll{flex:1;overflow-y:auto;padding:10px 12px 90px;}
+  .instk-group-title{font-weight:900;color:#4A3C49;font-size:14px;margin:14px 2px 8px;}
+  .instk-pcard{display:flex;gap:11px;border:1px solid #ece6df;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff;}
+  .instk-thumb{width:66px;height:66px;flex-shrink:0;border-radius:8px;background:#f1ede8;object-fit:cover;cursor:pointer;position:relative;}
+  .instk-pname{font-size:13px;font-weight:700;color:#4A3C49;margin:0;}
+  .instk-price{font-size:14px;font-weight:900;color:#c0392b;}
+  .instk-price-orig{font-size:11px;color:#b0a89f;text-decoration:line-through;margin-left:4px;}
+  .instk-sizes{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0;}
+  .instk-sizebtn{min-width:42px;text-align:center;font-size:11px;padding:4px 6px;border-radius:8px;border:1px solid #e0d8d0;background:#fff;cursor:pointer;}
+  .instk-sizebtn.sel{background:#7a6a78;color:#fff;border-color:#7a6a78;}
+  .instk-sizebtn.soldout{opacity:.4;cursor:not-allowed;}
+  .instk-prow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .instk-link{font-size:11px;color:#7a6a78;background:none;border:1px solid #d8d0e0;border-radius:8px;padding:3px 8px;cursor:pointer;}
+  .instk-add{font-size:12px;padding:5px 13px;border-radius:8px;border:none;background:#7a6a78;color:#fff;cursor:pointer;}
+  .instk-add:disabled{background:#c8c0c5;}
+  .instk-cartbar{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e0d8d0;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+  .instk-cartbar .sub{font-size:15px;font-weight:900;color:#4A3C49;}
+  .instk-cartbar .cnt{font-size:11px;color:#888;}
+  .instk-checkout{background:#7a6a78;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
+  .instk-checkout:disabled{background:#c8c0c5;}
+  .instk-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10001;display:none;align-items:center;justify-content:center;flex-direction:column;}
+  .instk-lightbox.open{display:flex;}
+  .instk-lightbox img{max-width:88%;max-height:74%;border-radius:8px;background:#fff;}
+  .instk-lightbox .lbclose{position:absolute;top:16px;right:18px;color:#fff;font-size:26px;background:none;border:none;cursor:pointer;}
+  .instk-sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;display:none;align-items:flex-end;}
+  .instk-sheet.open{display:flex;}
+  .instk-sheet-inner{background:#fff;width:100%;max-height:86%;border-radius:16px 16px 0 0;display:flex;flex-direction:column;}
+  .instk-sheet-head{padding:13px 16px;border-bottom:1px solid #ece6df;display:flex;align-items:center;justify-content:space-between;}
+  .instk-sheet-head h6{margin:0;font-weight:900;color:#4A3C49;}
+  .instk-sheet-body{overflow-y:auto;padding:8px 16px;flex:1;}
+  .instk-citem{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3efe9;font-size:13px;}
+  .instk-citem .rm{color:#c0392b;background:none;border:none;font-size:13px;cursor:pointer;}
+  .instk-sheet-foot{padding:12px 16px;border-top:1px solid #e0d8d0;}
+  .instk-info{background:#eef4ff;border-radius:10px;padding:11px;font-size:12px;color:#2c5aa0;line-height:1.7;margin-top:10px;}
+  .instk-ok-icon{width:48px;height:48px;border-radius:50%;background:#e6f7ee;color:#1a9d63;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;}
+  .instk-empty{text-align:center;color:#aaa;padding:50px 0;}
+</style>
+
+<div id="instkCartOverlay">
+  <div class="instk-top">
+    <button class="instk-close" onclick="instkCloseCart()"><i class="bi bi-chevron-left"></i></button>
+    <h6>🛍️ 現貨促銷</h6>
+    <button class="instk-myorders" onclick="instkOpenMyOrders()" title="我的訂單"><i class="bi bi-clipboard-check"></i></button>
+  </div>
+  <div class="instk-brandtabs" id="instkBrandTabs"></div>
+  <div class="instk-scroll" id="instkScroll">
+    <div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>
+  </div>
+  <div class="instk-cartbar">
+    <div><div class="cnt">已選 <span id="instkCartCnt">0</span> 件</div><div class="sub">小計 $<span id="instkCartSub">0</span></div></div>
+    <button class="instk-checkout" id="instkCheckoutBtn" onclick="instkOpenCartSheet()" disabled>查看購物車</button>
+  </div>
+</div>
+
+<div class="instk-lightbox" id="instkLightbox">
+  <button class="lbclose" onclick="instkCloseLightbox()"><i class="bi bi-x"></i></button>
+  <img id="instkLightboxImg" src="" alt="放大圖">
+  <div id="instkLightboxNav" style="color:#fff;font-size:12px;margin-top:10px;"></div>
+</div>
+
+<div class="instk-sheet" id="instkCartSheet">
+  <div class="instk-sheet-inner">
+    <div class="instk-sheet-head"><h6 id="instkSheetTitle"><i class="bi bi-cart3"></i> 我的購物車</h6><button class="instk-close" onclick="instkCloseSheet()" style="font-size:20px;"><i class="bi bi-x"></i></button></div>
+    <div class="instk-sheet-body" id="instkSheetBody"></div>
+    <div class="instk-sheet-foot" id="instkSheetFoot"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let DATA=null;          // {groups, batch}
+  let activeBrand=null;
+  let cart={};            // key=inventoryId → {inventoryId, name, size, price, qty, max}
+  let lightboxPhotos=[], lightboxIdx=0;
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function post(action, extra){
+    const body=new URLSearchParams(Object.assign({action:action,lineUid:currentLineUid},extra||{}));
+    return fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
+  }
+
+  // ── 開關購物車 ──
+  window.instkOpenCart=function(){
+    document.getElementById('instkCartOverlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    instkLoad();
+  };
+  window.instkCloseCart=function(){
+    document.getElementById('instkCartOverlay').classList.remove('open');
+    document.body.style.overflow='';
+  };
+
+  // ── 載入商品 ──
+  function instkLoad(){
+    const sc=document.getElementById('instkScroll');
+    sc.innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
+    post('getInstockProducts').then(function(res){
+      if(!res||res.status!=='SUCCESS'){sc.innerHTML='<div class="instk-empty">載入失敗：'+(res?esc(res.message):'無回應')+'</div>';return;}
+      DATA=res.data;
+      if(!DATA.groups||!DATA.groups.length){sc.innerHTML='<div class="instk-empty">目前沒有現貨商品<br><span style="font-size:12px;">敬請期待下次促銷</span></div>';document.getElementById('instkBrandTabs').innerHTML='';return;}
+      instkBuildBrandTabs();
+      instkRenderProducts();
+    }).catch(function(e){sc.innerHTML='<div class="instk-empty">連線錯誤：'+esc(e.message)+'</div>';});
+  }
+
+  // 品牌 tab：從 groups 的 category 取「品牌」(category 可能是 "品牌" 或 "品牌 / 系列")
+  function instkBuildBrandTabs(){
+    const brands=[];
+    DATA.groups.forEach(function(g){
+      const brand=g.category.split(' / ')[0];
+      if(brands.indexOf(brand)<0)brands.push(brand);
+    });
+    activeBrand=brands[0];
+    const tabs=document.getElementById('instkBrandTabs');
+    tabs.innerHTML=brands.map(function(b){
+      return '<button class="instk-brandtab'+(b===activeBrand?' active':'')+'" onclick="instkSwitchBrand(\''+esc(b).replace(/'/g,"\\'")+'\')">'+esc(b)+'</button>';
+    }).join('');
+  }
+  window.instkSwitchBrand=function(b){
+    activeBrand=b;
+    document.querySelectorAll('.instk-brandtab').forEach(function(t){t.classList.toggle('active',t.textContent===b);});
+    instkRenderProducts();
+  };
+
+  function instkRenderProducts(){
+    const sc=document.getElementById('instkScroll');
+    const groups=DATA.groups.filter(function(g){return g.category.split(' / ')[0]===activeBrand;});
+    let html='';
+    groups.forEach(function(g){
+      html+='<div class="instk-group-title">'+esc(g.category)+'</div>';
+      g.items.forEach(function(c){
+        const photo=c.photos&&c.photos.length?c.photos[0]:'';
+        html+='<div class="instk-pcard">';
+        html+='<div class="instk-thumb" style="'+(photo?'background-image:url('+photo+');background-size:cover;background-position:center;':'')+'" onclick="instkOpenLightbox('+instkStash(c.photos||[])+')">'+(photo?'':'<i class="bi bi-image" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#bbb;font-size:20px;"></i>')+'</div>';
+        html+='<div style="flex:1;min-width:0;">';
+        html+='<p class="instk-pname">'+esc(c.name)+'</p>';
+        html+='<div style="margin:2px 0 4px;"><span class="instk-price">$'+c.effectivePrice+'</span>'+(c.isSpecial?'<span class="instk-price-orig">$'+c.sellPrice+'</span>':'')+'</div>';
+        html+='<div class="instk-sizes">';
+        c.sizes.forEach(function(s){
+          const so=s.remain<=0;
+          html+='<button class="instk-sizebtn'+(so?' soldout':'')+'" '+(so?'disabled':'onclick="instkPickSize(this,\''+s.inventoryId+'\')"')+' data-inv="'+s.inventoryId+'" data-name="'+esc(c.name).replace(/"/g,'&quot;')+'" data-size="'+esc(s.size)+'" data-price="'+s.effectivePrice+'" data-max="'+s.remain+'">'+esc(s.size)+'<br><span style="font-size:9px;">'+(so?'售完':'剩'+s.remain)+'</span></button>';
+        });
+        html+='</div>';
+        html+='<div class="instk-prow">';
+        html+=(c.sizeChartUrl?'<button class="instk-link" onclick="instkOpenLightbox('+instkStash([c.sizeChartUrl])+')"><i class="bi bi-rulers"></i> 尺寸表</button>':'<span></span>');
+        html+='<button class="instk-add" onclick="instkAddToCart(this)">加入購物車</button>';
+        html+='</div>';
+        html+='</div></div>';
+      });
+    });
+    sc.innerHTML=html||'<div class="instk-empty">此品牌目前無商品</div>';
+  }
+
+  // 暫存陣列給 onclick 用（避免大量 JSON 塞進屬性）
+  let stashStore=[];
+  window.instkStash=function(){};
+  function instkStash(arr){stashStore.push(arr);return stashStore.length-1;}
+  window.instkOpenLightbox=function(idx){
+    const photos=stashStore[idx]||[];
+    if(!photos.length)return;
+    lightboxPhotos=photos;lightboxIdx=0;
+    document.getElementById('instkLightboxImg').src=photos[0];
+    document.getElementById('instkLightboxNav').textContent=photos.length>1?('1 / '+photos.length+'（點圖換下一張）'):'';
+    document.getElementById('instkLightbox').classList.add('open');
+  };
+  document.getElementById('instkLightboxImg')&&document.getElementById('instkLightboxImg').addEventListener('click',function(){
+    if(lightboxPhotos.length<2)return;
+    lightboxIdx=(lightboxIdx+1)%lightboxPhotos.length;
+    this.src=lightboxPhotos[lightboxIdx];
+    document.getElementById('instkLightboxNav').textContent=(lightboxIdx+1)+' / '+lightboxPhotos.length+'（點圖換下一張）';
+  });
+  window.instkCloseLightbox=function(){document.getElementById('instkLightbox').classList.remove('open');};
+
+  // 選尺寸（同卡內單選）
+  window.instkPickSize=function(btn,inv){
+    const card=btn.closest('.instk-pcard');
+    card.querySelectorAll('.instk-sizebtn').forEach(function(b){b.classList.remove('sel');});
+    btn.classList.add('sel');
+    card.setAttribute('data-selinv',inv);
+  };
+
+  window.instkAddToCart=function(addBtn){
+    const card=addBtn.closest('.instk-pcard');
+    const inv=card.getAttribute('data-selinv');
+    if(!inv){alert('請先選擇尺寸');return;}
+    const sb=card.querySelector('.instk-sizebtn[data-inv="'+inv+'"]');
+    const name=sb.getAttribute('data-name'),size=sb.getAttribute('data-size');
+    const price=parseInt(sb.getAttribute('data-price'),10),max=parseInt(sb.getAttribute('data-max'),10);
+    if(!cart[inv])cart[inv]={inventoryId:inv,name:name,size:size,price:price,qty:0,max:max};
+    if(cart[inv].qty>=max){alert('已達該尺寸庫存上限（'+max+' 件）');return;}
+    cart[inv].qty++;
+    instkUpdateCartBar();
+    addBtn.textContent='已加入 ✓';setTimeout(function(){addBtn.textContent='加入購物車';},800);
+  };
+
+  function instkCartArr(){return Object.keys(cart).map(function(k){return cart[k];}).filter(function(i){return i.qty>0;});}
+  function instkUpdateCartBar(){
+    const arr=instkCartArr();
+    const cnt=arr.reduce(function(s,i){return s+i.qty;},0);
+    const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
+    document.getElementById('instkCartCnt').textContent=cnt;
+    document.getElementById('instkCartSub').textContent=sub.toLocaleString();
+    const btn=document.getElementById('instkCheckoutBtn');
+    btn.disabled=cnt===0;
+    btn.textContent=cnt>0?'查看購物車':'查看購物車';
+  }
+
+  // ── 購物車 sheet ──
+  window.instkOpenCartSheet=function(){
+    const arr=instkCartArr();
+    if(!arr.length)return;
+    document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-cart3"></i> 我的購物車';
+    let body=arr.map(function(i){
+      return '<div class="instk-citem"><div>'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+' × '+i.qty+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
+        +'<div style="text-align:right;"><div style="font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</div><button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')">移除</button></div></div>';
+    }).join('');
+    document.getElementById('instkSheetBody').innerHTML=body;
+    const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
+    document.getElementById('instkSheetFoot').innerHTML=
+      '<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:900;color:#4A3C49;"><span>小計</span><span>$'+sub.toLocaleString()+'</span></div>'
+      +'<div style="font-size:11px;color:#999;margin:3px 0 10px;">運費與匯款資訊將於促銷收單後統一通知</div>'
+      +'<button class="instk-checkout" style="width:100%;" id="instkSubmitBtn" onclick="instkSubmit()">送出訂單</button>';
+    document.getElementById('instkCartSheet').classList.add('open');
+  };
+  window.instkCloseSheet=function(){document.getElementById('instkCartSheet').classList.remove('open');};
+  window.instkRemoveItem=function(inv){delete cart[inv];instkUpdateCartBar();const arr=instkCartArr();if(!arr.length){instkCloseSheet();}else{instkOpenCartSheet();}};
+
+  // ── 送出 ──
+  window.instkSubmit=function(){
+    const arr=instkCartArr();
+    if(!arr.length)return;
+    const btn=document.getElementById('instkSubmitBtn');
+    btn.disabled=true;btn.textContent='送出中…';
+    const cartItems=arr.map(function(i){return {inventoryId:i.inventoryId,qty:i.qty};});
+    post('instockCheckout',{payload:JSON.stringify({lineUid:currentLineUid,cartItems:cartItems})}).then(function(res){
+      btn.disabled=false;btn.textContent='送出訂單';
+      if(res&&res.status==='SUCCESS'){
+        cart={};instkUpdateCartBar();
+        instkShowSuccess(res);
+      }else if(res&&res.status==='STOCK_INSUFFICIENT'){
+        const names=(res.failedItems||[]).map(function(f){return f.name+'（剩'+f.remain+'）';}).join('、');
+        alert('部分商品剛被搶完：\n'+names+'\n\n請調整數量或移除後再送出。');
+        instkLoad();instkCloseSheet();
+      }else if(res&&res.status==='BUSY'){
+        alert('結帳人潮眾多，請稍候 3 秒再送出一次');
+      }else if(res&&res.status==='NO_CUSTOMER'){
+        alert('查無綁定資料，請先完成 LINE 綁定');
+      }else{
+        alert('送出失敗：'+(res?res.message:'無回應'));
+      }
+    }).catch(function(e){btn.disabled=false;btn.textContent='送出訂單';alert('連線錯誤：'+e.message);});
+  };
+
+  function instkShowSuccess(res){
+    document.getElementById('instkSheetTitle').innerHTML='訂單已成立';
+    document.getElementById('instkSheetBody').innerHTML=
+      '<div style="text-align:center;padding:14px 0;"><div class="instk-ok-icon"><i class="bi bi-check-lg"></i></div>'
+      +'<div style="font-size:15px;font-weight:900;color:#4A3C49;">訂單已成立，商品已保留</div></div>'
+      +'<div style="background:#f7f4f0;border-radius:10px;padding:11px;font-size:13px;">'
+      +'<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:#888;">本單小計</span><span style="font-weight:700;">$'+(res.thisSubtotal||0).toLocaleString()+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:#888;">本次促銷您已下</span><span style="font-weight:700;">第 '+(res.orderCount||1)+' 筆</span></div></div>'
+      +'<div class="instk-info"><b>先別急著匯款</b><br>促銷結束後，我們會把您本次所有訂單整合成一筆，再透過 LINE 通知應匯金額與帳號。</div>';
+    document.getElementById('instkSheetFoot').innerHTML=
+      '<div style="display:flex;gap:8px;"><button class="instk-link" style="flex:1;padding:10px;" onclick="instkCloseSheet()">繼續逛</button>'
+      +'<button class="instk-checkout" style="flex:1;" onclick="instkCloseSheet();instkOpenMyOrders()">看我的訂單</button></div>';
+  }
+
+  // ── 我的訂單 ──
+  window.instkOpenMyOrders=function(){
+    document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-clipboard-check"></i> 本次促銷訂單';
+    document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div></div>';
+    document.getElementById('instkSheetFoot').innerHTML='';
+    document.getElementById('instkCartSheet').classList.add('open');
+    post('getMyInstockOrders').then(function(res){
+      if(!res||res.status!=='SUCCESS'){document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty">讀取失敗</div>';return;}
+      const orders=res.data.orders||[];
+      if(!orders.length){document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty">本次促銷尚無訂單</div>';return;}
+      let body=orders.map(function(o){
+        return '<div class="instk-citem"><div>第 '+o.index+' 筆 · '+o.itemCount+' 件</div><div style="font-weight:700;">$'+(o.subtotal||0).toLocaleString()+'</div></div>';
+      }).join('');
+      body+='<div style="background:#fff7e6;border-radius:10px;padding:9px;margin-top:10px;text-align:center;font-size:12px;color:#915b00;"><i class="bi bi-clock"></i> 等待促銷收單，整合後通知匯款</div>';
+      document.getElementById('instkSheetBody').innerHTML=body;
+    });
+  };
+})();
+</script>
+
 </body>
 </html>
