@@ -1854,7 +1854,8 @@
   .instk-thumb{width:30%;max-width:110px;aspect-ratio:1;flex-shrink:0;border-radius:8px;background:#f1ede8;background-size:cover;background-position:center;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:22px;}
   .instk-zoom{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:1px 5px;border-radius:5px;}
   .instk-pinfo{flex:1;min-width:0;}
-  .instk-pname{font-size:14px;font-weight:700;color:#4A3C49;margin:0 0 3px;}
+  .instk-nameline{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:3px;}
+  .instk-pname{font-size:14px;font-weight:700;color:#4A3C49;margin:0;flex:1;min-width:0;}
   .instk-priceline{margin-bottom:7px;display:flex;align-items:baseline;gap:6px;}
   .instk-price{font-size:16px;font-weight:900;color:#c0392b;}
   .instk-price-orig{font-size:11px;color:#b0a89f;text-decoration:line-through;}
@@ -1862,12 +1863,12 @@
   .instk-sizebtn{min-width:44px;text-align:center;font-size:11px;padding:4px 6px;border-radius:8px;border:1px solid #e0d8d0;background:#fff;cursor:pointer;line-height:1.3;}
   .instk-sizebtn.sel{background:#7a6a78;color:#fff;border-color:#7a6a78;}
   .instk-sizebtn.soldout{opacity:.4;cursor:not-allowed;}
-  .instk-actionrow{display:flex;align-items:center;gap:8px;}
+  .instk-actionrow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .instk-qtygrp{display:flex;align-items:center;gap:7px;}
   .instk-qtybtn{width:27px;height:27px;border-radius:6px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:15px;font-weight:bold;cursor:pointer;line-height:1;}
   .instk-qtyval{min-width:18px;text-align:center;font-size:14px;font-weight:700;}
-  .instk-link{font-size:11px;color:#7a6a78;background:none;border:1px solid #d8d0e0;border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap;}
-  .instk-add{font-size:12px;padding:6px 13px;border-radius:8px;border:none;background:#7a6a78;color:#fff;cursor:pointer;white-space:nowrap;margin-left:auto;}
+  .instk-link{font-size:10.5px;color:#7a6a78;background:none;border:1px solid #d8d0e0;border-radius:7px;padding:3px 7px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .instk-add{font-size:12px;padding:7px 15px;border-radius:8px;border:none;background:#7a6a78;color:#fff;cursor:pointer;white-space:nowrap;}
   .instk-add:disabled{background:#c8c0c5;}
   .instk-cartbar{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e0d8d0;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
   .instk-cartbar .sub{font-size:15px;font-weight:900;color:#4A3C49;}
@@ -1891,6 +1892,9 @@
   .instk-info{background:#eef4ff;border-radius:10px;padding:11px;font-size:12px;color:#2c5aa0;line-height:1.7;margin-top:10px;}
   .instk-ok-icon{width:48px;height:48px;border-radius:50%;background:#e6f7ee;color:#1a9d63;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;}
   .instk-empty{text-align:center;color:#aaa;padding:50px 0;}
+  .instk-orderstrip{margin:10px 12px 0;background:#fff7e6;border:1px solid #ffe2a8;border-radius:10px;overflow:hidden;}
+  .instk-orderstrip-head{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:13px;font-weight:bold;color:#915b00;}
+  .instk-orderstrip-body{padding:0 13px 11px;border-top:1px dashed #ffe2a8;margin-top:2px;padding-top:9px;}
 </style>
 
 <div id="instkCartOverlay">
@@ -1900,6 +1904,7 @@
     <button class="instk-myorders" onclick="instkOpenMyOrders()" title="我的訂單"><i class="bi bi-clipboard-check"></i></button>
   </div>
   <div class="instk-brandtabs" id="instkBrandTabs"></div>
+  <div id="instkOrderStrip"></div>
   <div class="instk-scroll" id="instkScroll">
     <div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>
   </div>
@@ -1957,8 +1962,38 @@
       if(!DATA.groups||!DATA.groups.length){sc.innerHTML='<div class="instk-empty">目前沒有現貨商品<br><span style="font-size:12px;">敬請期待下次促銷</span></div>';document.getElementById('instkBrandTabs').innerHTML='';return;}
       instkBuildBrandTabs();
       instkRenderProducts();
+      instkLoadOrderStrip();
     }).catch(function(e){sc.innerHTML='<div class="instk-empty">連線錯誤：'+esc(e.message)+'</div>';});
   }
+
+  // 頁面內訂單摘要列（有訂單才顯示，點開看明細）
+  function instkLoadOrderStrip(){
+    const box=document.getElementById('instkOrderStrip');
+    if(!box)return;
+    post('getMyInstockOrders').then(function(res){
+      if(!res||res.status!=='SUCCESS'||!res.data.orders||!res.data.orders.length){box.innerHTML='';return;}
+      const d=res.data;
+      let detail=d.orders.map(function(o){
+        return (o.items||[]).map(function(it){
+          return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0;"><span>'+esc(it.name)+' <span style="color:#b59;">'+esc(it.size)+'×'+it.qty+'</span></span><span>NT$'+(it.price*it.qty).toLocaleString()+'</span></div>';
+        }).join('');
+      }).join('');
+      box.innerHTML=
+        '<div class="instk-orderstrip">'
+        +'<div class="instk-orderstrip-head" onclick="instkToggleOrderStrip()">'
+        +'<span><i class="bi bi-bag-check"></i> 我的現貨訂單 · '+d.totalOrders+' 筆 · NT$'+d.grandTotal.toLocaleString()+'</span>'
+        +'<i class="bi bi-chevron-down" id="instkStripChev"></i></div>'
+        +'<div class="instk-orderstrip-body" id="instkStripBody" style="display:none;">'+detail
+        +'<div style="margin-top:8px;font-size:10.5px;color:#915b00;"><i class="bi bi-clock"></i> 等待促銷收單，整合後通知匯款</div></div>'
+        +'</div>';
+    });
+  }
+  window.instkToggleOrderStrip=function(){
+    const b=document.getElementById('instkStripBody'),ch=document.getElementById('instkStripChev');
+    const open=b.style.display!=='none';
+    b.style.display=open?'none':'block';
+    if(ch)ch.className=open?'bi bi-chevron-down':'bi bi-chevron-up';
+  };
 
   // 品牌 tab：從 groups 的 category 取「品牌」(category 可能是 "品牌" 或 "品牌 / 系列")
   function instkBuildBrandTabs(){
@@ -1993,7 +2028,9 @@
         html+='<div class="instk-thumb" '+(photo?'style="background-image:url('+photo+');background-size:cover;background-position:center;"':'')+' onclick="instkOpenLightbox('+instkStash(c.photos||[])+')">'+(photo?'':'<i class="bi bi-image"></i>')+'<span class="instk-zoom"><i class="bi bi-zoom-in"></i></span></div>';
         // 右：資訊
         html+='<div class="instk-pinfo">';
-        html+='<p class="instk-pname">'+esc(c.name)+'</p>';
+        html+='<div class="instk-nameline"><p class="instk-pname">'+esc(c.name)+'</p>'
+          +(c.sizeChartUrl?'<button class="instk-link" onclick="instkOpenLightbox('+instkStash([c.sizeChartUrl])+')"><i class="bi bi-rulers"></i> 尺寸表</button>':'')
+          +'</div>';
         html+='<div class="instk-priceline">'+(c.isSpecial?'<span class="instk-price-orig">NT$'+c.sellPrice.toLocaleString()+'</span>':'')+'<span class="instk-price">NT$'+c.effectivePrice.toLocaleString()+'</span></div>';
         // 尺寸
         html+='<div class="instk-sizes">';
@@ -2002,10 +2039,9 @@
           html+='<button class="instk-sizebtn'+(so?' soldout':'')+'" '+(so?'disabled':'onclick="instkPickSize(this,\''+s.inventoryId+'\')"')+' data-inv="'+s.inventoryId+'" data-name="'+esc(c.name).replace(/"/g,'&quot;')+'" data-size="'+esc(s.size)+'" data-price="'+s.effectivePrice+'" data-max="'+s.remain+'">'+esc(s.size)+'<br><span style="font-size:9px;">'+(so?'售完':'剩'+s.remain)+'</span></button>';
         });
         html+='</div>';
-        // 數量加減 + 尺寸表（平行一列）+ 加入
+        // 數量加減 + 加入（乾淨一列）
         html+='<div class="instk-actionrow">';
         html+='<div class="instk-qtygrp"><button class="instk-qtybtn" onclick="instkCardQty(this,-1)">−</button><span class="instk-qtyval">1</span><button class="instk-qtybtn" onclick="instkCardQty(this,1)">＋</button></div>';
-        html+=(c.sizeChartUrl?'<button class="instk-link" onclick="instkOpenLightbox('+instkStash([c.sizeChartUrl])+')"><i class="bi bi-rulers"></i> 尺寸表</button>':'<span style="flex:1;"></span>');
         html+='<button class="instk-add" onclick="instkAddToCart(this)"><i class="bi bi-cart-plus"></i> 加入</button>';
         html+='</div>';
         html+='</div></div>';
@@ -2160,7 +2196,7 @@
       if(res&&res.status==='SUCCESS'){
         cart={};instkUpdateCartBar();
         instkShowSuccess(res);
-        instkLoad();  // 刷新商品列表，剩餘庫存即時反映
+        instkLoad();  // 刷新商品列表+訂單摘要，剩餘庫存即時反映
       }else if(res&&res.status==='STOCK_INSUFFICIENT'){
         const names=(res.failedItems||[]).map(function(f){return f.name+'（剩'+f.remain+'）';}).join('、');
         alert('部分商品剛被搶完：\n'+names+'\n\n請調整數量或移除後再送出。');
