@@ -1838,8 +1838,7 @@
     }
   </script>
 
-<!-- ===== 現貨購物車（自動插入）===== -->
-<!-- 現貨購物車 overlay。依賴 currentLineUid、GAS_URL。識別字以 INSTK_/instk 前綴。 -->
+<!-- 現貨購物車 -->
 <style>
   #instkCartOverlay{position:fixed;inset:0;background:#faf8f6;z-index:9999;display:none;flex-direction:column;}
   #instkCartOverlay.open{display:flex;}
@@ -1880,7 +1879,8 @@
   .instk-sheet-head h6{margin:0;font-weight:900;color:#4A3C49;}
   .instk-sheet-body{overflow-y:auto;padding:8px 16px;flex:1;}
   .instk-citem{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3efe9;font-size:13px;}
-  .instk-citem .rm{color:#c0392b;background:none;border:none;font-size:13px;cursor:pointer;}
+  .instk-citem .rm{color:#c0392b;background:none;border:none;font-size:14px;cursor:pointer;}
+  .instk-qtybtn{width:28px;height:28px;border-radius:6px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:16px;font-weight:bold;cursor:pointer;line-height:1;}
   .instk-sheet-foot{padding:12px 16px;border-top:1px solid #e0d8d0;}
   .instk-info{background:#eef4ff;border-radius:10px;padding:11px;font-size:12px;color:#2c5aa0;line-height:1.7;margin-top:10px;}
   .instk-ok-icon{width:48px;height:48px;border-radius:50%;background:#e6f7ee;color:#1a9d63;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;}
@@ -2062,8 +2062,14 @@
     if(!arr.length)return;
     document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-cart3"></i> 我的購物車';
     let body=arr.map(function(i){
-      return '<div class="instk-citem"><div>'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+' × '+i.qty+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
-        +'<div style="text-align:right;"><div style="font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</div><button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')">移除</button></div></div>';
+      return '<div class="instk-citem"><div style="flex:1;">'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
+        +'<div style="display:flex;align-items:center;gap:8px;">'
+        +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',-1)">−</button>'
+        +'<span style="min-width:20px;text-align:center;font-weight:700;">'+i.qty+'</span>'
+        +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',1)">＋</button>'
+        +'<span style="min-width:60px;text-align:right;font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</span>'
+        +'<button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')"><i class="bi bi-trash"></i></button>'
+        +'</div></div>';
     }).join('');
     document.getElementById('instkSheetBody').innerHTML=body;
     const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
@@ -2075,6 +2081,15 @@
   };
   window.instkCloseSheet=function(){document.getElementById('instkCartSheet').classList.remove('open');};
   window.instkRemoveItem=function(inv){delete cart[inv];instkUpdateCartBar();const arr=instkCartArr();if(!arr.length){instkCloseSheet();}else{instkOpenCartSheet();}};
+  window.instkChangeQty=function(inv,delta){
+    if(!cart[inv])return;
+    const next=cart[inv].qty+delta;
+    if(next<=0){instkRemoveItem(inv);return;}
+    if(next>cart[inv].max){alert('已達該尺寸庫存上限（'+cart[inv].max+' 件）');return;}
+    cart[inv].qty=next;
+    instkUpdateCartBar();
+    instkOpenCartSheet();
+  };
 
   // ── 送出 ──
   window.instkSubmit=function(){
@@ -2088,6 +2103,7 @@
       if(res&&res.status==='SUCCESS'){
         cart={};instkUpdateCartBar();
         instkShowSuccess(res);
+        instkLoad();  // 刷新商品列表，剩餘庫存即時反映
       }else if(res&&res.status==='STOCK_INSUFFICIENT'){
         const names=(res.failedItems||[]).map(function(f){return f.name+'（剩'+f.remain+'）';}).join('、');
         alert('部分商品剛被搶完：\n'+names+'\n\n請調整數量或移除後再送出。');
