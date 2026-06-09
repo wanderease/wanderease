@@ -3321,11 +3321,7 @@
     <div style="font-size:38px;text-align:center;margin-bottom:8px;">📋</div>
     <div style="font-size:16px;font-weight:bold;color:#4A3C49;text-align:center;margin-bottom:8px;">確認送出訂單</div>
     <div style="font-size:13px;color:#666;line-height:1.7;text-align:center;margin-bottom:14px;">送出訂單後，即代表訂單成立，<br>請確認品項與需求都正確無誤</div>
-    <div style="margin-bottom:16px;">
-      <label style="font-size:12.5px;color:#7a6a78;font-weight:bold;display:block;margin-bottom:5px;">匯款帳號後五碼 <span style="color:#c0392b;">*</span></label>
-      <input id="instkLast5" type="tel" inputmode="numeric" maxlength="5" placeholder="請輸入 5 位數字" style="width:100%;padding:10px;border:1px solid #d8d0e0;border-radius:9px;font-size:15px;text-align:center;letter-spacing:3px;" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,5)">
-      <div style="font-size:11px;color:#aaa;margin-top:4px;">可先預填，之後仍可於訂單頁修改</div>
-    </div>
+    <div id="instkConfirmLast5" style="font-size:12.5px;color:#7a6a78;text-align:center;margin-bottom:16px;"></div>
     <div style="display:flex;gap:10px;">
       <button onclick="instkCloseConfirm()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:14px;">返回購物車</button>
       <button onclick="instkDoSubmit()" style="flex:1;padding:11px;border-radius:9px;border:none;background:#7a6a78;color:#fff;font-size:14px;font-weight:bold;">確認送出</button>
@@ -3626,7 +3622,11 @@
     document.getElementById('instkSheetBody').innerHTML=body;
     const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
     document.getElementById('instkSheetFoot').innerHTML=
-      '<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:900;color:#4A3C49;"><span>小計</span><span>$'+sub.toLocaleString()+'</span></div>'
+      '<div style="margin-bottom:10px;padding:10px;background:#faf7fb;border-radius:9px;">'
+      +'<label style="font-size:12.5px;color:#7a6a78;font-weight:bold;display:block;margin-bottom:5px;">匯款帳號後五碼 <span style="color:#c0392b;">*</span></label>'
+      +'<input id="instkLast5" type="tel" inputmode="numeric" maxlength="5" placeholder="請輸入 5 位數字" style="width:100%;padding:9px;border:1px solid #d8d0e0;border-radius:8px;font-size:15px;text-align:center;letter-spacing:3px;box-sizing:border-box;" oninput="this.value=this.value.replace(/[^0-9]/g,\'\').slice(0,5)">'
+      +'<div style="font-size:11px;color:#aaa;margin-top:4px;">可先預填，之後仍可於訂單頁修改</div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:900;color:#4A3C49;"><span>小計</span><span>$'+sub.toLocaleString()+'</span></div>'
       +'<button class="instk-checkout" style="width:100%;margin-top:10px;" id="instkSubmitBtn" onclick="instkSubmit()">送出訂單</button>';
     document.getElementById('instkCartSheet').classList.add('open');
   };
@@ -3643,10 +3643,16 @@
   };
 
   // ── 送出 ──
-  // 按「送出訂單」先跳確認彈窗
+  let _instkPendingLast5='';
+  // 按「送出訂單」先驗證五碼，再跳確認彈窗
   window.instkSubmit=function(){
     const arr=instkCartArr();
     if(!arr.length)return;
+    const el=document.getElementById('instkLast5');
+    const last5=(el&&el.value||'').trim();
+    if(!/^\d{5}$/.test(last5)){alert('請填寫正確的匯款帳號後五碼（5 位數字）');if(el)el.focus();return;}
+    _instkPendingLast5=last5;
+    document.getElementById('instkConfirmLast5').innerHTML='匯款後五碼：<b style="color:#4A3C49;letter-spacing:2px;">'+last5+'</b>';
     document.getElementById('instkConfirmModal').classList.add('open');
   };
   window.instkCloseConfirm=function(){ document.getElementById('instkConfirmModal').classList.remove('open'); };
@@ -3655,7 +3661,7 @@
   window.instkDoSubmit=function(){
     const arr=instkCartArr();
     if(!arr.length)return;
-    const last5=(document.getElementById('instkLast5').value||'').trim();
+    const last5=_instkPendingLast5;
     if(!/^\d{5}$/.test(last5)){alert('請填寫正確的匯款帳號後五碼（5 位數字）');return;}
     instkCloseConfirm();
     const btn=document.getElementById('instkSubmitBtn');
