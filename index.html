@@ -787,12 +787,14 @@
           const bc = ip ? 'status-done' : 'badge-status';
           const sd = o.ship > 0 ? `-$${o.ship}` : '$0';
           const isWL = o.sourceType === 'WAITLIST';
+          const isInstock = o.sourceType === 'INSTOCK';
           const wlGroups = isWL && Array.isArray(o.waitlistGroups) ? o.waitlistGroups : [];
           const isMultiBrand = wlGroups.length > 1;
 
           // === 標題區 ===
           let th;
-          const sb = isWL ? `<span class="order-source-badge">候補補貨</span>` : '';
+          const sb = isWL ? `<span class="order-source-badge">候補補貨</span>`
+                   : (isInstock ? `<span class="order-source-badge" style="background:#7a6a78;">現貨</span>` : '');
           if (isWL && isMultiBrand) {
             // 多品牌系列候補單：標題顯示 N 個系列 + 各品牌系列藥丸
             const pillsHtml = wlGroups.map(g => {
