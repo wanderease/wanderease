@@ -4269,5 +4269,516 @@
 })();
 </script>
 
+
+<!-- 現貨購物車 -->
+<style>
+  #instkCartOverlay{position:fixed;inset:0;background:#faf8f6;z-index:9999;display:none;flex-direction:column;}
+  #instkCartOverlay.open{display:flex;}
+  .instk-top{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border-bottom:1px solid #ece6df;flex-shrink:0;}
+  .instk-top h6{margin:0;font-weight:900;color:#4A3C49;flex:1;font-size:16px;}
+  .instk-top .instk-close,.instk-top .instk-myorders{background:none;border:none;font-size:20px;color:#6b626d;cursor:pointer;}
+  .instk-xclose{width:34px;height:34px;border-radius:50%;border:none;background:#f0ebf0;color:#7a6a78;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+  .instk-xclose:hover{background:#7a6a78;color:#fff;transform:rotate(90deg);}
+  .instk-xclose:active{transform:scale(.92) rotate(90deg);}
+  .instk-brandtabs{display:flex;gap:6px;padding:9px 12px;overflow-x:auto;background:#fff;border-bottom:1px solid #ece6df;flex-shrink:0;}
+  .instk-brandtab{white-space:nowrap;padding:5px 14px;font-size:13px;border-radius:16px;border:1px solid #e0d8d0;background:#fff;color:#6b626d;cursor:pointer;}
+  .instk-brandtab.active{background:#7a6a78;color:#fff;border-color:#7a6a78;}
+  .instk-scroll{flex:1;overflow-y:auto;padding:10px 12px 90px;}
+  .instk-group-title{font-weight:900;color:#4A3C49;font-size:14px;margin:14px 2px 8px;}
+  .instk-pcard{display:flex;gap:11px;border:1px solid #ece6df;border-radius:12px;padding:11px;margin-bottom:10px;background:#fff;}
+  .instk-thumb{width:30%;max-width:110px;aspect-ratio:1;flex-shrink:0;border-radius:8px;background:#f1ede8;background-size:cover;background-position:center;cursor:pointer;position:relative;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:22px;}
+  .instk-zoom{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;font-size:10px;padding:1px 5px;border-radius:5px;}
+  .instk-pinfo{flex:1;min-width:0;}
+  .instk-nameline{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;margin-bottom:3px;}
+  .instk-pname{font-size:14px;font-weight:700;color:#4A3C49;margin:0;flex:1;min-width:0;}
+  .instk-priceline{margin-bottom:7px;display:flex;align-items:baseline;gap:6px;}
+  .instk-price{font-size:16px;font-weight:900;color:#c0392b;}
+  .instk-price-orig{font-size:11px;color:#b0a89f;text-decoration:line-through;}
+  .instk-sizes{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;}
+  .instk-sizebtn{min-width:44px;text-align:center;font-size:11px;padding:4px 6px;border-radius:8px;border:1px solid #e0d8d0;background:#fff;cursor:pointer;line-height:1.3;}
+  .instk-sizebtn.sel{background:#7a6a78;color:#fff;border-color:#7a6a78;}
+  .instk-sizebtn.soldout{opacity:.4;cursor:not-allowed;}
+  .instk-actionrow{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .instk-qtygrp{display:flex;align-items:center;gap:7px;}
+  .instk-qtybtn{width:27px;height:27px;border-radius:6px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:15px;font-weight:bold;cursor:pointer;line-height:1;}
+  .instk-qtyval{min-width:18px;text-align:center;font-size:14px;font-weight:700;}
+  .instk-link{font-size:10.5px;color:#7a6a78;background:none;border:1px solid #d8d0e0;border-radius:7px;padding:3px 7px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .instk-add{font-size:12px;padding:7px 15px;border-radius:8px;border:none;background:#7a6a78;color:#fff;cursor:pointer;white-space:nowrap;}
+  .instk-add:disabled{background:#c8c0c5;}
+  .instk-cartbar{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e0d8d0;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
+  .instk-cartbar .sub{font-size:15px;font-weight:900;color:#4A3C49;}
+  .instk-cartbar .cnt{font-size:11px;color:#888;}
+  .instk-checkout{background:#7a6a78;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:bold;cursor:pointer;}
+  .instk-checkout:disabled{background:#c8c0c5;}
+  .instk-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10001;display:none;align-items:center;justify-content:center;flex-direction:column;}
+  .instk-lightbox.open{display:flex;}
+  .instk-lightbox img{max-width:88%;max-height:74%;border-radius:8px;background:#fff;}
+  .instk-lightbox .lbclose{position:absolute;top:16px;right:18px;color:#fff;font-size:26px;background:none;border:none;cursor:pointer;}
+  .instk-sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:10000;display:none;align-items:flex-end;}
+  .instk-sheet.open{display:flex;}
+  .instk-sheet-inner{background:#fff;width:100%;max-height:86%;border-radius:16px 16px 0 0;display:flex;flex-direction:column;}
+  .instk-sheet-head{padding:13px 16px;border-bottom:1px solid #ece6df;display:flex;align-items:center;justify-content:space-between;}
+  .instk-sheet-head h6{margin:0;font-weight:900;color:#4A3C49;}
+  .instk-sheet-body{overflow-y:auto;padding:8px 16px;flex:1;}
+  .instk-citem{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3efe9;font-size:13px;}
+  .instk-citem .rm{color:#c0392b;background:none;border:none;font-size:14px;cursor:pointer;}
+  .instk-qtybtn{width:28px;height:28px;border-radius:6px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:16px;font-weight:bold;cursor:pointer;line-height:1;}
+  .instk-sheet-foot{padding:12px 16px;border-top:1px solid #e0d8d0;}
+  .instk-info{background:#eef4ff;border-radius:10px;padding:11px;font-size:12px;color:#2c5aa0;line-height:1.7;margin-top:10px;}
+  .instk-ok-icon{width:48px;height:48px;border-radius:50%;background:#e6f7ee;color:#1a9d63;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;}
+  .instk-empty{text-align:center;color:#aaa;padding:50px 0;}
+  .instk-coming{text-align:center;padding:70px 20px;}
+  .instk-confirm-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;display:none;align-items:center;justify-content:center;padding:24px;}
+  .instk-confirm-mask.open{display:flex;}
+  .instk-confirm-box{background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;}
+  .instk-orderstrip{margin:10px 12px 0;background:#fff7e6;border:1px solid #ffe2a8;border-radius:10px;overflow:hidden;}
+  .instk-orderstrip-head{padding:10px 13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:13px;font-weight:bold;color:#915b00;}
+  .instk-orderstrip-body{padding:0 13px 11px;border-top:1px dashed #ffe2a8;margin-top:2px;padding-top:9px;}
+</style>
+
+<div id="instkCartOverlay">
+  <div class="instk-top">
+    <button class="instk-close" onclick="instkCloseCart()"><i class="bi bi-chevron-left"></i></button>
+    <h6>🛍️ 現貨</h6>
+    <button class="instk-myorders" onclick="instkOpenMyOrders()" title="我的訂單"><i class="bi bi-clipboard-check"></i></button>
+  </div>
+  <div class="instk-brandtabs" id="instkBrandTabs"></div>
+  <div id="instkOrderStrip"></div>
+  <div class="instk-scroll" id="instkScroll">
+    <div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>
+  </div>
+  <div class="instk-cartbar">
+    <div><div class="cnt">已選 <span id="instkCartCnt">0</span> 件</div><div class="sub">小計 $<span id="instkCartSub">0</span></div></div>
+    <button class="instk-checkout" id="instkCheckoutBtn" onclick="instkOpenCartSheet()" disabled>查看購物車</button>
+  </div>
+</div>
+
+<div class="instk-lightbox" id="instkLightbox">
+  <button class="lbclose" onclick="instkCloseLightbox()"><i class="bi bi-x"></i></button>
+  <img id="instkLightboxImg" src="" alt="放大圖">
+  <div id="instkLightboxNav" style="color:#fff;font-size:12px;margin-top:10px;"></div>
+</div>
+
+<div class="instk-confirm-mask" id="instkConfirmModal">
+  <div class="instk-confirm-box">
+    <div style="font-size:38px;text-align:center;margin-bottom:8px;">📋</div>
+    <div style="font-size:16px;font-weight:bold;color:#4A3C49;text-align:center;margin-bottom:8px;">確認送出訂單</div>
+    <div style="font-size:13px;color:#666;line-height:1.7;text-align:center;margin-bottom:14px;">送出訂單後，即代表訂單成立，<br>請確認品項與需求都正確無誤</div>
+    <div id="instkConfirmLast5" style="font-size:12.5px;color:#7a6a78;text-align:center;margin-bottom:16px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="instkCloseConfirm()" style="flex:1;padding:11px;border-radius:9px;border:1px solid #d8d0e0;background:#fff;color:#7a6a78;font-size:14px;">返回購物車</button>
+      <button onclick="instkDoSubmit()" style="flex:1;padding:11px;border-radius:9px;border:none;background:#7a6a78;color:#fff;font-size:14px;font-weight:bold;">確認送出</button>
+    </div>
+  </div>
+</div>
+
+<div class="instk-sheet" id="instkCartSheet">
+  <div class="instk-sheet-inner">
+    <div class="instk-sheet-head"><h6 id="instkSheetTitle"><i class="bi bi-cart3"></i> 我的購物車</h6><button class="instk-xclose" onclick="instkCloseSheet()" aria-label="關閉"><i class="bi bi-x-lg"></i></button></div>
+    <div class="instk-sheet-body" id="instkSheetBody"></div>
+    <div class="instk-sheet-foot" id="instkSheetFoot"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let DATA=null;          // {groups, batch}
+  let activeBrand=null;
+  let cart={};            // key=inventoryId → {inventoryId, name, size, price, qty, max}
+  let lightboxPhotos=[], lightboxIdx=0;
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  // 共用：明細按品牌/系列分組渲染（摘要列、首頁卡、訂單sheet 共用）
+  function instkRenderItemsByBrand(items){
+    const byBS={};
+    (items||[]).forEach(function(it){
+      const k=(it.brand||'其他')+'\u0001'+(it.series||'');
+      if(!byBS[k])byBS[k]=[];
+      byBS[k].push(it);
+    });
+    return Object.keys(byBS).map(function(k){
+      const parts=k.split('\u0001');
+      const rows=byBS[k].map(function(it){
+        return '<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0 2px 8px;"><span>'+esc(it.name)+' <span style="color:#b59;">'+esc(it.size)+'\u00d7'+it.qty+'</span></span><span>NT$'+(it.price*it.qty).toLocaleString()+'</span></div>';
+      }).join('');
+      return '<div style="margin-bottom:4px;"><div style="font-size:11.5px;font-weight:bold;color:#7a6a78;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>'+rows+'</div>';
+    }).join('');
+  }
+  function post(action, extra){
+    const body=new URLSearchParams(Object.assign({action:action,lineUid:currentLineUid},extra||{}));
+    return fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
+  }
+
+  // ── 開關購物車 ──
+  window.instkOpenCart=function(){
+    document.getElementById('instkCartOverlay').classList.add('open');
+    document.body.style.overflow='hidden';
+    instkLoad();
+  };
+  window.instkCloseCart=function(){
+    document.getElementById('instkCartOverlay').classList.remove('open');
+    document.body.style.overflow='';
+  };
+
+  // ── 載入商品 ──
+  function instkLoad(){
+    const sc=document.getElementById('instkScroll');
+    sc.innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
+    post('getInstockProducts').then(function(res){
+      if(res&&res.status==='COMING_SOON'){
+        document.getElementById('instkBrandTabs').innerHTML='';
+        document.getElementById('instkOrderStrip').innerHTML='';
+        sc.innerHTML='<div class="instk-coming"><div style="font-size:42px;">🛍️</div><div style="font-size:20px;font-weight:bold;color:#7a6a78;margin-top:14px;">Coming Soon</div><div style="font-size:14px;color:#999;margin-top:8px;">現貨購物功能即將開放<br>敬請期待 ✨</div></div>';
+        return;
+      }
+      if(!res||res.status!=='SUCCESS'){sc.innerHTML='<div class="instk-empty">載入失敗：'+(res?esc(res.message):'無回應')+'</div>';return;}
+      DATA=res.data;
+      if(!DATA.groups||!DATA.groups.length){sc.innerHTML='<div class="instk-empty">目前沒有現貨商品<br><span style="font-size:12px;">敬請期待下次促銷</span></div>';document.getElementById('instkBrandTabs').innerHTML='';return;}
+      instkBuildBrandTabs();
+      instkRenderProducts();
+      instkLoadOrderStrip();
+    }).catch(function(e){sc.innerHTML='<div class="instk-empty">連線錯誤：'+esc(e.message)+'</div>';});
+  }
+
+  // 頁面內訂單摘要列（有訂單才顯示，點開看明細）
+  function instkLoadOrderStrip(){
+    const box=document.getElementById('instkOrderStrip');
+    if(!box)return;
+    post('getMyInstockOrders').then(function(res){
+      if(!res||res.status!=='SUCCESS'||!res.data.orders||!res.data.orders.length){box.innerHTML='';return;}
+      const d=res.data;
+      let detail=d.orders.map(function(o){
+        return instkRenderItemsByBrand(o.items||[]);
+      }).join('');
+      box.innerHTML=
+        '<div class="instk-orderstrip">'
+        +'<div class="instk-orderstrip-head" onclick="instkToggleOrderStrip()">'
+        +'<span><i class="bi bi-bag-check"></i> 我的現貨訂單 · '+d.totalOrders+' 筆 · NT$'+d.grandTotal.toLocaleString()+'</span>'
+        +'<i class="bi bi-chevron-down" id="instkStripChev"></i></div>'
+        +'<div class="instk-orderstrip-body" id="instkStripBody" style="display:none;">'+detail
+        +'<div style="margin-top:8px;font-size:10.5px;color:#915b00;"><i class="bi bi-clock"></i> 訂單送出 15 分鐘後，可至訂單頁面查詢應匯款金額與匯款資訊</div></div>'
+        +'</div>';
+    });
+  }
+  window.instkToggleOrderStrip=function(){
+    const b=document.getElementById('instkStripBody'),ch=document.getElementById('instkStripChev');
+    const open=b.style.display!=='none';
+    b.style.display=open?'none':'block';
+    if(ch)ch.className=open?'bi bi-chevron-down':'bi bi-chevron-up';
+  };
+
+  // 品牌 tab：從 groups 的 category 取「品牌」(category 可能是 "品牌" 或 "品牌 / 系列")
+  function instkBuildBrandTabs(){
+    const brands=[];
+    DATA.groups.forEach(function(g){
+      const brand=g.category.split(' / ')[0];
+      if(brands.indexOf(brand)<0)brands.push(brand);
+    });
+    activeBrand=brands[0];
+    const tabs=document.getElementById('instkBrandTabs');
+    tabs.innerHTML=brands.map(function(b){
+      return '<button class="instk-brandtab'+(b===activeBrand?' active':'')+'" onclick="instkSwitchBrand(\''+esc(b).replace(/'/g,"\\'")+'\')">'+esc(b)+'</button>';
+    }).join('');
+  }
+  window.instkSwitchBrand=function(b){
+    activeBrand=b;
+    document.querySelectorAll('.instk-brandtab').forEach(function(t){t.classList.toggle('active',t.textContent===b);});
+    instkRenderProducts();
+  };
+
+  function instkRenderProducts(){
+    const sc=document.getElementById('instkScroll');
+    const groups=DATA.groups.filter(function(g){return g.category.split(' / ')[0]===activeBrand;});
+    let html='';
+    groups.forEach(function(g){
+      html+='<div class="instk-group-title">'+esc(g.category)+'</div>';
+      g.items.forEach(function(c){
+        const photo=c.photos&&c.photos.length?c.photos[0]:'';
+        const cid=c.styleKey;
+        html+='<div class="instk-pcard" data-cid="'+esc(cid)+'" data-brand="'+esc(c.brand||'').replace(/"/g,'&quot;')+'" data-series="'+esc(c.series||'').replace(/"/g,'&quot;')+'">';
+        // 左：圖（1/3，可放大）
+        html+='<div class="instk-thumb" '+(photo?'style="background-image:url('+photo+');background-size:cover;background-position:center;"':'')+' onclick="instkOpenLightbox('+instkStash(c.photos||[])+')">'+(photo?'':'<i class="bi bi-image"></i>')+'<span class="instk-zoom"><i class="bi bi-zoom-in"></i></span></div>';
+        // 右：資訊
+        html+='<div class="instk-pinfo">';
+        html+='<div class="instk-nameline"><p class="instk-pname">'+esc(c.name)+'</p>'
+          +(c.sizeChartUrl?'<button class="instk-link" onclick="instkOpenLightbox('+instkStash([c.sizeChartUrl])+')"><i class="bi bi-rulers"></i> 尺寸表</button>':'')
+          +'</div>';
+        html+='<div class="instk-priceline">'+(c.isSpecial?'<span class="instk-price-orig">NT$'+c.sellPrice.toLocaleString()+'</span>':'')+'<span class="instk-price">NT$'+c.effectivePrice.toLocaleString()+'</span></div>';
+        // 尺寸：判斷是否「無尺寸款」（只有一筆且 size 空）
+        const noSize=(c.sizes.length===1 && (!c.sizes[0].size || c.sizes[0].size===''));
+        if(noSize){
+          const s0=c.sizes[0];
+          const so=s0.remain<=0;
+          // 無尺寸：不顯示規格按鈕，直接顯示剩餘；用隱藏按鈕承載資料 + 自動選取
+          html+='<div class="instk-nosize" style="font-size:12px;color:#888;margin-bottom:6px;">'+(so?'<span style="color:#c0392b;">已售完</span>':'剩 '+s0.remain+' 件')+'</div>';
+          html+='<button class="instk-sizebtn sel" style="display:none;" data-inv="'+s0.inventoryId+'" data-name="'+esc(c.name).replace(/"/g,'&quot;')+'" data-size="" data-price="'+s0.effectivePrice+'" data-max="'+s0.remain+'"></button>';
+        } else {
+          html+='<div class="instk-sizes">';
+          c.sizes.forEach(function(s){
+            const so=s.remain<=0;
+            html+='<button class="instk-sizebtn'+(so?' soldout':'')+'" '+(so?'disabled':'onclick="instkPickSize(this,\''+s.inventoryId+'\')"')+' data-inv="'+s.inventoryId+'" data-name="'+esc(c.name).replace(/"/g,'&quot;')+'" data-size="'+esc(s.size)+'" data-price="'+s.effectivePrice+'" data-max="'+s.remain+'">'+esc(s.size)+'<br><span style="font-size:9px;">'+(so?'售完':'剩'+s.remain)+'</span></button>';
+          });
+          html+='</div>';
+        }
+        // 數量加減 + 加入（乾淨一列）
+        html+='<div class="instk-actionrow">';
+        html+='<div class="instk-qtygrp"><button class="instk-qtybtn" onclick="instkCardQty(this,-1)">−</button><span class="instk-qtyval">1</span><button class="instk-qtybtn" onclick="instkCardQty(this,1)">＋</button></div>';
+        html+='<button class="instk-add" onclick="instkAddToCart(this)"><i class="bi bi-cart-plus"></i> 加入</button>';
+        html+='</div>';
+        html+='</div></div>';
+      });
+    });
+    sc.innerHTML=html||'<div class="instk-empty">此品牌目前無商品</div>';
+  }
+
+  // 卡上數量加減
+  window.instkCardQty=function(btn,delta){
+    const grp=btn.closest('.instk-qtygrp');
+    const span=grp.querySelector('.instk-qtyval');
+    let v=parseInt(span.textContent,10)+delta;
+    if(v<1)v=1;
+    span.textContent=v;
+  };
+
+  // 暫存陣列給 onclick 用（避免大量 JSON 塞進屬性）
+  let stashStore=[];
+  window.instkStash=function(){};
+  function instkStash(arr){stashStore.push(arr);return stashStore.length-1;}
+  window.instkOpenLightbox=function(idx){
+    const photos=stashStore[idx]||[];
+    if(!photos.length)return;
+    lightboxPhotos=photos;lightboxIdx=0;
+    document.getElementById('instkLightboxImg').src=photos[0];
+    document.getElementById('instkLightboxNav').textContent=photos.length>1?('1 / '+photos.length+'（點圖換下一張）'):'';
+    document.getElementById('instkLightbox').classList.add('open');
+  };
+  document.getElementById('instkLightboxImg')&&document.getElementById('instkLightboxImg').addEventListener('click',function(){
+    if(lightboxPhotos.length<2)return;
+    lightboxIdx=(lightboxIdx+1)%lightboxPhotos.length;
+    this.src=lightboxPhotos[lightboxIdx];
+    document.getElementById('instkLightboxNav').textContent=(lightboxIdx+1)+' / '+lightboxPhotos.length+'（點圖換下一張）';
+  });
+  window.instkCloseLightbox=function(){document.getElementById('instkLightbox').classList.remove('open');};
+
+  // 選尺寸（同卡內單選）
+  window.instkPickSize=function(btn,inv){
+    const card=btn.closest('.instk-pcard');
+    card.querySelectorAll('.instk-sizebtn').forEach(function(b){b.classList.remove('sel');});
+    btn.classList.add('sel');
+    card.setAttribute('data-selinv',inv);
+  };
+
+  window.instkAddToCart=function(addBtn){
+    const card=addBtn.closest('.instk-pcard');
+    let inv=card.getAttribute('data-selinv');
+    // 無尺寸款：自動取卡內唯一的（隱藏）品項按鈕
+    if(!inv){
+      const only=card.querySelectorAll('.instk-sizebtn');
+      if(only.length===1){inv=only[0].getAttribute('data-inv');}
+    }
+    if(!inv){alert('請先選擇尺寸');return;}
+    const sb=card.querySelector('.instk-sizebtn[data-inv="'+inv+'"]');
+    const name=sb.getAttribute('data-name'),size=sb.getAttribute('data-size');
+    const price=parseInt(sb.getAttribute('data-price'),10),max=parseInt(sb.getAttribute('data-max'),10);
+    const wantQty=parseInt(card.querySelector('.instk-qtyval').textContent,10)||1;
+    const brand=card.getAttribute('data-brand')||'',series=card.getAttribute('data-series')||'';
+    if(!cart[inv])cart[inv]={inventoryId:inv,name:name,size:size,price:price,qty:0,max:max,brand:brand,series:series};
+    if(cart[inv].qty+wantQty>max){alert('超過該尺寸庫存（剩 '+max+' 件，您購物車已有 '+cart[inv].qty+' 件）');return;}
+    cart[inv].qty+=wantQty;
+    instkUpdateCartBar();
+    addBtn.innerHTML='<i class="bi bi-check"></i> 已加入';setTimeout(function(){addBtn.innerHTML='<i class="bi bi-cart-plus"></i> 加入';},800);
+  };
+
+  // ── 首頁置頂訂單卡（客人一進首頁就看到，可點開明細）──
+  // 用法：在 index 首頁容器放一個 <div id="instkHomeBanner"></div>，頁面載入後呼叫 instkRenderHomeBanner()
+  window.instkRenderHomeBanner=function(){
+    const box=document.getElementById('instkHomeBanner');
+    if(!box||!currentLineUid)return;
+    post('getMyInstockOrders').then(function(res){
+      if(!res||res.status!=='SUCCESS'||!res.data.orders||!res.data.orders.length){box.innerHTML='';return;}
+      const d=res.data;
+      let detail=d.orders.map(function(o){
+        return instkRenderItemsByBrand(o.items||[]);
+      }).join('');
+      box.innerHTML=
+        '<div style="background:#fff7e6;border:1px solid #ffe2a8;border-radius:14px;overflow:hidden;margin:10px 0;">'
+        +'<div style="padding:12px 15px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="instkToggleHomeDetail()">'
+        +'<span style="font-size:13px;font-weight:bold;color:#915b00;">🛍️ 我的現貨訂單（'+esc(d.batch)+'）</span>'
+        +'<i class="bi bi-chevron-down" id="instkHomeChev" style="color:#915b00;"></i></div>'
+        +'<div style="padding:0 15px;display:flex;gap:18px;"><div><div style="font-size:10px;color:#b08;">已下訂單</div><div style="font-size:16px;font-weight:bold;">'+d.totalOrders+' 筆</div></div>'
+        +'<div><div style="font-size:10px;color:#b08;">件數</div><div style="font-size:16px;font-weight:bold;">'+d.grandCount+' 件</div></div>'
+        +'<div><div style="font-size:10px;color:#b08;">小計</div><div style="font-size:16px;font-weight:bold;color:#c0392b;">NT$'+d.grandTotal.toLocaleString()+'</div></div></div>'
+        +'<div id="instkHomeDetail" style="display:none;margin:10px 15px 0;padding:10px 0 12px;border-top:1px dashed #ffe2a8;">'
+        +'<div style="font-size:11px;color:#b08;margin-bottom:4px;">訂單明細</div>'+detail
+        +'<div style="margin-top:8px;font-size:10.5px;color:#915b00;"><i class="bi bi-clock"></i> 訂單送出 15 分鐘後，可至訂單頁面查詢應匯款金額與匯款資訊</div></div>'
+        +'</div>';
+    });
+  };
+  window.instkToggleHomeDetail=function(){
+    const d=document.getElementById('instkHomeDetail');
+    const ch=document.getElementById('instkHomeChev');
+    const open=d.style.display!=='none';
+    d.style.display=open?'none':'block';
+    if(ch)ch.className=open?'bi bi-chevron-down':'bi bi-chevron-up';
+  };
+
+  function instkCartArr(){return Object.keys(cart).map(function(k){return cart[k];}).filter(function(i){return i.qty>0;});}
+  function instkUpdateCartBar(){
+    const arr=instkCartArr();
+    const cnt=arr.reduce(function(s,i){return s+i.qty;},0);
+    const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
+    document.getElementById('instkCartCnt').textContent=cnt;
+    document.getElementById('instkCartSub').textContent=sub.toLocaleString();
+    const btn=document.getElementById('instkCheckoutBtn');
+    btn.disabled=cnt===0;
+    btn.textContent=cnt>0?'查看購物車':'查看購物車';
+  }
+
+  // ── 購物車 sheet ──
+  window.instkOpenCartSheet=function(){
+    const arr=instkCartArr();
+    if(!arr.length)return;
+    document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-cart3"></i> 我的購物車';
+    // 按品牌/系列分組
+    const grp={};
+    arr.forEach(function(i){
+      const k=(i.brand||'其他')+'\u0001'+(i.series||'');
+      if(!grp[k])grp[k]=[];
+      grp[k].push(i);
+    });
+    let body=Object.keys(grp).map(function(k){
+      const parts=k.split('\u0001');
+      const head='<div style="font-size:12px;font-weight:bold;color:#7a6a78;margin:6px 0 2px;">'+esc(parts[0])+(parts[1]?' <span style="color:#aaa;font-weight:normal;">/ '+esc(parts[1])+'</span>':'')+'</div>';
+      const rows=grp[k].map(function(i){
+        return '<div class="instk-citem"><div style="flex:1;">'+esc(i.name)+' <span style="color:#aaa;">'+esc(i.size)+'</span><br><span style="font-size:11px;color:#c0392b;">$'+i.price+'</span></div>'
+          +'<div style="display:flex;align-items:center;gap:8px;">'
+          +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',-1)">−</button>'
+          +'<span style="min-width:20px;text-align:center;font-weight:700;">'+i.qty+'</span>'
+          +'<button class="instk-qtybtn" onclick="instkChangeQty(\''+i.inventoryId+'\',1)">＋</button>'
+          +'<span style="min-width:60px;text-align:right;font-weight:700;">$'+(i.price*i.qty).toLocaleString()+'</span>'
+          +'<button class="rm" onclick="instkRemoveItem(\''+i.inventoryId+'\')"><i class="bi bi-trash"></i></button>'
+          +'</div></div>';
+      }).join('');
+      return head+rows;
+    }).join('');
+    document.getElementById('instkSheetBody').innerHTML=body;
+    const sub=arr.reduce(function(s,i){return s+i.qty*i.price;},0);
+    document.getElementById('instkSheetFoot').innerHTML=
+      '<div style="margin-bottom:10px;padding:10px;background:#faf7fb;border-radius:9px;">'
+      +'<label style="font-size:12.5px;color:#7a6a78;font-weight:bold;display:block;margin-bottom:5px;">匯款帳號後五碼 <span style="color:#c0392b;">*</span></label>'
+      +'<input id="instkLast5" type="tel" inputmode="numeric" maxlength="5" placeholder="請輸入 5 位數字" style="width:100%;padding:9px;border:1px solid #d8d0e0;border-radius:8px;font-size:15px;text-align:center;letter-spacing:3px;box-sizing:border-box;" oninput="this.value=this.value.replace(/[^0-9]/g,\'\').slice(0,5)">'
+      +'<div style="font-size:11px;color:#aaa;margin-top:4px;">可先預填，之後仍可於訂單頁修改</div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:900;color:#4A3C49;"><span>小計</span><span>$'+sub.toLocaleString()+'</span></div>'
+      +'<button class="instk-checkout" style="width:100%;margin-top:10px;" id="instkSubmitBtn" onclick="instkSubmit()">送出訂單</button>';
+    document.getElementById('instkCartSheet').classList.add('open');
+  };
+  window.instkCloseSheet=function(){document.getElementById('instkCartSheet').classList.remove('open');};
+  window.instkRemoveItem=function(inv){delete cart[inv];instkUpdateCartBar();const arr=instkCartArr();if(!arr.length){instkCloseSheet();}else{instkOpenCartSheet();}};
+  window.instkChangeQty=function(inv,delta){
+    if(!cart[inv])return;
+    const next=cart[inv].qty+delta;
+    if(next<=0){instkRemoveItem(inv);return;}
+    if(next>cart[inv].max){alert('已達該尺寸庫存上限（'+cart[inv].max+' 件）');return;}
+    cart[inv].qty=next;
+    instkUpdateCartBar();
+    instkOpenCartSheet();
+  };
+
+  // ── 送出 ──
+  let _instkPendingLast5='';
+  // 按「送出訂單」先驗證五碼，再跳確認彈窗
+  window.instkSubmit=function(){
+    const arr=instkCartArr();
+    if(!arr.length)return;
+    const el=document.getElementById('instkLast5');
+    const last5=(el&&el.value||'').trim();
+    if(!/^\d{5}$/.test(last5)){alert('請填寫正確的匯款帳號後五碼（5 位數字）');if(el)el.focus();return;}
+    _instkPendingLast5=last5;
+    document.getElementById('instkConfirmLast5').innerHTML='匯款後五碼：<b style="color:#4A3C49;letter-spacing:2px;">'+last5+'</b>';
+    document.getElementById('instkConfirmModal').classList.add('open');
+  };
+  window.instkCloseConfirm=function(){ document.getElementById('instkConfirmModal').classList.remove('open'); };
+
+  // 彈窗按「確認送出」才真正送出
+  window.instkDoSubmit=function(){
+    const arr=instkCartArr();
+    if(!arr.length)return;
+    const last5=_instkPendingLast5;
+    if(!/^\d{5}$/.test(last5)){alert('請填寫正確的匯款帳號後五碼（5 位數字）');return;}
+    instkCloseConfirm();
+    const btn=document.getElementById('instkSubmitBtn');
+    btn.disabled=true;btn.textContent='送出中…';
+    const cartItems=arr.map(function(i){return {inventoryId:i.inventoryId,qty:i.qty};});
+    post('instockCheckout',{payload:JSON.stringify({lineUid:currentLineUid,cartItems:cartItems,last5:last5})}).then(function(res){
+      btn.disabled=false;btn.textContent='送出訂單';
+      if(res&&res.status==='SUCCESS'){
+        cart={};instkUpdateCartBar();
+        instkShowSuccess(res);
+        instkLoad();  // 刷新商品列表+訂單摘要，剩餘庫存即時反映
+      }else if(res&&res.status==='STOCK_INSUFFICIENT'){
+        const names=(res.failedItems||[]).map(function(f){return f.name+'（剩'+f.remain+'）';}).join('、');
+        alert('部分商品剛被搶完：\n'+names+'\n\n請調整數量或移除後再送出。');
+        instkLoad();instkCloseSheet();
+      }else if(res&&res.status==='BUSY'){
+        alert('結帳人潮眾多，請稍候 3 秒再送出一次');
+      }else if(res&&res.status==='BAD_LAST5'){
+        alert('請填寫正確的匯款帳號後五碼（5 位數字）');
+      }else if(res&&res.status==='COMING_SOON'){
+        alert('現貨購物功能即將開放，敬請期待 ✨');
+      }else if(res&&res.status==='NO_CUSTOMER'){
+        alert('查無綁定資料，請先完成 LINE 綁定');
+      }else{
+        alert('送出失敗：'+(res?res.message:'無回應'));
+      }
+    }).catch(function(e){btn.disabled=false;btn.textContent='送出訂單';alert('連線錯誤：'+e.message);});
+  };
+
+  function instkShowSuccess(res){
+    document.getElementById('instkSheetTitle').innerHTML='訂單已成立';
+    document.getElementById('instkSheetBody').innerHTML=
+      '<div style="text-align:center;padding:14px 0;"><div class="instk-ok-icon"><i class="bi bi-check-lg"></i></div>'
+      +'<div style="font-size:15px;font-weight:900;color:#4A3C49;">訂單已成立，商品已保留</div></div>'
+      +'<div style="background:#f7f4f0;border-radius:10px;padding:11px;font-size:13px;">'
+      +'<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:#888;">本單小計</span><span style="font-weight:700;">$'+(res.thisSubtotal||0).toLocaleString()+'</span></div></div>'
+      +'<div class="instk-info"><b>匯款資訊與金額</b><br>可於訂單送出後 15 分鐘至訂單頁面確認應匯款金額與匯款資訊。</div>';
+    document.getElementById('instkSheetFoot').innerHTML=
+      '<div style="display:flex;gap:8px;"><button class="instk-link" style="flex:1;padding:10px;" onclick="instkCloseSheet()">繼續逛</button>'
+      +'<button class="instk-checkout" style="flex:1;" onclick="instkCloseSheet();instkOpenMyOrders()">看我的訂單</button></div>';
+  }
+
+  // ── 我的訂單 ──
+  window.instkOpenMyOrders=function(){
+    document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-clipboard-check"></i> 現貨訂單';
+    document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div></div>';
+    document.getElementById('instkSheetFoot').innerHTML='';
+    document.getElementById('instkCartSheet').classList.add('open');
+    post('getMyInstockOrders').then(function(res){
+      if(!res||res.status!=='SUCCESS'){document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty">讀取失敗</div>';return;}
+      const orders=res.data.orders||[];
+      if(!orders.length){document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty">本次促銷尚無訂單</div>';return;}
+      const d=res.data;
+      let body=orders.map(function(o){
+        let itemsHtml=instkRenderItemsByBrand(o.items||[]);
+        const money='<div style="border-top:1px dashed #e8e0d8;margin-top:6px;padding-top:6px;font-size:12px;color:#666;">'
+          +'<div style="display:flex;justify-content:space-between;"><span>商品小計</span><span>$'+(o.subtotal||0).toLocaleString()+'</span></div>'
+          +'<div style="display:flex;justify-content:space-between;"><span>賣貨便金額</span><span>−$'+(o.shipFee||0).toLocaleString()+'</span></div>'
+          +'<div style="display:flex;justify-content:space-between;font-weight:bold;color:#c0392b;font-size:13px;margin-top:2px;"><span>應匯款金額</span><span>$'+(o.dueAmount||0).toLocaleString()+'</span></div>'
+          +(o.last5?'<div style="display:flex;justify-content:space-between;color:#999;margin-top:3px;"><span>匯款後五碼</span><span>'+esc(o.last5)+'</span></div>':'')
+          +'</div>';
+        return '<div style="border:1px solid #ece6df;border-radius:10px;padding:10px 12px;margin-bottom:8px;">'
+          +'<div style="display:flex;justify-content:space-between;font-weight:700;color:#4A3C49;font-size:13px;margin-bottom:5px;"><span>第 '+o.index+' 筆 · '+o.itemCount+' 件</span></div>'
+          +itemsHtml+money+'</div>';
+      }).join('');
+      // 總應匯款
+      body+='<div style="background:#fbeef0;border-radius:10px;padding:10px 12px;margin-top:6px;">'
+        +'<div style="display:flex;justify-content:space-between;font-weight:bold;color:#4A3C49;"><span>本次總應匯款</span><span style="color:#c0392b;font-size:16px;">$'+((d.grandDue||0)).toLocaleString()+'</span></div></div>';
+      body+='<div style="background:#fff7e6;border-radius:10px;padding:9px;margin-top:6px;text-align:center;font-size:12px;color:#915b00;"><i class="bi bi-info-circle"></i> 訂單送出 15 分鐘後，可至訂單頁面查詢應匯款金額與匯款資訊</div>';
+      document.getElementById('instkSheetBody').innerHTML=body;
+    });
+  };
+})();
+</script>
+
 </body>
 </html>
