@@ -790,18 +790,13 @@
           const isInstock = o.sourceType === 'INSTOCK';
           const wlGroups = isWL && Array.isArray(o.waitlistGroups) ? o.waitlistGroups : [];
           const isMultiBrand = wlGroups.length > 1;
-          // 🆕 匯款急件：未完成 + 期限剩 ≤1 天（含逾期）
+          // 🆕 匯款急件排序用（保留浮頂排序，但不顯示逾期/即將到期標籤）
           const _now = Date.now();
-          const isUrgent = !ip && o.deadlineTs && (o.deadlineTs - _now) <= 86400000;
-          const isOverdue = !ip && o.deadlineTs && o.deadlineTs < _now;
-          const urgentBadge = isUrgent
-            ? `<span style="display:inline-block;background:${isOverdue ? '#c0392b' : '#e67e22'};color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;"><i class="bi bi-alarm-fill"></i> ${isOverdue ? '匯款已逾期' : '匯款即將到期'}</span>`
-            : '';
 
           // === 標題區 ===
           let th;
           const sb = (isWL ? `<span class="order-source-badge">候補補貨</span>`
-                   : (isInstock ? `<span class="order-source-badge" style="background:#7a6a78;">現貨</span>` : '')) + urgentBadge;
+                   : (isInstock ? `<span class="order-source-badge" style="background:#7a6a78;">現貨</span>` : ''));
           if (isWL && isMultiBrand) {
             // 多品牌系列候補單：標題顯示 N 個系列 + 各品牌系列藥丸
             const pillsHtml = wlGroups.map(g => {
@@ -821,7 +816,11 @@
 
           // === 公告（候補不顯示）===
           let nh = '';
-          if (!isWL && (o.groupNotice || o.groupMemo)) {
+          if (isInstock) {
+            // 🆕 現貨單：卡片內顯示現貨公告（後台現貨上架頁設定）
+            const _ia = (gp && gp.instockAnnounce) ? String(gp.instockAnnounce).trim() : '';
+            if (_ia) nh = `<div class="notice-box">📢 公告：<br>${escHTML(_ia).replace(/\n/g,'<br>')}</div>`;
+          } else if (!isWL && (o.groupNotice || o.groupMemo)) {
             nh = `<div class="notice-box">📢 公告：<br>${escHTML(o.groupNotice)}<br>${escHTML(o.groupMemo)}</div>`;
           }
 
@@ -1002,13 +1001,7 @@
 
           return `<div class="card-order mb-4 ${isWL?'is-waitlist':''}"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;
         }).join('');
-        // 🆕 現貨公告（後台現貨上架頁設定，顯示在訂單列表頂端）
-        let instkAnncHtml = '';
-        const _ia = (gp && gp.instockAnnounce) ? String(gp.instockAnnounce).trim() : '';
-        if (_ia) {
-          instkAnncHtml = `<div style="margin:0 0 14px;padding:13px 15px;background:#fff8e8;border:1px solid #f0d98a;border-radius:12px;font-size:13.5px;color:#7a5c00;line-height:1.6;text-align:left;"><div style="font-weight:bold;margin-bottom:4px;"><i class="bi bi-megaphone-fill me-1"></i>現貨公告</div>${escHTML(_ia).replace(/\n/g,'<br>')}</div>`;
-        }
-        oc.innerHTML = `<div class="text-start">${tt}${instkAnncHtml}${cards}</div>`;
+        oc.innerHTML = `<div class="text-start">${tt}${cards}</div>`;
       }
       // 開團/現貨/規則
       const pc=document.getElementById('pagePromos');pc.innerHTML=promos&&promos.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6>${promos.map(p=>`<div style="background:#fffaf5;border:1px solid #e8d5c4;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:12px;">👑 ${escHTML(p.title)}</h6><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14.5px;color:#dc3545;font-weight:900;">${p.exp?`⏰ 結單: ${escHTML(p.exp)}`:''}</div><button style="background:var(--brand-brown);color:#fff;border:none;padding:8px 20px;font-size:14px;border-radius:8px;font-weight:bold;cursor:pointer;" onclick="window.open('${p.url}','_blank')">👉 前往填單</button></div></div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">目前沒有開團</h6></div></div>`;
