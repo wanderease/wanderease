@@ -329,6 +329,12 @@
     .unship-row-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;}
     .unship-row-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;white-space:nowrap;}
     .unship-row-tag.delay{background:#fee2e2;color:#991b1b;}
+    /* 🆕 出貨流程示意（純說明用，透明底，無進度）*/
+    .flow-guide{display:flex;align-items:flex-start;justify-content:space-between;gap:2px;padding:10px 4px 14px;margin-bottom:4px;}
+    .flow-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;}
+    .flow-step .fi{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:#a96a3f;border:1.5px solid #e0d0bf;background:transparent;margin-bottom:5px;}
+    .flow-step .fl{font-size:10px;color:#8a7560;font-weight:600;text-align:center;line-height:1.2;}
+    .flow-arrow{flex:0 0 auto;align-self:center;margin-top:-12px;color:#d8c4af;font-size:11px;}
     .unship-row-tag.wait{background:#fef3c7;color:#92400e;}
 
     /* 預購框「+ 新增品項」改用卡內展開（補強 modal 已存在的 fallback）*/
@@ -1112,6 +1118,15 @@
         unship.innerHTML = `
           <div class="unship-page-section">
             <div class="unship-page-title"><i class="bi bi-hourglass-split"></i> 尚未出貨列表 <span class="count">共 ${totalUnship} 項</span></div>
+            <div class="flow-guide">
+              <div class="flow-step"><div class="fi"><i class="bi bi-truck"></i></div><div class="fl">官方出貨</div></div>
+              <div class="flow-arrow"><i class="bi bi-chevron-right"></i></div>
+              <div class="flow-step"><div class="fi"><i class="bi bi-building"></i></div><div class="fl">泰國到貨</div></div>
+              <div class="flow-arrow"><i class="bi bi-chevron-right"></i></div>
+              <div class="flow-step"><div class="fi"><i class="bi bi-airplane"></i></div><div class="fl">海關查驗</div></div>
+              <div class="flow-arrow"><i class="bi bi-chevron-right"></i></div>
+              <div class="flow-step"><div class="fi"><i class="bi bi-house-door"></i></div><div class="fl">台灣到貨</div></div>
+            </div>
             ${unshipGroups.map(g => `
               <div class="unship-group">
                 <div class="unship-group-head">
