@@ -1120,7 +1120,13 @@
                 </div>
                 ${(g.items||[]).map(it => {
                   let tagHtml = '';
-                  if(it.expectedDate){
+                  if(it.status==='official_wait'){
+                    tagHtml = `<span class="unship-row-tag" style="background:#fef9c3;color:#854d0e;">📦 官方尚未出貨</span>`;
+                  } else if(it.status==='thai_warehouse'){
+                    tagHtml = `<span class="unship-row-tag" style="background:#dbeafe;color:#1e40af;">🏬 正在泰國倉庫</span>`;
+                  } else if(it.status==='customs'){
+                    tagHtml = `<span class="unship-row-tag" style="background:#ede9fe;color:#5b21b6;">✈️ 海關查驗中</span>`;
+                  } else if(it.expectedDate){
                     tagHtml = `<span class="unship-row-tag" style="background:#fef3c7;color:#92400e;">📅 官方預計 ${escHTML(it.expectedDate)} 出貨</span>`;
                   } else if(it.status==='delay'){
                     tagHtml = `<span class="unship-row-tag delay">延後出貨</span>`;
