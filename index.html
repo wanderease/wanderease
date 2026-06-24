@@ -421,12 +421,13 @@
         <button class="page-tab active" id="pageTab0" onclick="switchPageTab(0)"><span class="pt-l"><i class="bi bi-cart3" style="color:var(--pre-soft-2);"></i> 預購 / 訂單</span></button>
         <button class="page-tab" id="pageTab1" onclick="switchPageTab(1)"><span class="pt-l"><i class="bi bi-truck" style="color:var(--ship-soft-2);"></i> 出貨</span></button>
         <button class="page-tab" id="pageTab2" onclick="switchPageTab(2)"><span class="pt-l"><i class="bi bi-hourglass-split" style="color:var(--wait-soft-2);"></i> 候補</span></button>
-        <button class="page-tab" id="histTab" onclick="histOpen()" style="display:none;flex:0 0 auto;padding-left:12px;padding-right:12px;"><span class="pt-l"><i class="bi bi-clock-history" style="color:var(--brand-brown);"></i> 歷史</span></button>
+        <button class="page-tab" id="pageTab3" onclick="switchPageTab(3)" style="display:none;"><span class="pt-l"><i class="bi bi-clock-history" style="color:var(--brand-brown);"></i> 歷史</span></button>
       </div>
       <div class="swipe-dots">
         <div class="swipe-dot active" id="swipeDot0"></div>
         <div class="swipe-dot" id="swipeDot1"></div>
         <div class="swipe-dot" id="swipeDot2"></div>
+        <div class="swipe-dot" id="swipeDot3" style="display:none;"></div>
       </div>
       <div class="swipe-viewport" id="swipeViewport">
         <!-- 頁 1：預購 + 訂單 -->
@@ -480,6 +481,11 @@
         <div class="swipe-page" id="swipePage2">
           <div class="swipe-page-inner">
             <div id="waitlistContainer"></div>
+          </div>
+        </div>
+        <div class="swipe-page" id="swipePage3" style="display:none;">
+          <div class="swipe-page-inner">
+            <div id="histScroll"><div class="hist-loading"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div></div>
           </div>
         </div>
       </div>
@@ -544,9 +550,10 @@
       updatePageIndicator(idx);
       // 切到候補時觸發載入（沿用現有 loadWaitlistData）
       if(idx===2)loadWaitlistData();
+      if(idx===3)histLoadOnce();
     };
     function updatePageIndicator(idx){
-      for(let i=0;i<3;i++){
+      for(let i=0;i<4;i++){
         const tab=document.getElementById('pageTab'+i),dot=document.getElementById('swipeDot'+i);
         if(tab)tab.classList.toggle('active',i===idx);
         if(dot)dot.classList.toggle('active',i===idx);
@@ -563,6 +570,7 @@
           const idx=Math.round(vp.scrollLeft/vp.clientWidth);
           updatePageIndicator(idx);
           if(idx===2)loadWaitlistData();
+          if(idx===3)histLoadOnce();
         },80);
       });
     });
@@ -602,7 +610,7 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('histTab');if(_ht)_ht.style.display='block';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     // ===== 管理員清除 Cache =====
@@ -5341,12 +5349,7 @@
      後端：action=getMyHistory
      ════════════════════════════════════════════════════════════════ -->
 <style>
-  #historyOverlay{position:fixed;inset:0;background:var(--brand-bg,#efe8df);z-index:9998;display:none;flex-direction:column;}
-  #historyOverlay.open{display:flex;}
-  .hist-top{display:flex;align-items:center;gap:10px;padding:13px 15px;background:linear-gradient(135deg,#795238,#5e3f2b);color:#fff;flex-shrink:0;}
-  .hist-top .hist-back{background:rgba(255,255,255,.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;flex:none;line-height:1;}
-  .hist-top h6{margin:0;font-weight:900;flex:1;font-size:16px;letter-spacing:1px;}
-  .hist-scroll{flex:1;overflow-y:auto;padding:16px 14px 40px;-webkit-overflow-scrolling:touch;}
+  /* 歷史頁採頁內模式（在 swipePage3 內），無需 overlay/fixed 樣式 */
 
   .hist-overview{background:linear-gradient(135deg,#795238,#5e3f2b);border-radius:18px;padding:22px 22px 20px;color:#fff;box-shadow:0 10px 28px rgba(94,63,43,.32);position:relative;overflow:hidden;}
   .hist-overview::after{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;background:rgba(201,163,106,.16);border-radius:50%;}
@@ -5400,10 +5403,6 @@
   .hist-tc-head{padding:13px 16px 11px;border-bottom:1px solid #f1ebe3;background:#fbf8f4;}
   .hist-tc-date{font-size:12px;font-weight:800;color:#795238;display:flex;align-items:center;gap:6px;}
   .hist-tc-series{font-size:13.5px;font-weight:900;color:#2c2c2f;margin-top:4px;}
-  .hist-tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;margin-top:6px;}
-  .hist-tag-pre{background:#eef3ee;color:#5a7d5a;}
-  .hist-tag-instk{background:#fdf0e3;color:#b5763a;}
-  .hist-tag-wl{background:#f0ecf5;color:#735a8a;}
   .hist-tc-body{padding:6px 16px 12px;}
   .hist-tc-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fbf8f4;border-top:1px solid #f1ebe3;}
   .hist-tc-foot .l{font-size:12px;font-weight:700;color:#9b8e7e;}
@@ -5416,16 +5415,6 @@
   .hist-view{display:none;}
   .hist-view.active{display:block;}
 </style>
-
-<div id="historyOverlay">
-  <div class="hist-top">
-    <button class="hist-back" onclick="histClose()">‹</button>
-    <h6><i class="bi bi-clock-history"></i> 歷史訂單</h6>
-  </div>
-  <div class="hist-scroll" id="histScroll">
-    <div class="hist-loading"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>
-  </div>
-</div>
 
 <script>
 (function(){
@@ -5440,16 +5429,9 @@
   var _data = null;       // 快取本次載入的 data，切換檢視不重打 API
   var _loaded = false;
 
-  window.histOpen = function(){
-    if(!window.IS_ADMIN){ return; }   // 🔒 目前僅管理員可見（對外開放時移除此行）
-    var ov=document.getElementById('historyOverlay');
-    ov.classList.add('open');
-    document.body.style.overflow='hidden';
+  // 滑到歷史頁時呼叫（只載一次；管理員限定由 tab 是否顯示控制）
+  window.histLoadOnce = function(){
     if(!_loaded) histLoad();
-  };
-  window.histClose = function(){
-    document.getElementById('historyOverlay').classList.remove('open');
-    document.body.style.overflow='';
   };
 
   function histLoad(){
@@ -5550,16 +5532,13 @@
 
   function renderTime(cards){
     if(!cards.length) return '<div class="hist-empty"><div class="ic">🗓️</div><div class="t">沒有資料</div></div>';
-    var tagMap={'預購':['hist-tag-pre','預購'],'現貨':['hist-tag-instk','現貨'],'候補':['hist-tag-wl','候補']};
     return cards.map(function(c){
-      var tg=tagMap[c.tag]||['hist-tag-pre',c.tag||''];
       var title=c.series ? (esc(c.brand)+' · '+esc(c.series)) : esc(c.brand);
       var items=c.items.map(function(it){return renderItemRow(it,false);}).join('');
       return '<div class="hist-tc">'
         +'<div class="hist-tc-head">'
         +'<div class="hist-tc-date"><i class="bi bi-calendar3"></i> '+esc(c.dateStr)+'</div>'
         +'<div class="hist-tc-series">'+title+'</div>'
-        +'<span class="hist-tag '+tg[0]+'">'+esc(tg[1])+'</span>'
         +'</div>'
         +'<div class="hist-tc-body">'+items+'</div>'
         +'<div class="hist-tc-foot"><span class="l">本次小計</span><span class="r">NT$ '+money(c.subtotal)+'</span></div>'
