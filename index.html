@@ -451,6 +451,7 @@
               <div class="frame-title" id="ordFrameTitle"></div>
               <div class="order-stats-inline" id="ordStatsRow"></div>
               <button id="ordViewAllBtn" class="order-view-all" onclick="toggleOrderList()"><i class="bi bi-list-ul"></i> 查看完整訂單列表 ›</button>
+              <button id="histOpenBtn" class="order-view-all" style="margin-top:8px;" onclick="histOpen()"><i class="bi bi-clock-history"></i> 歷史訂單 ›</button>
             </div>
             <!-- 訂單卡列表（預設折疊，點「查看完整訂單列表」展開）-->
             <div id="orderListWrap" style="display:none;">
@@ -5330,6 +5331,246 @@
       body+='<div style="background:#fff7e6;border-radius:10px;padding:9px;margin-top:6px;text-align:center;font-size:12px;color:#915b00;"><i class="bi bi-info-circle"></i> 訂單送出 15 分鐘後，可至訂單頁面查詢應匯款金額與匯款資訊</div>';
       document.getElementById('instkSheetBody').innerHTML=body;
     });
+  };
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════
+     📜 歷史訂單 Overlay（自包含區塊：CSS + HTML + 獨立 IIFE）
+     入口：訂單藍框「歷史訂單 ›」按鈕 → histOpen()
+     後端：action=getMyHistory
+     ════════════════════════════════════════════════════════════════ -->
+<style>
+  #historyOverlay{position:fixed;inset:0;background:var(--brand-bg,#efe8df);z-index:9998;display:none;flex-direction:column;}
+  #historyOverlay.open{display:flex;}
+  .hist-top{display:flex;align-items:center;gap:10px;padding:13px 15px;background:linear-gradient(135deg,#795238,#5e3f2b);color:#fff;flex-shrink:0;}
+  .hist-top .hist-back{background:rgba(255,255,255,.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;flex:none;line-height:1;}
+  .hist-top h6{margin:0;font-weight:900;flex:1;font-size:16px;letter-spacing:1px;}
+  .hist-scroll{flex:1;overflow-y:auto;padding:16px 14px 40px;-webkit-overflow-scrolling:touch;}
+
+  .hist-overview{background:linear-gradient(135deg,#795238,#5e3f2b);border-radius:18px;padding:22px 22px 20px;color:#fff;box-shadow:0 10px 28px rgba(94,63,43,.32);position:relative;overflow:hidden;}
+  .hist-overview::after{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;background:rgba(201,163,106,.16);border-radius:50%;}
+  .hist-ov-label{font-size:12px;opacity:.82;letter-spacing:1px;display:flex;align-items:center;gap:6px;}
+  .hist-ov-total{font-size:36px;font-weight:900;letter-spacing:.5px;margin:4px 0 2px;line-height:1;}
+  .hist-ov-total small{font-size:17px;font-weight:700;opacity:.85;margin-right:4px;}
+  .hist-ov-sub{display:flex;gap:14px;margin-top:14px;}
+  .hist-ov-stat{flex:1;}
+  .hist-ov-stat .n{font-size:19px;font-weight:800;}
+  .hist-ov-stat .t{font-size:11px;opacity:.78;margin-top:1px;}
+  .hist-ov-divider{width:1px;background:rgba(255,255,255,.22);}
+
+  .hist-toggle{display:flex;background:#e4dcd1;border-radius:11px;padding:4px;margin:16px 0 14px;}
+  .hist-vt{flex:1;text-align:center;padding:9px 0;font-size:13px;font-weight:800;color:#8a7e70;border-radius:8px;border:none;background:transparent;cursor:pointer;transition:.18s;}
+  .hist-vt.active{background:#fff;color:#795238;box-shadow:0 2px 6px rgba(0,0,0,.08);}
+
+  .hist-hint{font-size:11px;color:#a89c8d;text-align:center;margin:2px 0 14px;}
+
+  .hist-brand-block{background:#fff;border-radius:16px;border:1px solid #e8e0d6;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 14px rgba(44,44,47,.04);}
+  .hist-brand-head{display:flex;align-items:center;gap:9px;padding:14px 16px;border-bottom:1px solid #f1ebe3;}
+  .hist-brand-dot{width:9px;height:9px;border-radius:50%;flex:none;background:#9db89d;}
+  .hist-brand-name{font-size:15px;font-weight:900;color:#2c2c2f;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .hist-brand-total{font-size:13px;font-weight:800;color:#795238;flex:none;}
+
+  .hist-series-row{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;border-bottom:1px solid #f6f1ea;transition:background .15s;}
+  .hist-series-row:last-child{border-bottom:none;}
+  .hist-series-row:active{background:#faf6f0;}
+  .hist-series-chev{color:#b8b0a8;font-size:12px;transition:transform .2s;flex:none;}
+  .hist-series-row.open .hist-series-chev{transform:rotate(90deg);color:#795238;}
+  .hist-series-info{flex:1;min-width:0;}
+  .hist-series-name{font-size:13.5px;font-weight:700;color:#2c2c2f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hist-series-meta{font-size:11px;color:#a89c8d;margin-top:2px;}
+  .hist-series-amt{font-size:13.5px;font-weight:800;color:#2c2c2f;flex:none;}
+
+  .hist-series-detail{display:none;background:#fbf8f4;padding:4px 16px 12px;border-bottom:1px solid #f6f1ea;}
+  .hist-series-detail.show{display:block;}
+  .hist-series-detail:last-child{border-bottom:none;}
+
+  .hist-item{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:1px dashed #e6ded3;}
+  .hist-item:last-child{border-bottom:none;}
+  .hist-item-main{flex:1;min-width:0;}
+  .hist-item-name{font-size:13px;font-weight:700;color:#2c2c2f;line-height:1.4;}
+  .hist-sz{display:inline-block;background:#efe6da;color:#8a6648;font-size:10.5px;font-weight:800;padding:1px 7px;border-radius:5px;margin-left:5px;vertical-align:middle;letter-spacing:.5px;}
+  .hist-qty{font-size:12px;font-weight:800;color:#795238;margin-left:6px;vertical-align:middle;}
+  .hist-when{font-size:10.5px;color:#b0a494;margin-top:3px;}
+  .hist-item-right{text-align:right;flex:none;}
+  .hist-amt{font-size:13.5px;font-weight:800;color:#2c2c2f;}
+  .hist-unit{font-size:10.5px;color:#a89c8d;margin-top:2px;}
+
+  .hist-tc{background:#fff;border-radius:16px;border:1px solid #e8e0d6;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 14px rgba(44,44,47,.04);}
+  .hist-tc-head{padding:13px 16px 11px;border-bottom:1px solid #f1ebe3;background:#fbf8f4;}
+  .hist-tc-date{font-size:12px;font-weight:800;color:#795238;display:flex;align-items:center;gap:6px;}
+  .hist-tc-series{font-size:13.5px;font-weight:900;color:#2c2c2f;margin-top:4px;}
+  .hist-tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 8px;border-radius:6px;margin-top:6px;}
+  .hist-tag-pre{background:#eef3ee;color:#5a7d5a;}
+  .hist-tag-instk{background:#fdf0e3;color:#b5763a;}
+  .hist-tag-wl{background:#f0ecf5;color:#735a8a;}
+  .hist-tc-body{padding:6px 16px 12px;}
+  .hist-tc-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#fbf8f4;border-top:1px solid #f1ebe3;}
+  .hist-tc-foot .l{font-size:12px;font-weight:700;color:#9b8e7e;}
+  .hist-tc-foot .r{font-size:15px;font-weight:900;color:#795238;}
+
+  .hist-empty{text-align:center;padding:60px 20px;color:#a89c8d;}
+  .hist-empty .ic{font-size:46px;}
+  .hist-empty .t{font-size:15px;font-weight:700;margin-top:14px;}
+  .hist-loading{text-align:center;padding:60px 20px;color:#a89c8d;}
+  .hist-view{display:none;}
+  .hist-view.active{display:block;}
+</style>
+
+<div id="historyOverlay">
+  <div class="hist-top">
+    <button class="hist-back" onclick="histClose()">‹</button>
+    <h6><i class="bi bi-clock-history"></i> 歷史訂單</h6>
+  </div>
+  <div class="hist-scroll" id="histScroll">
+    <div class="hist-loading"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var GAS = (typeof GAS_URL !== 'undefined') ? GAS_URL : '';
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function money(n){var v=Math.round(Number(n)||0);return v.toLocaleString('en-US');}
+  function post(action){
+    var body=new URLSearchParams({action:action,lineUid:(typeof currentLineUid!=='undefined'?currentLineUid:'')});
+    return fetch(GAS,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
+  }
+
+  var _data = null;       // 快取本次載入的 data，切換檢視不重打 API
+  var _loaded = false;
+
+  window.histOpen = function(){
+    var ov=document.getElementById('historyOverlay');
+    ov.classList.add('open');
+    document.body.style.overflow='hidden';
+    if(!_loaded) histLoad();
+  };
+  window.histClose = function(){
+    document.getElementById('historyOverlay').classList.remove('open');
+    document.body.style.overflow='';
+  };
+
+  function histLoad(){
+    var sc=document.getElementById('histScroll');
+    sc.innerHTML='<div class="hist-loading"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
+    post('getMyHistory').then(function(res){
+      if(!res || res.status!=='SUCCESS'){
+        sc.innerHTML='<div class="hist-empty"><div class="ic">⚠️</div><div class="t">'+esc((res&&res.message)||'讀取失敗，請稍後再試')+'</div></div>';
+        return;
+      }
+      _data = res.data; _loaded = true;
+      render('brand');
+    }).catch(function(e){
+      sc.innerHTML='<div class="hist-empty"><div class="ic">⚠️</div><div class="t">連線異常：'+esc(e.message)+'</div></div>';
+    });
+  }
+
+  function render(view){
+    var d=_data; if(!d){return;}
+    var sm=d.summary||{total:0,orderCount:0,itemCount:0,seriesCount:0};
+
+    if((d.byTime||[]).length===0){
+      document.getElementById('histScroll').innerHTML=
+        '<div class="hist-empty"><div class="ic">📜</div><div class="t">目前還沒有歷史訂單</div></div>';
+      return;
+    }
+
+    var html='';
+    // 總覽卡
+    html+='<div class="hist-overview">'
+      +'<div class="hist-ov-label"><i class="bi bi-graph-up-arrow"></i> 我的累計消費</div>'
+      +'<div class="hist-ov-total"><small>NT$</small>'+money(sm.total)+'</div>'
+      +'<div class="hist-ov-sub">'
+      +'<div class="hist-ov-stat"><div class="n">'+(sm.orderCount||0)+'</div><div class="t">訂單筆數</div></div>'
+      +'<div class="hist-ov-divider"></div>'
+      +'<div class="hist-ov-stat"><div class="n">'+(sm.itemCount||0)+'</div><div class="t">購買品項</div></div>'
+      +'<div class="hist-ov-divider"></div>'
+      +'<div class="hist-ov-stat"><div class="n">'+(sm.seriesCount||0)+'</div><div class="t">系列</div></div>'
+      +'</div></div>';
+
+    // 檢視切換
+    html+='<div class="hist-toggle">'
+      +'<button class="hist-vt '+(view==='brand'?'active':'')+'" onclick="histSwitch(\'brand\')">依品牌系列</button>'
+      +'<button class="hist-vt '+(view==='time'?'active':'')+'" onclick="histSwitch(\'time\')">依時間</button>'
+      +'</div>';
+
+    if(view==='brand'){
+      html+='<div class="hist-hint">點系列展開當時購買的品項與尺寸</div>';
+      html+='<div class="hist-view active">'+renderBrand(d.byBrand||[])+'</div>';
+    }else{
+      html+='<div class="hist-hint">由新到舊，每張卡為一次填單購買</div>';
+      html+='<div class="hist-view active">'+renderTime(d.byTime||[])+'</div>';
+    }
+
+    document.getElementById('histScroll').innerHTML=html;
+    document.getElementById('histScroll').scrollTop=0;
+  }
+
+  function renderItemRow(it, showWhen){
+    var sz = it.size ? '<span class="hist-sz">'+esc(it.size)+'</span>' : '';
+    var when = (showWhen && it.dateStr) ? '<div class="hist-when">'+esc(it.dateStr)+' 填單</div>' : '';
+    var unit = (Number(it.qty)>1) ? '<div class="hist-unit">單件 NT$'+money(it.unit)+'</div>' : '';
+    return '<div class="hist-item">'
+      +'<div class="hist-item-main">'
+      +'<div class="hist-item-name">'+esc(it.name)+sz+'<span class="hist-qty">×'+(it.qty||1)+'</span></div>'
+      +when
+      +'</div>'
+      +'<div class="hist-item-right"><div class="hist-amt">NT$'+money(it.amount)+'</div>'+unit+'</div>'
+      +'</div>';
+  }
+
+  function renderBrand(brands){
+    if(!brands.length) return '<div class="hist-empty"><div class="ic">📦</div><div class="t">沒有資料</div></div>';
+    var dotColors=['#9db89d','#a89888','#c4a35a','#8a9bb0','#b89090'];
+    var sIdx=0;
+    return brands.map(function(b,bi){
+      var seriesHtml=b.seriesList.map(function(s){
+        var id='histS'+(sIdx++);
+        var items=s.items.map(function(it){return renderItemRow(it,true);}).join('');
+        return '<div class="hist-series-row" onclick="histToggle(this,\''+id+'\')">'
+          +'<i class="bi bi-chevron-right hist-series-chev"></i>'
+          +'<div class="hist-series-info">'
+          +'<div class="hist-series-name">'+esc(s.series)+'</div>'
+          +'<div class="hist-series-meta">'+(s.count||0)+' 筆 · '+(s.qty||0)+' 件</div>'
+          +'</div>'
+          +'<div class="hist-series-amt">NT$ '+money(s.subtotal)+'</div>'
+          +'</div>'
+          +'<div class="hist-series-detail" id="'+id+'">'+items+'</div>';
+      }).join('');
+      return '<div class="hist-brand-block">'
+        +'<div class="hist-brand-head">'
+        +'<span class="hist-brand-dot" style="background:'+dotColors[bi%dotColors.length]+';"></span>'
+        +'<span class="hist-brand-name">'+esc(b.brand)+'</span>'
+        +'<span class="hist-brand-total">NT$ '+money(b.brandTotal)+'</span>'
+        +'</div>'+seriesHtml+'</div>';
+    }).join('');
+  }
+
+  function renderTime(cards){
+    if(!cards.length) return '<div class="hist-empty"><div class="ic">🗓️</div><div class="t">沒有資料</div></div>';
+    var tagMap={'預購':['hist-tag-pre','預購'],'現貨':['hist-tag-instk','現貨'],'候補':['hist-tag-wl','候補']};
+    return cards.map(function(c){
+      var tg=tagMap[c.tag]||['hist-tag-pre',c.tag||''];
+      var title=c.series ? (esc(c.brand)+' · '+esc(c.series)) : esc(c.brand);
+      var items=c.items.map(function(it){return renderItemRow(it,false);}).join('');
+      return '<div class="hist-tc">'
+        +'<div class="hist-tc-head">'
+        +'<div class="hist-tc-date"><i class="bi bi-calendar3"></i> '+esc(c.dateStr)+'</div>'
+        +'<div class="hist-tc-series">'+title+'</div>'
+        +'<span class="hist-tag '+tg[0]+'">'+esc(tg[1])+'</span>'
+        +'</div>'
+        +'<div class="hist-tc-body">'+items+'</div>'
+        +'<div class="hist-tc-foot"><span class="l">本次小計</span><span class="r">NT$ '+money(c.subtotal)+'</span></div>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.histSwitch = function(v){ render(v); };
+  window.histToggle = function(row,id){
+    row.classList.toggle('open');
+    var el=document.getElementById(id);
+    if(el) el.classList.toggle('show');
   };
 })();
 </script>
