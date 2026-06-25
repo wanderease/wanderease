@@ -5421,8 +5421,10 @@
   var GAS = (typeof GAS_URL !== 'undefined') ? GAS_URL : '';
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
   function money(n){var v=Math.round(Number(n)||0);return v.toLocaleString('en-US');}
-  function post(action){
-    var body=new URLSearchParams({action:action,lineUid:(typeof currentLineUid!=='undefined'?currentLineUid:'')});
+  function post(action,force){
+    var p={action:action,lineUid:(typeof currentLineUid!=='undefined'?currentLineUid:'')};
+    if(force)p.forceRefresh='1';
+    var body=new URLSearchParams(p);
     return fetch(GAS,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
   }
 
@@ -5434,10 +5436,12 @@
     if(!_loaded) histLoad();
   };
 
-  function histLoad(){
+  window.histRefresh = function(){ _loaded=false; histLoad(true); };
+
+  function histLoad(force){
     var sc=document.getElementById('histScroll');
     sc.innerHTML='<div class="hist-loading"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
-    post('getMyHistory').then(function(res){
+    post('getMyHistory',force).then(function(res){
       if(!res || res.status!=='SUCCESS'){
         sc.innerHTML='<div class="hist-empty"><div class="ic">⚠️</div><div class="t">'+esc((res&&res.message)||'讀取失敗，請稍後再試')+'</div></div>';
         return;
@@ -5462,7 +5466,7 @@
     var html='';
     // 總覽卡
     html+='<div class="hist-overview">'
-      +'<div class="hist-ov-label"><i class="bi bi-graph-up-arrow"></i> 我的累計消費</div>'
+      +'<div class="hist-ov-label"><i class="bi bi-graph-up-arrow"></i> 我的累計消費<button onclick="histRefresh()" style="margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;" title="重新整理"><i class="bi bi-arrow-clockwise"></i></button></div>'
       +'<div class="hist-ov-total"><small>NT$</small>'+money(sm.total)+'</div>'
       +'<div class="hist-ov-sub">'
       +'<div class="hist-ov-stat"><div class="n">'+(sm.orderCount||0)+'</div><div class="t">訂單筆數</div></div>'
