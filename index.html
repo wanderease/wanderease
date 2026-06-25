@@ -1247,7 +1247,6 @@
         tip.innerHTML='目前沒有「'+label+'」的訂單';
         container.appendChild(tip);
       }
-      setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}),50);
     };
     function _syncStatHighlight(){
       document.querySelectorAll('#ordStatsRow .order-stat-cell').forEach(function(c){
