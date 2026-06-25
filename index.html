@@ -676,6 +676,12 @@
           renderWL(wlInitialData);
           window.instkAdminData = d.instockData || null;  // 🆕 給管理員模式的 instkOpenCart 用
           renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);
+          // 🆕 歷史訂單：顯示 tab/圓點/頁，並注入該客人的歷史資料（完全模擬客人畫面）
+          var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';
+          var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';
+          var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';
+          if(window.histReset)window.histReset();
+          if(window.histInjectData)window.histInjectData(d.historyData||null);
           // 顯示「結束模式」按鈕
           showAdminViewExitBtn();
           // 滾到頂部
@@ -691,6 +697,7 @@
       window._adminViewCustomer=null;
       window.instkAdminData=null;
       window.lastAdminSearchText='';
+      if(window.histReset)window.histReset();  // 🆕 清掉被檢視客人的歷史，回自己時重載
       const btn=document.getElementById('adminViewExitBtn');
       if(btn)btn.remove();
       showLoaderModal('返回中', '請稍候...');
@@ -5434,10 +5441,30 @@
 
   // 滑到歷史頁時呼叫（只載一次；管理員限定由 tab 是否顯示控制）
   window.histLoadOnce = function(){
+    // 管理員檢視客人模式：資料已由後端注入（histInjectData），不打 API
+    if(window._adminViewMode) return;
     if(!_loaded) histLoad();
   };
 
-  window.histRefresh = function(){ _loaded=false; histLoad(true); };
+  window.histRefresh = function(){
+    // 檢視客人模式下不重打（資料源自後端注入）
+    if(window._adminViewMode) return;
+    _loaded=false; histLoad(true);
+  };
+
+  // 🆕 外部直接注入歷史資料並渲染（管理員檢視客人用，不打 API）
+  window.histInjectData = function(data){
+    if(!data){
+      document.getElementById('histScroll').innerHTML=
+        '<div class="hist-empty"><div class="ic">📜</div><div class="t">這位客人目前沒有歷史訂單</div></div>';
+      _data=null; _loaded=true; return;
+    }
+    _data=data; _loaded=true;
+    render('brand');
+  };
+
+  // 重設狀態（結束檢視模式或切換客人時呼叫）
+  window.histReset = function(){ _data=null; _loaded=false; };
 
   function histLoad(force){
     var sc=document.getElementById('histScroll');
