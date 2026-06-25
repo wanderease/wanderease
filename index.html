@@ -286,6 +286,14 @@
     .order-stats-inline{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px;position:relative;z-index:1;width:100%;}
     .order-stat-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;margin:0;border:none;}
     .order-stat-cell.is-alert{background:rgba(255,235,180,.42);}
+    .order-stat-cell.stat-clickable{cursor:pointer;transition:transform .12s,box-shadow .12s,background .12s;}
+    .order-stat-cell.stat-clickable:active{transform:scale(.96);}
+    .order-stat-cell.stat-active{background:rgba(255,255,255,.92);box-shadow:0 3px 10px rgba(0,0,0,.18);}
+    .order-stat-cell.stat-active .n,.order-stat-cell.stat-active .l{color:#5e3f2b;}
+    /* 篩選模式：只顯示對應 data-ostatus 的卡片 */
+    #regularOrdersContainer.ofilter-on[data-show="unpaid"]   .card-order:not([data-ostatus="unpaid"]){display:none;}
+    #regularOrdersContainer.ofilter-on[data-show="shipping"] .card-order:not([data-ostatus="shipping"]){display:none;}
+    #regularOrdersContainer.ofilter-on[data-show="done"]     .card-order:not([data-ostatus="done"]){display:none;}
     .order-stat-cell .n{font-size:20px;font-weight:800;line-height:1;}
     .order-stat-cell .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .order-view-all{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:10px;border-radius:8px;font-weight:700;font-size:13px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;box-sizing:border-box;}
@@ -798,6 +806,8 @@
 
     // ===== 正式訂單渲染 =====
     function renderOrders(orders,promos,gp){
+      // 🆕 重畫訂單前重置狀態篩選（改五碼、切換檢視客人等情境，避免殘留）
+      window._ordFilter=null;
       const oc=document.getElementById('regularOrdersContainer');
       // 一般客人不再顯示「您的訂單紀錄」標題（已移至訂單藍框內），但 admin 搜尋結果仍保留標題
       let tt = window.lastAdminSearchText ? `<h6 class="fw-bold mb-3 ms-1 mt-3" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>` : '';
@@ -806,6 +816,8 @@
         let cards = orders.map((o, idx) => {
           const ci = `oc-${idx}`, pi = `pc-${idx}`;
           const ip = o.payStatus.includes('完成') || o.payStatus.includes('✅') || o.payStatus.includes('貨付');
+          // 🆕 訂單狀態分類（供主頁統計方塊點擊篩選用）：unpaid / shipping / done
+          const ostatus = !ip ? 'unpaid' : (o.allShipped ? 'done' : 'shipping');
           const bc = ip ? 'status-done' : 'badge-status';
           const sd = o.ship > 0 ? `-$${o.ship}` : '$0';
           const isWL = o.sourceType === 'WAITLIST';
@@ -1021,7 +1033,7 @@
             bh = `<div class="bank-info shadow-sm"><div class="bank-title"><span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>${dl}</div><div class="bank-text">${escHTML(o.groupBankInfo)}</div><div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div></div>`;
           }
 
-          return `<div class="card-order mb-4 ${isWL?'is-waitlist':''}"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;
+          return `<div class="card-order mb-4 ${isWL?'is-waitlist':''}" data-ostatus="${ostatus}"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;
         }).join('');
         oc.innerHTML = `<div class="text-start">${tt}${cards}</div>`;
       }
@@ -1069,9 +1081,9 @@
           document.getElementById('ordFrameCount').innerText = `${total} 筆`;
           document.getElementById('ordFrameTitle').innerText = unpaid > 0 ? `${unpaid} 張訂單尚未匯款` : (shipping > 0 ? `${shipping} 張訂單待出貨` : `已完成 ${done} 張訂單`);
           document.getElementById('ordStatsRow').innerHTML = `
-            <div class="order-stat-cell ${unpaid>0?'is-alert':''}"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
-            <div class="order-stat-cell"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
-            <div class="order-stat-cell"><div class="n">${done}</div><div class="l">已完成</div></div>
+            <div class="order-stat-cell stat-clickable ${unpaid>0?'is-alert':''}" data-fstatus="unpaid" onclick="filterOrdersByStatus('unpaid')"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
+            <div class="order-stat-cell stat-clickable" data-fstatus="shipping" onclick="filterOrdersByStatus('shipping')"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
+            <div class="order-stat-cell stat-clickable" data-fstatus="done" onclick="filterOrdersByStatus('done')"><div class="n">${done}</div><div class="l">已完成</div></div>
           `;
           // 渲染後處理「查看完整訂單列表」按鈕的有無
           renderOrdViewAllBtn(total);
@@ -1198,8 +1210,58 @@
       }
     };
     // 🆕 訂單列表展開/收合
+    // 🆕 點主頁統計方塊 → 展開訂單列表並只顯示該狀態的卡片；再點同方塊 → 取消篩選
+    window._ordFilter = null;
+    window.filterOrdersByStatus = function(status){
+      const wrap=document.getElementById('orderListWrap');
+      const container=document.getElementById('regularOrdersContainer');
+      const btn=document.getElementById('ordViewAllBtn');
+      if(!wrap||!container)return;
+
+      // 再點同一個 → 取消篩選並收合
+      if(window._ordFilter===status){
+        window._ordFilter=null;
+        container.classList.remove('ofilter-on');
+        container.removeAttribute('data-show');
+        var _e=document.getElementById('ordFilterEmpty');if(_e)_e.remove();
+        wrap.style.display='none';
+        if(btn){btn.style.display='block';btn.innerHTML='<i class="bi bi-list-ul"></i> 查看完整訂單列表 ›';}
+        _syncStatHighlight();
+        return;
+      }
+
+      // 套用篩選
+      window._ordFilter=status;
+      container.classList.add('ofilter-on');
+      container.setAttribute('data-show',status);
+      wrap.style.display='block';
+      if(btn){btn.style.display='block';btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起（目前篩選中）';}
+      _syncStatHighlight();
+      // 空狀態提示
+      var _vis=container.querySelectorAll('.card-order[data-ostatus="'+status+'"]').length;
+      var _old=document.getElementById('ordFilterEmpty');if(_old)_old.remove();
+      if(_vis===0){
+        var label={unpaid:'未匯款',shipping:'待出貨',done:'已完成'}[status]||'';
+        var tip=document.createElement('div');tip.id='ordFilterEmpty';
+        tip.style.cssText='text-align:center;padding:30px 16px;color:#999;font-size:14px;';
+        tip.innerHTML='目前沒有「'+label+'」的訂單';
+        container.appendChild(tip);
+      }
+      setTimeout(()=>wrap.scrollIntoView({behavior:'smooth',block:'start'}),50);
+    };
+    function _syncStatHighlight(){
+      document.querySelectorAll('#ordStatsRow .order-stat-cell').forEach(function(c){
+        c.classList.toggle('stat-active', c.getAttribute('data-fstatus')===window._ordFilter);
+      });
+    }
+
     window.toggleOrderList=function(){
       const wrap=document.getElementById('orderListWrap'),btn=document.getElementById('ordViewAllBtn');
+      // 從「完整列表」按鈕進入時，清除狀態篩選
+      window._ordFilter=null;
+      const _c=document.getElementById('regularOrdersContainer');
+      if(_c){_c.classList.remove('ofilter-on');_c.removeAttribute('data-show');}
+      _syncStatHighlight();
       if(!wrap||!btn)return;
       if(wrap.style.display==='none'){
         wrap.style.display='block';
