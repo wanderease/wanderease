@@ -131,6 +131,11 @@
 
     /* 預購卡片 */
     .po-card{background:#fff;border-radius:16px;margin-bottom:20px;overflow:hidden;text-align:left;box-shadow:0 4px 16px rgba(44,44,47,.03);}
+    @keyframes wespin{to{transform:rotate(360deg);}}
+    .po-card.po-submitting{border-color:#b8b0a8 !important;}
+    .po-card.po-submitting .po-body{pointer-events:none;}
+    .po-updating-bar{display:flex;align-items:center;justify-content:center;gap:8px;background:#f4efe8;border-radius:8px;padding:9px;color:#795238;font-size:12px;font-weight:700;margin-top:8px;}
+    .po-updating-spin{display:inline-block;width:14px;height:14px;border:2px solid #c9b8a8;border-top-color:#795238;border-radius:50%;animation:wespin .7s linear infinite;}
     .po-header{padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
     .po-title{font-size:15px;font-weight:900;color:var(--brand-charcoal);}
     .po-sub{font-size:12px;margin-top:3px;}
@@ -544,6 +549,7 @@
     const LIFF_ID="2009208139-8lZaYbbd";
     let currentLineUid="";
     let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
+    let submittingCards=new Set();
     let addItemMasterId="",addItemSel={};
     let wlInitialData={groups:[],cancelled:[]};
 
@@ -1326,7 +1332,7 @@
     // =============================================
     // 🎯 預購卡片
     // =============================================
-    async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};renderPoCards();}}catch(e){}}
+    async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};submittingCards.clear();renderPoCards();}}catch(e){}}
     function renderPoCards(){const c=document.getElementById('preorderCardsContainer');let list=(poData.mergedPreorders&&poData.mergedPreorders.length>=0&&poData.mergedPreorders!==undefined)?poData.mergedPreorders:(poData.preorders||[]);if(poData.mergedPreorders===undefined)list=poData.preorders||[];if(!list||!list.length){c.innerHTML='';return;}c.innerHTML=list.map((po,i)=>buildPoCard(po,i)).join('');}
 
     // ===== 🆕 合併卡編輯輔助（跨主單路由） =====
@@ -1357,6 +1363,8 @@
     function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
 
     function buildPoCard(po,idx){
+      let _mids=poCardMids(po);
+      let isSubmitting=_mids.some(function(m){return submittingCards.has(m);});
       let s=po.stage,ed=poCardEdits(po),dec=poCardSweep(po);
       let bc,hbg,sub,badge;
       switch(s){
@@ -1435,7 +1443,10 @@
       let nt='';if(s==='SWEEP_DONE')nt=`<div class="po-notice" style="background:#fff3cd;color:#633806;border:1px dashed #efc777;">⚠️ 目前暫未開放匯款，開放後將另行通知</div>`;
       let notes='';let fn=fmtPoNote(po.note);if(fn)notes=`<div class="po-notes">${fn}</div>`;
 
-      return`<div class="po-card" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${pv}${nt}${notes}</div></div>`;
+      let _cardCls="po-card"+(isSubmitting?" po-submitting":"");
+      let _pvShow=isSubmitting?"":pv;
+      let _updBar=isSubmitting?`<div class="po-updating-bar"><span class="po-updating-spin"></span>更新中，請稍候…</div>`:"";
+      return`<div class="${_cardCls}" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${_pvShow}${_updBar}${nt}${notes}</div></div>`;
     }
 
     // ===== 改單操作 =====
@@ -1482,19 +1493,29 @@
         }); });
         weConfirm({ title:"確認送出修改？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">本次變更</div>'+_rows }).then(function(ok){
           if(!ok) return;
+          // 🌟 樂觀更新：加鎖→立即顯opt狀→背景fetch→成功清pending+重拉 / 失敗還原
+          mids.forEach(mid => submittingCards.add(mid)); // 鎖定（防重複送出）
+          renderPoCards();                                // pending 暫不清，畫面呈現最終樣子+更新中
           let _jobs = [];
           mids.forEach(mid => {
             let ed = pendingEdits[mid];
             if(!ed || !ed.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
             _jobs.push(fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr}) })
-              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e)));
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS"){ console.error("背景處理異常:", d.message); throw new Error(d.message||"FAIL"); } return true; }));
           });
-          mids.forEach(mid => delete pendingEdits[mid]);
-          weToast("已送出，正在更新…","success");
-          renderPoCards();
-          // 等後端寫入+清快取都完成後再重拉，避免命中舊快取
-          Promise.all(_jobs).then(function(){ setTimeout(loadPreorderData, 600); });
+          Promise.all(_jobs).then(function(){
+            // ✅ 全數成功：清 pending、解鎖、重拉真實資料
+            mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
+            weToast("修改已完成","success");
+            setTimeout(loadPreorderData, 600);
+          }).catch(function(err){
+            // ❌ 失敗：退回原狀（撤銷本次變更）+紅 Toast
+            mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
+            renderPoCards();
+            weToast("更新失敗，已還原，請再試一次","error");
+            setTimeout(loadPreorderData, 600); // 以後端真實狀態為準
+          });
         });
     }
 
@@ -1516,18 +1537,26 @@
         }); });
         weConfirm({ title:"確認送出決定？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">您的決定</div>'+_rows }).then(function(ok){
           if(!ok) return;
+          mids.forEach(mid => submittingCards.add(mid)); // 鎖定
+          renderPoCards();
           let _jobs = [];
           mids.forEach(mid => {
             let dec = pendingSweep[mid];
             if(!dec || !dec.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
             _jobs.push(fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr}) })
-              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e)));
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS"){ console.error("背景處理異常:", d.message); throw new Error(d.message||"FAIL"); } return true; }));
           });
-          mids.forEach(mid => delete pendingSweep[mid]);
-          weToast("已送出，正在更新…","success");
-          renderPoCards();
-          Promise.all(_jobs).then(function(){ setTimeout(loadPreorderData, 600); });
+          Promise.all(_jobs).then(function(){
+            mids.forEach(mid => { delete pendingSweep[mid]; submittingCards.delete(mid); });
+            weToast("決定已完成","success");
+            setTimeout(loadPreorderData, 600);
+          }).catch(function(err){
+            mids.forEach(mid => { delete pendingSweep[mid]; submittingCards.delete(mid); });
+            renderPoCards();
+            weToast("更新失敗，已還原，請再試一次","error");
+            setTimeout(loadPreorderData, 600);
+          });
         });
     }
 
