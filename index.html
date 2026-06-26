@@ -10,6 +10,8 @@
     :root{--brand-bg:#efe8df;--brand-charcoal:#2c2c2f;--brand-brown:#795238;--brand-brown-hover:#5e3f2b;--brand-white:#fff;--track-bg:#e0d8d0;--track-active:#795238;--track-final:#2c2c2f;--track-muted:#b8b0a8;}
     html{color-scheme:light only;}
     body{color-scheme:light only;}
+    .po-irow{color:#2c2c2f;}
+    .po-irow span,.po-irow div,.po-irow button{-webkit-text-fill-color:currentColor;}
     body{background:var(--brand-bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--brand-charcoal);padding-bottom:90px;}
     .header-img{width:100%;height:160px;background:var(--brand-charcoal);color:var(--brand-white);display:flex;align-items:center;justify-content:center;flex-direction:column;border-radius:0 0 20px 20px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
     .header-img-mini{height:100px;}
@@ -136,7 +138,7 @@
     .po-body{padding:10px 18px;border-top:1px dashed #e0d8d0;}
     .po-irow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:.5px dashed #e0d8d0;gap:6px;font-size:13px;}
     .po-irow:last-child{border-bottom:none;}
-    .po-iname{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2c2c2f;-webkit-text-fill-color:#2c2c2f;}
+    .po-iname{font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#2c2c2f;}
     .po-iprice{color:#888;font-size:12px;white-space:nowrap;flex-shrink:0;}
     .po-sum{border-top:1.5px solid #e0d8d0;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;}
     .po-sum span:last-child{color:#dc3545;}
@@ -1480,17 +1482,19 @@
         }); });
         weConfirm({ title:"確認送出修改？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">本次變更</div>'+_rows }).then(function(ok){
           if(!ok) return;
+          let _jobs = [];
           mids.forEach(mid => {
             let ed = pendingEdits[mid];
             if(!ed || !ed.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
-            fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr}) })
-              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e));
+            _jobs.push(fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr}) })
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e)));
           });
           mids.forEach(mid => delete pendingEdits[mid]);
           weToast("已送出，正在更新…","success");
           renderPoCards();
-          setTimeout(loadPreorderData, 1500);
+          // 等後端寫入+清快取都完成後再重拉，避免命中舊快取
+          Promise.all(_jobs).then(function(){ setTimeout(loadPreorderData, 600); });
         });
     }
 
@@ -1512,17 +1516,18 @@
         }); });
         weConfirm({ title:"確認送出決定？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">您的決定</div>'+_rows }).then(function(ok){
           if(!ok) return;
+          let _jobs = [];
           mids.forEach(mid => {
             let dec = pendingSweep[mid];
             if(!dec || !dec.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
-            fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr}) })
-              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e));
+            _jobs.push(fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr}) })
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e)));
           });
           mids.forEach(mid => delete pendingSweep[mid]);
           weToast("已送出，正在更新…","success");
           renderPoCards();
-          setTimeout(loadPreorderData, 1500);
+          Promise.all(_jobs).then(function(){ setTimeout(loadPreorderData, 600); });
         });
     }
 
