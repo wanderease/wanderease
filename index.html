@@ -547,6 +547,41 @@
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
     function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
+    // ===== 品牌化通知元件（取代 alert/confirm）=====
+    function weToast(msg, type){
+      type = type || "success";
+      var bg = type==="error" ? "#791f1f" : (type==="info" ? "#795238" : "#27500a");
+      var icon = type==="error" ? "⚠" : "✓";
+      var wrap = document.getElementById("weToastWrap");
+      if(!wrap){ wrap=document.createElement("div"); wrap.id="weToastWrap"; wrap.style.cssText="position:fixed;top:14px;left:0;right:0;z-index:3000;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 14px;"; document.body.appendChild(wrap); }
+      var t=document.createElement("div");
+      t.style.cssText="max-width:340px;width:100%;background:"+bg+";color:#fff;border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.22);font-size:13px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;opacity:0;transform:translateY(-12px);transition:opacity .25s,transform .25s;-webkit-text-fill-color:#fff;";
+      t.innerHTML='<span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;">'+icon+'</span><span style="flex:1;line-height:1.4;">'+String(msg||"").replace(/</g,"&lt;").replace(/\n/g,"<br>")+'</span>';
+      wrap.appendChild(t);
+      requestAnimationFrame(function(){ t.style.opacity="1"; t.style.transform="translateY(0)"; });
+      setTimeout(function(){ t.style.opacity="0"; t.style.transform="translateY(-12px)"; setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); }, 280); }, type==="error"?2600:1900);
+    }
+    // weConfirm：回傳 Promise<boolean>，取代原生 confirm
+    function weConfirm(opts){
+      opts = opts || {};
+      var title = opts.title || "請確認";
+      var bodyHtml = opts.bodyHtml || (opts.body ? '<div style="font-size:13px;color:#2c2c2f;line-height:1.6;">'+String(opts.body).replace(/</g,"&lt;").replace(/\n/g,"<br>")+'</div>' : "");
+      var okText = opts.okText || "確定";
+      var cancelText = opts.cancelText || "取消";
+      var danger = !!opts.danger;
+      return new Promise(function(resolve){
+        var ov=document.createElement("div");
+        ov.style.cssText="position:fixed;inset:0;z-index:3100;background:rgba(44,44,47,.45);display:flex;align-items:center;justify-content:center;padding:24px 18px;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;";
+        var okBg = danger ? "#791f1f" : "#795238";
+        ov.innerHTML='<div style="background:#fff;border-radius:16px;width:100%;max-width:320px;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.28);transform:scale(.94);transition:transform .2s;"><div style="background:'+okBg+';color:#fff;-webkit-text-fill-color:#fff;padding:14px 18px;font-size:15px;font-weight:900;">'+String(title).replace(/</g,"&lt;")+'</div><div style="padding:16px 18px;">'+bodyHtml+'</div><div style="display:flex;gap:10px;padding:0 18px 18px;"><button id="weCfNo" style="flex:1;background:#fbfaf9;border:1.5px solid #e0d8d0;color:#795238;-webkit-text-fill-color:#795238;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;">'+String(cancelText).replace(/</g,"&lt;")+'</button><button id="weCfYes" style="flex:1.4;background:'+okBg+';border:none;color:#fff;-webkit-text-fill-color:#fff;border-radius:10px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;">'+String(okText).replace(/</g,"&lt;")+'</button></div></div>';
+        document.body.appendChild(ov);
+        requestAnimationFrame(function(){ ov.style.opacity="1"; ov.firstChild.style.transform="scale(1)"; });
+        function close(val){ ov.style.opacity="0"; ov.firstChild.style.transform="scale(.94)"; setTimeout(function(){ if(ov.parentNode)ov.parentNode.removeChild(ov); resolve(val); }, 200); }
+        ov.querySelector("#weCfYes").onclick=function(){close(true);};
+        ov.querySelector("#weCfNo").onclick=function(){close(false);};
+        ov.onclick=function(e){ if(e.target===ov) close(false); };
+      });
+    }
     // 舊 switchBottomTab 改為 no-op（保留以防其他地方呼叫不報錯）
     window.switchBottomTab=function(pid,btn){if(pid==='pageWaitlist'){switchPageTab(2);loadWaitlistData();}else if(pid==='pageOrders'){switchPageTab(0);}};
 
@@ -1306,9 +1341,16 @@
     function poFindItem(cardIdx,repRid){ let po=poCurList()[cardIdx]; if(!po)return null; let it=(po.items||[]).find(x=>x.recordId===repRid); return it?{po:po,it:it}:null; }
     function poCardByMid(mid){ return poCurList().find(p=>poCardMids(p).includes(mid)); }
     // 改數量：加→加購(最新)、減→加購先扣再原單；底層各自路由到來源主單
-    function poMergedQty(cardIdx,repRid,delta,maxQ){ let f=poFindItem(cardIdx,repRid); if(!f)return; let it=f.it; let srcs=poItemSrcs(it); let total=poItemEff(it); if(delta>0){ if(maxQ>0&&total+1>maxQ){alert(`此品項限購 ${maxQ} 件`);return;} let last=srcs[srcs.length-1]; _poSetSrc(last,poSrcEff(last)+1,it.product);} else { if(total<=1)return; for(let k=srcs.length-1;k>=0;k--){let eff=poSrcEff(srcs[k]); if(eff>0){_poSetSrc(srcs[k],eff-1,it.product);break;}} } renderPoCards(); }
+    function poMergedQty(cardIdx,repRid,delta,maxQ){ let f=poFindItem(cardIdx,repRid); if(!f)return; let it=f.it; let srcs=poItemSrcs(it); let total=poItemEff(it); if(delta>0){ if(maxQ>0&&total+1>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;} let last=srcs[srcs.length-1]; _poSetSrc(last,poSrcEff(last)+1,it.product);} else { if(total<=1)return; for(let k=srcs.length-1;k>=0;k--){let eff=poSrcEff(srcs[k]); if(eff>0){_poSetSrc(srcs[k],eff-1,it.product);break;}} } renderPoCards(); }
     // 刪除整品項：底層兩筆一起刪
-    function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length; if(activeCnt<=1){let c=poData.cancelCount||0; if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;} if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;} srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
+    function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length;
+      function _doDel(){ srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
+      if(activeCnt<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        return;
+      }
+      _doDel();
+    }
     function getCountdown(ds){if(!ds)return'';let t=new Date(ds.replace(/-/g,'/')).getTime()-Date.now();if(t<=0)return'已截止';let d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4);return d>0?`剩餘 ${d} 天 ${h} 小時`:`剩餘 ${h} 小時 ${m} 分`;}
     function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
 
@@ -1395,8 +1437,15 @@
     }
 
     // ===== 改單操作 =====
-    function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
-    function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;if(ac<=1){let c=poData.cancelCount||0;if(c>=3){alert("取消次數已達上限，請聯繫客服。");return;}if(!confirm(`⚠️ 您即將取消全數品項。\n\n累積 3 次後將要求先匯款。\n目前已累積：${c} 次\n\n確定繼續？`))return;}a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty});renderPoCards();}
+    function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
+    function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;
+      function _doDel(){ a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty}); renderPoCards(); }
+      if(ac<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        return;
+      }
+      _doDel();
+    }
     function poUndo(mid,i){let a=pendingEdits[mid];if(a)a.splice(i,1);renderPoCards();}
 
     function getFullAvailableProducts(po){
@@ -1413,7 +1462,7 @@
     function openAddItemModal(mid){addItemMasterId=mid;addItemSel={};document.getElementById('addItemSearchInput').value='';let po=poCardByMid(mid);if(!po)return;renderAddList(getFullAvailableProducts(po),'');new bootstrap.Modal(document.getElementById('addItemModal')).show();}
     function filterAddItems(kw){let po=poCardByMid(addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),kw.toLowerCase());}
     function renderAddList(prods,kw){let f=kw?prods.filter(p=>p.name.toLowerCase().includes(kw)):prods;document.getElementById('addItemList').innerHTML=f.length>0?f.map(p=>{let s=addItemSel[p.inventoryId],q=s?s.qty:0,iS=q>0;let lim=p.maxQty>0?`<span style="font-size:10px;color:#a95a52;"> (限購${p.maxQty})</span>`:'';return`<div class="additem-row ${iS?'sel':''}"><div style="flex:1;min-width:0;"><div class="additem-name" ${iS?'style="color:#27500a;"':''}>${escHTML(p.name)}${lim}</div><div class="additem-price" ${iS?'style="color:#3b6d11;"':''}>$${p.price}</div></div><div class="qty-ctrl"><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},-1,${p.maxQty||0})">-</div><div class="qty-val" ${iS?'style="color:#27500a;"':''}>${q}</div><div class="qty-btn" ${iS?'style="border-color:#c0dd97;color:#3b6d11;"':''} onclick="addItemQty('${p.inventoryId}','${escAttr(p.name)}',${p.price},1,${p.maxQty||0})">+</div></div></div>`;}).join(''):(kw?'<div class="p-4 text-center text-muted fw-bold">找不到符合的品項</div>':'<div class="p-4 text-center fw-bold" style="color:#795238;">此系列所有品項皆已訂購<br><span class="text-muted fw-normal" style="font-size:12px;">如需調整數量，請直接在訂單上操作 +/-</span></div>');}
-    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){alert(`此品項限購 ${maxQ} 件`);return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poCardByMid(addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
+    function addItemQty(id,nm,pr,d,maxQ){if(!addItemSel[id])addItemSel[id]={name:nm,price:pr,qty:0};let nq=addItemSel[id].qty+d;if(maxQ>0&&nq>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;}addItemSel[id].qty=Math.max(0,nq);if(addItemSel[id].qty===0)delete addItemSel[id];let po=poCardByMid(addItemMasterId);if(po)renderAddList(getFullAvailableProducts(po),document.getElementById('addItemSearchInput').value.toLowerCase());}
     function confirmAddItems(){if(!pendingEdits[addItemMasterId])pendingEdits[addItemMasterId]=[];let ed=pendingEdits[addItemMasterId];Object.entries(addItemSel).forEach(([id,s])=>{if(s.qty<=0)return;ed.push({type:'ADD',inventoryId:id,product:s.name,price:s.price,qty:s.qty});});bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();renderPoCards();}
     
     // 🌟 樂觀更新 (Optimistic UI)：客人按下送出後瞬間切換畫面，系統在背景默默處理
@@ -1422,26 +1471,27 @@
         let mids = poCardMids(po);
         let hasAny = mids.some(m => (pendingEdits[m]||[]).length>0);
         if(!hasAny) return;
-        if(!confirm('確定送出所有修改？'))return;
-
-        // 按來源主單分批送出（合併卡可能橫跨兩張主單）
-        mids.forEach(mid => {
+        // 組合變更摘要
+        let _rows = "";
+        mids.forEach(mid => { (pendingEdits[mid]||[]).forEach(function(e){
+          if(e.type==='ADD') _rows+='<div style="background:#eaf3de;color:#27500a;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">➕ 新增：'+escHTML(e.product)+' ×'+e.qty+'</div>';
+          else if(e.type==='MODIFY'&&e.newQty!==e.oldQty) _rows+='<div style="background:#e6f1fb;color:#0c447c;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">✏️ 修改：'+escHTML(e.product)+' '+e.oldQty+'→'+e.newQty+'</div>';
+          else if(e.type==='DELETE') _rows+='<div style="background:#fdf3f2;color:#791f1f;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">🗑️ 刪除：'+escHTML(e.product)+' ×'+e.oldQty+'</div>';
+        }); });
+        weConfirm({ title:"確認送出修改？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">本次變更</div>'+_rows }).then(function(ok){
+          if(!ok) return;
+          mids.forEach(mid => {
             let ed = pendingEdits[mid];
             if(!ed || !ed.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,changes:ed});
-            fetch(GAS_URL,{
-                method:"POST",
-                headers:{"Content-Type":"application/x-www-form-urlencoded"},
-                body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr})
-            }).then(r => r.json()).then(d => {
-                if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message);
-            }).catch(e => console.error("背景連線異常:", e));
+            fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerEditPreorder',payload:payloadStr}) })
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e));
+          });
+          mids.forEach(mid => delete pendingEdits[mid]);
+          weToast("已送出，正在更新…","success");
+          renderPoCards();
+          setTimeout(loadPreorderData, 1500);
         });
-
-        mids.forEach(mid => delete pendingEdits[mid]);
-        alert("✅ 已完成送出！畫面更新中…");
-        renderPoCards();
-        setTimeout(loadPreorderData, 1500);
     }
 
     // ===== 二選一操作 =====
@@ -1454,25 +1504,26 @@
         let mids = poCardMids(po);
         let hasAny = mids.some(m => (pendingSweep[m]||[]).length>0);
         if(!hasAny) return;
-        if(!confirm('確定送出您的決定？'))return;
-
-        mids.forEach(mid => {
+        let _rows = "";
+        mids.forEach(mid => { (pendingSweep[mid]||[]).forEach(function(d){
+          var qty = (d.reqQty-d.allocQty);
+          if(d.action==='CANCEL') _rows+='<div style="background:#fdf3f2;color:#791f1f;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">🗑️ 取消：'+escHTML(d.product)+' ×'+qty+'</div>';
+          else _rows+='<div style="background:#fff3cd;color:#633806;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">⏳ 轉候補：'+escHTML(d.product)+' ×'+qty+'</div>';
+        }); });
+        weConfirm({ title:"確認送出決定？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">您的決定</div>'+_rows }).then(function(ok){
+          if(!ok) return;
+          mids.forEach(mid => {
             let dec = pendingSweep[mid];
             if(!dec || !dec.length) return;
             let payloadStr = JSON.stringify({lineUid:currentLineUid,masterId:mid,decisions:dec});
-            fetch(GAS_URL,{
-                method:"POST",
-                headers:{"Content-Type":"application/x-www-form-urlencoded"},
-                body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr})
-            }).then(r => r.json()).then(d => {
-                if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message);
-            }).catch(e => console.error("背景連線異常:", e));
+            fetch(GAS_URL,{ method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:new URLSearchParams({action:'customerSweepDecision',payload:payloadStr}) })
+              .then(r => r.json()).then(d => { if(d.status !== "SUCCESS") console.error("背景處理異常:", d.message); }).catch(e => console.error("背景連線異常:", e));
+          });
+          mids.forEach(mid => delete pendingSweep[mid]);
+          weToast("已送出，正在更新…","success");
+          renderPoCards();
+          setTimeout(loadPreorderData, 1500);
         });
-
-        mids.forEach(mid => delete pendingSweep[mid]);
-        alert("✅ 已完成送出！畫面更新中…");
-        renderPoCards();
-        setTimeout(loadPreorderData, 1500);
     }
 
     // ===== 候補頁面（V2 完整版） =====
