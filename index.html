@@ -1389,20 +1389,24 @@
           <span style="font-weight:800;color:#111827;">${escHTML(feeText)}</span>
         </div>
         ${dis&&disableReason?`<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${escHTML(disableReason)}</div>`:''}
-        <div class="ship-opt-detail" id="shipOptDetail-${choice}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;"></div>
+        <div class="ship-opt-detail" id="shipOptDetail-${choice}" onclick="event.stopPropagation()" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;"></div>
       </div>`;
     }
 
     // 點選：展開說明 + 記錄選擇
     window.feSelectShip = function(choice){
       const mod = window._shipModuleData; if(!mod) return;
+      const detail = document.getElementById(`shipOptDetail-${choice}`);
+      // 若此項已經展開，再點一次不重繪（避免正在輸入的表單被重建而無法打字）
+      if(detail && detail.style.display==='block' && detail.innerHTML.trim()!==''){
+        return;
+      }
       window._shipSelectedChoice = choice;
       // 收合其他、展開此項
-      document.querySelectorAll('.ship-opt-detail').forEach(el=>el.style.display='none');
+      document.querySelectorAll('.ship-opt-detail').forEach(el=>{ el.style.display='none'; el.innerHTML=''; });
       document.querySelectorAll('.ship-opt-row').forEach(el=>{ el.style.borderColor='#e5e7eb'; el.style.boxShadow='none'; });
       const row = document.querySelector(`.ship-opt-row[data-choice="${choice}"]`);
       if(row){ row.style.borderColor='#6366f1'; row.style.boxShadow='0 0 0 2px rgba(99,102,241,.15)'; }
-      const detail = document.getElementById(`shipOptDetail-${choice}`);
       if(detail){ detail.style.display='block'; detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{}); }
     };
 
@@ -1422,8 +1426,8 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>
           <div class="sd-block sd-pay">
-            <div class="sd-title">💳 付款</div>
-            <ul class="sd-list"><li>無需事先匯款，剩餘費用於取貨時付款</li></ul>
+            <div class="sd-title">💳 運費付款</div>
+            <ul class="sd-list"><li>賣貨便無需事先匯款，剩餘費用於取貨時付款</li></ul>
           </div>`;
       } else if(choice==='crossmart'){
         const c = rates.crossmart || _feCalcCrossmart(declared);
@@ -1448,8 +1452,8 @@
             </ul>
           </div>
           <div class="sd-block sd-pay">
-            <div class="sd-title">💳 付款</div>
-            <ul class="sd-list"><li>於 7-11 取貨，需先匯運費</li></ul>
+            <div class="sd-title">💳 運費付款</div>
+            <ul class="sd-list"><li>包裹於 7-11 取貨，運費於確認送出後，須先匯款</li></ul>
           </div>`;
       } else if(choice==='blackcat'){
         const b = rates.blackcat;
@@ -1470,8 +1474,8 @@
             </ul>
           </div>
           <div class="sd-block sd-pay">
-            <div class="sd-title">💳 付款</div>
-            <ul class="sd-list"><li>需先匯運費</li></ul>
+            <div class="sd-title">💳 運費付款</div>
+            <ul class="sd-list"><li>運費於確認送出後，須先匯款</li></ul>
           </div>`;
       } else if(choice==='post'){
         const p = rates.post;
@@ -1494,8 +1498,8 @@
             <ul class="sd-list"><li>依報值金額賠償</li></ul>
           </div>
           <div class="sd-block sd-pay">
-            <div class="sd-title">💳 付款</div>
-            <ul class="sd-list"><li>需先匯運費</li></ul>
+            <div class="sd-title">💳 運費付款</div>
+            <ul class="sd-list"><li>運費於確認送出後，須先匯款</li></ul>
           </div>`;
       }
       // 表單區 + 確認送出區（內嵌，取代原彈窗）
@@ -1515,7 +1519,7 @@
       const firstHint = isFirstTime ? `<div class="shipf-firsthint">💡 初次填寫，往後將自動帶入，不需每次重新輸入</div>` : '';
       // 交貨便需查驗證件填全名；賣貨便取貨較寬鬆
       const nameHint = (choice==='crossmart')
-        ? '取貨人姓名（因需取貨付款，店員會查驗證件，必須填寫真實全名）'
+        ? '取貨人姓名（因無需取貨付款，店員會查驗證件，必須填寫真實全名）'
         : (choice==='myship' ? '取貨人姓名' : '收件人姓名');
       let fields = '';
       if(isCvs){
