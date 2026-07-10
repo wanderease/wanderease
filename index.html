@@ -331,6 +331,28 @@
     .shipf-lbl{display:block;font-size:12px;color:#4b5563;font-weight:700;margin:8px 0 3px;}
     .shipf-inp{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827;box-sizing:border-box;}
     .shipf-inp:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.15);}
+    /* 配送說明分區（條列式）*/
+    .ship-detail-inner{display:flex;flex-direction:column;gap:8px;}
+    .sd-block{border-radius:8px;padding:8px 10px;border:1px solid #eee;}
+    .sd-block .sd-title{font-weight:800;font-size:12px;margin-bottom:3px;}
+    .sd-list{margin:0;padding-left:18px;font-size:12px;color:#4b5563;line-height:1.75;}
+    .sd-list li{margin:1px 0;}
+    .sd-list .sd-total{list-style:none;margin-left:-18px;padding-top:3px;border-top:1px dashed #e5e7eb;margin-top:3px;font-weight:700;color:#111827;}
+    .sd-tier li{color:#6b7280;font-size:11.5px;}
+    .sd-fee{background:#f0f9ff;border-color:#bae6fd;}    .sd-fee .sd-title{color:#0369a1;}
+    .sd-warn{background:#fff7ed;border-color:#fed7aa;}   .sd-warn .sd-title{color:#c2410c;}
+    .sd-pay{background:#f5f3ff;border-color:#ddd6fe;}    .sd-pay .sd-title{color:#6d28d9;}
+    .sd-info{background:#f9fafb;border-color:#e5e7eb;}   .sd-info .sd-title{color:#374151;}
+    /* 內嵌表單 */
+    .sd-formbox{margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;}
+    .sd-formtitle{font-weight:800;font-size:13px;color:#374151;margin-bottom:4px;}
+    .shipf-row-flex{display:flex;gap:8px;align-items:flex-end;}
+    .shipf-emap-btn{white-space:nowrap;padding:8px 12px;border:1px solid #16a34a;background:#dcfce7;color:#166534;font-weight:700;font-size:12px;border-radius:8px;cursor:pointer;}
+    .shipf-emap-btn:active{background:#bbf7d0;}
+    .shipf-hint{font-size:11px;color:#16a34a;margin:4px 0 2px;}
+    .shipf-check{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#4b5563;cursor:pointer;}
+    .shipf-agree{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:12px;cursor:pointer;}
+    .shipf-agree input{margin-top:2px;}
 
     /* 候補框舊統計樣式已合併到上方訂單框 cell，保留 wait-action */
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
@@ -1383,125 +1405,170 @@
       if(detail){ detail.style.display='block'; detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{}); }
     };
 
+    // 說明區塊（條列式分區：運費計算 / 賠償責任 / 匯款提醒）
     function _feShipDetailHtml(choice, rates){
       const declared = rates.declaredValue||0;
+      const wrapOpen = `<div class="ship-detail-inner">`;
+      let info = '';
       if(choice==='myship'){
-        return `<div style="font-size:12px;color:#4b5563;line-height:1.7;">固定 <b>$38</b>，在 7-11 取貨。<br>⚠️ 賣貨便若發生遺失/損毀無賠償。<br>賣貨便無需事先匯款，剩餘費用於取貨時付款。</div>
-          <button class="ship-cta-primary" style="margin-top:8px;" onclick="feOpenShipForm('myship')">填寫取貨資訊 →</button>`;
-      }
-      if(choice==='crossmart'){
+        info = `
+          <div class="sd-block sd-fee">
+            <div class="sd-title">💰 運費</div>
+            <ul class="sd-list"><li>固定 <b>$38</b>，於 7-11 取貨</li></ul>
+          </div>
+          <div class="sd-block sd-warn">
+            <div class="sd-title">⚠️ 賠償</div>
+            <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
+          </div>
+          <div class="sd-block sd-pay">
+            <div class="sd-title">💳 付款</div>
+            <ul class="sd-list"><li>無需事先匯款，剩餘費用於取貨時付款</li></ul>
+          </div>`;
+      } else if(choice==='crossmart'){
         const c = rates.crossmart || _feCalcCrossmart(declared);
-        let boxesHtml = c.boxes.map((b,i)=>`<div>第${i+1}箱 報值$${b.value} → 運費 $${b.fee}</div>`).join('');
-        return `<div style="font-size:12px;color:#4b5563;line-height:1.7;">
-          本次包裹價值 $${declared}${c.boxes.length>1?`，分 ${c.boxes.length} 箱寄出：`:''}
-          <div style="margin:4px 0;padding:6px 8px;background:#f9fafb;border-radius:6px;">${boxesHtml}<div style="font-weight:700;margin-top:2px;">運費合計 $${c.fee}</div></div>
-          報值級距表：<br>1~1000元…$60｜1001~2000…$70｜2001~3000…$80｜3001~4000…$90｜4001~5000…$100<br>
-          在 7-11 取貨，需先匯運費。</div>
-          <button class="ship-cta-primary" style="margin-top:8px;" onclick="feOpenShipForm('crossmart')">填寫取貨資訊 →</button>`;
-      }
-      if(choice==='blackcat'){
+        const boxesLi = c.boxes.map((b,i)=>`<li>第 ${i+1} 箱：報值 $${b.value} → 運費 <b>$${b.fee}</b></li>`).join('');
+        info = `
+          <div class="sd-block sd-fee">
+            <div class="sd-title">💰 運費計算</div>
+            <ul class="sd-list">
+              <li>本次包裹價值 <b>$${declared}</b>${c.boxes.length>1?`，需分 ${c.boxes.length} 箱寄出`:''}</li>
+              ${boxesLi}
+              <li class="sd-total">運費合計 <b>$${c.fee}</b></li>
+            </ul>
+          </div>
+          <div class="sd-block sd-info">
+            <div class="sd-title">📋 報值級距表</div>
+            <ul class="sd-list sd-tier">
+              <li>1 ~ 1,000 元 …… $60</li>
+              <li>1,001 ~ 2,000 元 …… $70</li>
+              <li>2,001 ~ 3,000 元 …… $80</li>
+              <li>3,001 ~ 4,000 元 …… $90</li>
+              <li>4,001 ~ 5,000 元 …… $100</li>
+            </ul>
+          </div>
+          <div class="sd-block sd-pay">
+            <div class="sd-title">💳 付款</div>
+            <ul class="sd-list"><li>於 7-11 取貨，需先匯運費</li></ul>
+          </div>`;
+      } else if(choice==='blackcat'){
         const b = rates.blackcat;
-        if(!b) return `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div>`;
-        return `<div style="font-size:12px;color:#4b5563;line-height:1.7;">
-          依 ${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')} 區間，運費 <b>$${b.fee}</b>。<br>
-          黑貓未申報包裹最高賠償 2 萬，最終以貨運方接收訂單截圖與相關資料後判定。<br>需先匯運費。</div>
-          <button class="ship-cta-primary" style="margin-top:8px;" onclick="feOpenShipForm('blackcat')">填寫收件資訊 →</button>`;
-      }
-      if(choice==='post'){
+        if(!b){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div></div>`; }
+        info = `
+          <div class="sd-block sd-fee">
+            <div class="sd-title">💰 運費</div>
+            <ul class="sd-list">
+              <li>箱子區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b></li>
+              <li>運費 <b>$${b.fee}</b></li>
+            </ul>
+          </div>
+          <div class="sd-block sd-warn">
+            <div class="sd-title">⚠️ 賠償</div>
+            <ul class="sd-list">
+              <li>未申報包裹最高賠償 <b>2 萬</b></li>
+              <li>最終以貨運方接收訂單截圖與相關資料後判定</li>
+            </ul>
+          </div>
+          <div class="sd-block sd-pay">
+            <div class="sd-title">💳 付款</div>
+            <ul class="sd-list"><li>需先匯運費</li></ul>
+          </div>`;
+      } else if(choice==='post'){
         const p = rates.post;
-        if(!p) return `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div>`;
-        return `<div style="font-size:12px;color:#4b5563;line-height:1.7;">
-          運費 $${p.base}（箱子區間）＋ 報值費 $${p.insurance}（申報 $${declared}）＝ <b>$${p.fee}</b>。<br>
-          報值費：每滿1000元加$4，上限報值5萬。依報值金額賠償。<br>需先匯運費。</div>
-          <button class="ship-cta-primary" style="margin-top:8px;" onclick="feOpenShipForm('post')">填寫收件資訊 →</button>`;
+        if(!p){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div></div>`; }
+        info = `
+          <div class="sd-block sd-fee">
+            <div class="sd-title">💰 運費計算</div>
+            <ul class="sd-list">
+              <li>箱子區間運費 <b>$${p.base}</b></li>
+              <li>報值費 <b>$${p.insurance}</b>（報值 $${declared}）</li>
+              <li class="sd-total">運費合計 <b>$${p.fee}</b></li>
+            </ul>
+          </div>
+          <div class="sd-block sd-info">
+            <div class="sd-title">📋 報值費規則</div>
+            <ul class="sd-list"><li>每滿 1,000 元加 $4，上限報值 5 萬</li></ul>
+          </div>
+          <div class="sd-block sd-warn">
+            <div class="sd-title">⚠️ 賠償</div>
+            <ul class="sd-list"><li>依報值金額賠償</li></ul>
+          </div>
+          <div class="sd-block sd-pay">
+            <div class="sd-title">💳 付款</div>
+            <ul class="sd-list"><li>需先匯運費</li></ul>
+          </div>`;
       }
-      return '';
+      // 表單區 + 確認送出區（內嵌，取代原彈窗）
+      return wrapOpen + info + _feShipFormHtml(choice) + `</div>`;
     }
 
-    // 開啟收件資訊表單（彈窗）
-    window.feOpenShipForm = function(choice){
-      const mod = window._shipModuleData; if(!mod) return;
-      window._shipSelectedChoice = choice;
+    // 內嵌表單 HTML（說明下方）
+    function _feShipFormHtml(choice){
+      const mod = window._shipModuleData || {};
       const isCvs = (choice==='myship' || choice==='crossmart');
       const saved = mod.savedRecipient || {};
       const pre = isCvs ? (saved.cvs||{}) : (saved.addr||{});
-      const rates = mod.rates || {};
-      let feeText = '';
-      if(choice==='myship') feeText = '$38（取貨時付款，無需事先匯款）';
-      else if(choice==='crossmart') feeText = `運費 $${rates.crossmart?rates.crossmart.fee:'--'}`;
-      else if(choice==='blackcat') feeText = `運費 $${rates.blackcat?rates.blackcat.fee:'--'}`;
-      else if(choice==='post') feeText = `運費 $${rates.post?rates.post.fee:'--'}`;
-
       let fields = '';
       if(isCvs){
         fields = `
-          <label class="shipf-lbl">7-11 店號 *</label><input class="shipf-inp" id="shipf-store" value="${escHTML(pre.store||'')}" placeholder="例：123456">
-          <label class="shipf-lbl">7-11 店名 *</label><input class="shipf-inp" id="shipf-storeName" value="${escHTML(pre.storeName||'')}" placeholder="例：桃園門市">
-          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name" value="${escHTML(pre.name||'')}" placeholder="取貨人姓名">
-          <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx">`;
+          <div class="shipf-row-flex">
+            <div style="flex:1;">
+              <label class="shipf-lbl">7-11 店號 *</label>
+              <input class="shipf-inp" id="shipf-store-${choice}" value="${escHTML(pre.store||'')}" placeholder="例：174671" inputmode="numeric">
+            </div>
+            <button type="button" class="shipf-emap-btn" onclick="window.open('https://emap.pcsc.com.tw/ecmap/default.aspx','_blank')">🔍 門市查詢</button>
+          </div>
+          <div class="shipf-hint">在門市查詢頁找到門市後，把「門市店號」與「門市店名」填回下方欄位</div>
+          <label class="shipf-lbl">7-11 店名 *</label><input class="shipf-inp" id="shipf-storeName-${choice}" value="${escHTML(pre.storeName||'')}" placeholder="例：鎮宮門市">
+          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="取貨人姓名">
+          <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       } else {
         fields = `
-          <label class="shipf-lbl">郵遞區號 *</label><input class="shipf-inp" id="shipf-zip" value="${escHTML(pre.zip||'')}" placeholder="例：330">
-          <label class="shipf-lbl">詳細地址 *</label><input class="shipf-inp" id="shipf-address" value="${escHTML(pre.address||'')}" placeholder="縣市區路街號樓">
-          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name" value="${escHTML(pre.name||'')}" placeholder="收件人姓名">
-          <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx">`;
+          <label class="shipf-lbl">郵遞區號 *</label><input class="shipf-inp" id="shipf-zip-${choice}" value="${escHTML(pre.zip||'')}" placeholder="例：330" inputmode="numeric">
+          <label class="shipf-lbl">詳細地址 *</label><input class="shipf-inp" id="shipf-address-${choice}" value="${escHTML(pre.address||'')}" placeholder="縣市區路街號樓">
+          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="收件人姓名">
+          <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       }
-
-      const html = `
-      <div id="shipFormMask" style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)feCloseShipForm()">
-        <div style="background:#fff;border-radius:16px;max-width:420px;width:100%;max-height:88vh;overflow:auto;padding:18px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <div style="font-weight:800;font-size:15px;color:#374151;">✍️ 確認配送資訊</div>
-            <button onclick="feCloseShipForm()" style="border:none;background:none;font-size:20px;color:#9ca3af;cursor:pointer;">✕</button>
-          </div>
-          <div style="font-size:12.5px;color:#6b7280;margin-bottom:10px;">您選擇：<b>${escHTML(SHIPFE_LABEL[choice]||choice)}</b> · ${escHTML(feeText)}</div>
-
-          <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-bottom:10px;cursor:pointer;">
-            <input type="checkbox" id="shipf-agree" style="margin-top:2px;">
-            <span>我已閱讀配送責任說明，了解此選擇將影響日後遺失/損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。</span>
-          </label>
-
-          <div style="font-weight:700;font-size:13px;color:#374151;margin:6px 0;">收件資訊</div>
+      return `
+        <div class="sd-formbox">
+          <div class="sd-formtitle">✍️ 收件資訊</div>
           ${fields}
-
-          <div style="font-weight:700;font-size:13px;color:#374151;margin:12px 0 4px;">出貨排除期間（選填）</div>
-          <label style="display:flex;gap:6px;align-items:center;font-size:12.5px;color:#4b5563;cursor:pointer;">
-            <input type="checkbox" id="shipf-unavail" onchange="document.getElementById('shipf-unavail-dates').style.display=this.checked?'block':'none'"> 我有一段時間出國/無法收貨
+          <div class="sd-formtitle" style="margin-top:12px;">出貨排除期間（選填）</div>
+          <label class="shipf-check">
+            <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間出國／無法收貨
           </label>
-          <div id="shipf-unavail-dates" style="display:none;margin-top:6px;">
+          <div id="shipf-unavail-dates-${choice}" style="display:none;margin-top:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
-              從 <input type="date" class="shipf-inp" id="shipf-from" style="flex:1;"> 到 <input type="date" class="shipf-inp" id="shipf-to" style="flex:1;">
+              從 <input type="date" class="shipf-inp" id="shipf-from-${choice}" style="flex:1;"> 到 <input type="date" class="shipf-inp" id="shipf-to-${choice}" style="flex:1;">
             </div>
           </div>
-
-          <button class="ship-cta-primary" style="margin-top:14px;width:100%;" onclick="feSubmitShip()">✅ 確認送出，可以出我的貨</button>
+          <label class="shipf-agree">
+            <input type="checkbox" id="shipf-agree-${choice}">
+            <span>我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。</span>
+          </label>
+          <button class="ship-cta-primary" style="margin-top:12px;width:100%;" onclick="feSubmitShip('${choice}')">✅ 確認送出，可以出我的貨</button>
           <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">送出後即鎖定，如需修改請聯繫客服</div>
-        </div>
-      </div>`;
-      const holder = document.createElement('div'); holder.id='shipFormHolder'; holder.innerHTML=html;
-      document.body.appendChild(holder);
-    };
+        </div>`;
+    }
 
-    window.feCloseShipForm = function(){ const h=document.getElementById('shipFormHolder'); if(h)h.remove(); };
-
-    window.feSubmitShip = async function(){
-      const choice = window._shipSelectedChoice; if(!choice) return;
+    window.feSubmitShip = async function(choice){
+      if(!choice) choice = window._shipSelectedChoice;
+      if(!choice) return;
       const isCvs = (choice==='myship' || choice==='crossmart');
-      const agree = document.getElementById('shipf-agree');
+      const agree = document.getElementById(`shipf-agree-${choice}`);
       if(!agree || !agree.checked){ alert('請先勾選並閱讀配送責任說明'); return; }
       const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
       let recipient = {};
       if(isCvs){
-        recipient = { store:val('shipf-store'), storeName:val('shipf-storeName'), name:val('shipf-name'), phone:val('shipf-phone') };
+        recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ alert('請完整填寫店號、店名、收件人與手機'); return; }
       } else {
-        recipient = { zip:val('shipf-zip'), address:val('shipf-address'), name:val('shipf-name'), phone:val('shipf-phone') };
+        recipient = { zip:val(`shipf-zip-${choice}`), address:val(`shipf-address-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.zip||!recipient.address||!recipient.name||!recipient.phone){ alert('請完整填寫郵遞區號、地址、收件人與手機'); return; }
       }
       let unavailable = null;
-      const uav = document.getElementById('shipf-unavail');
+      const uav = document.getElementById(`shipf-unavail-${choice}`);
       if(uav && uav.checked){
-        const from=val('shipf-from'), to=val('shipf-to');
+        const from=val(`shipf-from-${choice}`), to=val(`shipf-to-${choice}`);
         if(!from||!to){ alert('已勾選無法收貨期間，請填寫起訖日期'); return; }
         unavailable = { from:from, to:to };
       }
@@ -1511,9 +1578,7 @@
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
-          feCloseShipForm();
           alert('✅ 已送出配送選擇！');
-          // 本地更新 state 並重繪
           const mod = window._shipModuleData;
           mod.state = { confirmed:true, locked:true, shipChoice:choice, shipFee:d.data?d.data.shipFee:null, recipient:Object.assign({type:isCvs?'cvs':'addr'},recipient), unavailable:unavailable, payOpened:false, paid:false, finalDue:null, last5:'' };
           renderShipModule(mod);
