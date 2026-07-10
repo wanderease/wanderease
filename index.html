@@ -350,6 +350,7 @@
     .shipf-emap-btn{white-space:nowrap;padding:8px 12px;border:1px solid #16a34a;background:#dcfce7;color:#166534;font-weight:700;font-size:12px;border-radius:8px;cursor:pointer;}
     .shipf-emap-btn:active{background:#bbf7d0;}
     .shipf-hint{font-size:11px;color:#16a34a;margin:4px 0 2px;}
+    .shipf-firsthint{font-size:11.5px;color:#0369a1;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 8px;margin-bottom:8px;}
     .shipf-check{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#4b5563;cursor:pointer;}
     .shipf-agree{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:12px;cursor:pointer;}
     .shipf-agree input{margin-top:2px;}
@@ -1507,25 +1508,34 @@
       const isCvs = (choice==='myship' || choice==='crossmart');
       const saved = mod.savedRecipient || {};
       const pre = isCvs ? (saved.cvs||{}) : (saved.addr||{});
+      // 判斷是否初次輸入（該型態資料全空）→ 顯示安撫提醒
+      const isFirstTime = isCvs
+        ? !(pre.store || pre.storeName || pre.name || pre.phone)
+        : !(pre.zip || pre.address || pre.name || pre.phone);
+      const firstHint = isFirstTime ? `<div class="shipf-firsthint">💡 初次填寫，往後將自動帶入，不需每次重新輸入</div>` : '';
+      // 交貨便需查驗證件填全名；賣貨便取貨較寬鬆
+      const nameHint = (choice==='crossmart')
+        ? '取貨人姓名（因需取貨付款，店員會查驗證件，必須填寫真實全名）'
+        : (choice==='myship' ? '取貨人姓名' : '收件人姓名');
       let fields = '';
       if(isCvs){
-        fields = `
+        fields = firstHint + `
           <div class="shipf-row-flex">
             <div style="flex:1;">
               <label class="shipf-lbl">7-11 店號 *</label>
-              <input class="shipf-inp" id="shipf-store-${choice}" value="${escHTML(pre.store||'')}" placeholder="例：174671" inputmode="numeric">
+              <input class="shipf-inp" id="shipf-store-${choice}" value="${escHTML(pre.store||'')}" placeholder="例：123456" inputmode="numeric">
             </div>
-            <button type="button" class="shipf-emap-btn" onclick="window.open('https://emap.pcsc.com.tw/ecmap/default.aspx','_blank')">🔍 門市查詢</button>
+            <button type="button" class="shipf-emap-btn" onclick="window.open('https://emap.pcsc.com.tw/','_blank')">🔍 門市查詢</button>
           </div>
           <div class="shipf-hint">在門市查詢頁找到門市後，把「門市店號」與「門市店名」填回下方欄位</div>
-          <label class="shipf-lbl">7-11 店名 *</label><input class="shipf-inp" id="shipf-storeName-${choice}" value="${escHTML(pre.storeName||'')}" placeholder="例：鎮宮門市">
-          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="取貨人姓名">
+          <label class="shipf-lbl">7-11 店名 *</label><input class="shipf-inp" id="shipf-storeName-${choice}" value="${escHTML(pre.storeName||'')}" placeholder="例：花園門市">
+          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="${nameHint}">
           <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       } else {
-        fields = `
+        fields = firstHint + `
           <label class="shipf-lbl">郵遞區號 *</label><input class="shipf-inp" id="shipf-zip-${choice}" value="${escHTML(pre.zip||'')}" placeholder="例：330" inputmode="numeric">
           <label class="shipf-lbl">詳細地址 *</label><input class="shipf-inp" id="shipf-address-${choice}" value="${escHTML(pre.address||'')}" placeholder="縣市區路街號樓">
-          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="收件人姓名">
+          <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="${nameHint}">
           <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       }
       return `
@@ -1534,7 +1544,7 @@
           ${fields}
           <div class="sd-formtitle" style="margin-top:12px;">出貨排除期間（選填）</div>
           <label class="shipf-check">
-            <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間出國／無法收貨
+            <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間無法出貨
           </label>
           <div id="shipf-unavail-dates-${choice}" style="display:none;margin-top:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
@@ -1578,9 +1588,24 @@
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
-          alert('✅ 已送出配送選擇！');
+          const dd = d.data || {};
           const mod = window._shipModuleData;
-          mod.state = { confirmed:true, locked:true, shipChoice:choice, shipFee:d.data?d.data.shipFee:null, recipient:Object.assign({type:isCvs?'cvs':'addr'},recipient), unavailable:unavailable, payOpened:false, paid:false, finalDue:null, last5:'' };
+          mod.state = {
+            confirmed:true, locked:true, shipChoice:choice,
+            shipFee:(dd.shipFee!=null?dd.shipFee:null),
+            myshipAmount:(dd.myshipAmount!=null?dd.myshipAmount:null),
+            finalDue:(dd.finalDue!=null?dd.finalDue:null),
+            payOpened:!!dd.payOpened, paid:false,
+            payDeadlineTs:(dd.payDeadlineTs!=null?dd.payDeadlineTs:null),
+            recipient:Object.assign({type:isCvs?'cvs':'addr'},recipient),
+            unavailable:unavailable, last5:''
+          };
+          // 非賣貨便：彈出應匯款視窗；賣貨便：直接完成
+          if(dd.needPay){
+            feShowPayModal(choice, dd, mod.shipBankInfo || dd.shipBankInfo || '');
+          } else {
+            alert('✅ 已送出！賣貨便無需事先匯款，剩餘費用於取貨時付款。');
+          }
           renderShipModule(mod);
         } else {
           alert(d.message||'送出失敗');
@@ -1588,7 +1613,39 @@
       }catch(e){ alert('連線異常：'+e.message); }
     };
 
-    // 已確認後的顯示（等待 / 開放匯款）
+    // 匯款彈窗（送出後立即顯示應匯金額 + 期限 + 帳戶）
+    window.feCloseModal = function(){ const h=document.getElementById('feModalHolder'); if(h)h.remove(); };
+    window.feShowPayModal = function(choice, data, bankInfo){
+      const due = (data.finalDue!=null)?data.finalDue:0;
+      const ship = (data.shipFee!=null)?data.shipFee:0;
+      const mAmt = (data.myshipAmount!=null)?data.myshipAmount:0;
+      let deadlineStr = '';
+      if(data.payDeadlineTs){ const dt=new Date(data.payDeadlineTs); deadlineStr = `${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
+      const html = `
+      <div id="feModalMask" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)feCloseModal()">
+        <div style="background:#fff;border-radius:16px;max-width:400px;width:100%;padding:20px;">
+          <div style="font-weight:900;font-size:16px;color:#b45309;text-align:center;margin-bottom:4px;">💳 應匯款資訊</div>
+          <div style="font-size:12px;color:#6b7280;text-align:center;margin-bottom:12px;">${escHTML(SHIPFE_LABEL[choice]||choice)}</div>
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>賣貨便金額</span><span>$${mAmt}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>運費</span><span>$${ship}</span></div>
+            <div style="border-top:1px dashed #fbbf24;margin:6px 0;"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:22px;font-weight:900;color:#b91c1c;">$${due}</span></div>
+          </div>
+          ${deadlineStr?`<div style="text-align:center;font-size:12.5px;color:#dc2626;font-weight:700;margin:10px 0;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-top:6px;">
+            <div style="font-weight:700;color:#374151;font-size:12.5px;">運費專屬匯款帳戶</div>
+            <div style="font-size:13px;color:#111827;white-space:pre-wrap;margin-top:3px;">${escHTML(bankInfo||'（帳戶整理中，請稍候，可稍後於下方查看）')}</div>
+          </div>
+          <button class="ship-cta-primary" style="margin-top:14px;width:100%;background:#5fab7e;color:#fff;" onclick="feCloseModal()">我知道了</button>
+          <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">匯款資訊也會顯示在出貨頁下方，可隨時回來查看與填寫後五碼</div>
+        </div>
+      </div>`;
+      const holder=document.createElement('div'); holder.id='feModalHolder'; holder.innerHTML=html;
+      document.body.appendChild(holder);
+    };
+
+    // 已確認後的顯示（綠框下方常駐匯款區）
     function renderShipConfirmed(mod, state){
       const choice = state.shipChoice;
       const isMyship = (choice==='myship');
@@ -1597,7 +1654,7 @@
       if(r.type==='cvs') recvLine = `${escHTML(r.storeName||'')} ${escHTML(r.store||'')} · ${escHTML(r.name||'')} / ${escHTML(r.phone||'')}`;
       else if(r.type==='addr') recvLine = `${escHTML(r.zip||'')} ${escHTML(r.address||'')} · ${escHTML(r.name||'')} / ${escHTML(r.phone||'')}`;
       let unavailLine = '';
-      if(state.unavailable && state.unavailable.from) unavailLine = `<div style="color:#dc2626;font-weight:700;font-size:12px;margin-top:2px;">⛔ 出國無法收貨：${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</div>`;
+      if(state.unavailable && state.unavailable.from) unavailLine = `<div style="color:#dc2626;font-weight:700;font-size:12px;margin-top:2px;">⛔ 無法出貨：${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</div>`;
 
       let h = `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;margin:10px 0;">
         <div style="font-weight:800;color:#166534;">✅ 已確認配送方式：${escHTML(SHIPFE_LABEL[choice]||choice)}</div>
@@ -1610,39 +1667,46 @@
         return h;
       }
 
-      // 非賣貨便：等待客服算最終應匯 或 已開放匯款
-      if(!state.payOpened){
-        h += `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#92400e;">
-          運費 $${state.shipFee!=null?state.shipFee:'--'}。客服將依您的匯款情況（含溢繳/少匯）計算<b>最終應匯金額</b>後通知您匯款 🙌</div>`;
-        return h;
-      }
+      // 非賣貨便（方案B）：送出即開放，常駐顯示應匯金額 + 帳戶 + 後五碼 + 匯款狀態
+      const mAmt = (state.myshipAmount!=null)?state.myshipAmount:0;
+      const ship = (state.shipFee!=null)?state.shipFee:0;
+      const due = (state.finalDue!=null)?state.finalDue:(mAmt+ship);
+      let deadlineStr='';
+      if(state.payDeadlineTs){ const dt=new Date(state.payDeadlineTs); deadlineStr=`${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
 
-      // 已開放匯款：顯示最終應匯明細 + 逐系列備註 + 運費帳戶 + 後五碼
-      const payNotes = mod.payNotes || [];
-      let notesHtml = '';
-      if(payNotes.length){
-        notesHtml = `<div style="margin:6px 0;padding:6px 8px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11.5px;color:#b91c1c;">
-          ${payNotes.map(n=>`<div>📝 ${escHTML(n.series||'')}${n.series?'：':''}${escHTML(n.note||'')}</div>`).join('')}
-        </div>`;
-      }
+      // 匯款狀態徽章
+      const statusBadge = state.paid
+        ? `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:800;font-size:12px;">✅ 已匯款</span>`
+        : `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#fef3c7;color:#92400e;font-weight:800;font-size:12px;">⏳ 待匯款</span>`;
+
       h += `<div style="border:1.5px solid #fbbf24;background:#fffbeb;border-radius:12px;padding:12px 14px;">
-        <div style="font-weight:800;color:#92400e;margin-bottom:6px;">💳 最終應匯款</div>
-        <div style="font-size:13px;color:#374151;">賣貨便金額 + 運費，經客服調整後：</div>
-        ${notesHtml}
-        <div style="font-size:20px;font-weight:900;color:#b91c1c;margin:6px 0;">合計應匯 $${state.finalDue!=null?state.finalDue:'--'}</div>
-        <div style="border-top:1px dashed #fde68a;padding-top:8px;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:800;color:#92400e;">💳 應匯款</span>
+          ${statusBadge}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>賣貨便金額</span><span>$${mAmt}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>運費</span><span>$${ship}</span></div>
+        <div style="border-top:1px dashed #fde68a;margin:6px 0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:20px;font-weight:900;color:#b91c1c;">$${due}</span></div>
+        ${deadlineStr?`<div style="text-align:center;font-size:12px;color:#dc2626;font-weight:700;margin-top:6px;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
+        <div style="border-top:1px dashed #fde68a;padding-top:8px;margin-top:8px;">
           <div style="font-weight:700;color:#92400e;font-size:12.5px;">運費專屬匯款帳戶</div>
           <div style="font-size:13px;color:#374151;white-space:pre-wrap;margin-top:2px;">${escHTML(mod.shipBankInfo||'（帳戶整理中，請稍候）')}</div>
-        </div>
-        <div style="margin-top:10px;">
+        </div>`;
+
+      if(state.paid){
+        h += `<div style="margin-top:10px;font-size:12.5px;color:#166534;">✅ 客服已確認收到您的匯款，感謝！${state.last5?`（後五碼 ${escHTML(state.last5)}）`:''}</div>`;
+      } else {
+        h += `<div style="margin-top:10px;">
           <label style="font-size:12.5px;color:#374151;font-weight:700;">匯款帳號後五碼</label>
           <div style="display:flex;gap:8px;margin-top:4px;">
             <input class="shipf-inp" id="shipLast5Inp" value="${escHTML(state.last5||'')}" placeholder="輸入後五碼" style="flex:1;" maxlength="5" inputmode="numeric">
             <button class="ship-cta-primary" style="width:auto;padding:8px 16px;" onclick="feSubmitShipLast5()">送出</button>
           </div>
-          ${state.last5?`<div style="font-size:11.5px;color:#16a34a;margin-top:4px;">✅ 已提供後五碼：${escHTML(state.last5)}</div>`:''}
-        </div>
-      </div>`;
+          ${state.last5?`<div style="font-size:11.5px;color:#0369a1;margin-top:4px;">已提供後五碼：${escHTML(state.last5)}，待客服確認收款後將顯示「已匯款」</div>`:`<div style="font-size:11px;color:#9ca3af;margin-top:4px;">匯款後請填後五碼，客服核對收款後會為您標記已匯款</div>`}
+        </div>`;
+      }
+      h += `</div>`;
       return h;
     }
 
