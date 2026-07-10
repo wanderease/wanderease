@@ -666,7 +666,7 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     // ===== 管理員清除 Cache =====
@@ -1161,7 +1161,15 @@
       const series = Array.isArray(up.series) ? up.series : [];
       const totalItems = up.totalItems || 0;
       const totalAmount = up.totalAmount || 0;
-      if(series.length > 0){
+      // 🆕 前台顯示開關：未開放時，綠框與配送選擇都不顯示（維持一般畫面，只留尚未出貨列表）
+      const _shipMod = shipData.shipModule || null;
+      const _shipPublished = !!(_shipMod && _shipMod.published);
+      if(!_shipPublished){
+        wrap.style.display = 'none';
+        if(empty) empty.style.display = 'none';
+        const _area = document.getElementById('shipModuleArea');
+        if(_area) _area.innerHTML = '';
+      } else if(series.length > 0){
         wrap.style.display = 'block';
         if(empty) empty.style.display = 'none';
         document.getElementById('shipFrameCount').innerText = `${series.length} 系列 · ${totalItems} 件`;
@@ -1186,8 +1194,10 @@
         wrap.style.display = 'none';
         if(empty) empty.style.display = 'block';
       }
-      // 🆕 配送模組（客人自選貨運）
-      try { renderShipModule(shipData.shipModule || null); } catch(e){ console.warn('shipModule render fail', e); }
+      // 🆕 配送模組（客人自選貨運）— 僅開關開放時渲染
+      if(_shipPublished){
+        try { renderShipModule(_shipMod); } catch(e){ console.warn('shipModule render fail', e); }
+      }
       // 尚未出貨列表（按系列分組）
       const unshipGroups = Array.isArray(shipData.unshipped) ? shipData.unshipped : [];
       let totalUnship = 0;
@@ -1288,9 +1298,10 @@
       const area = document.getElementById('shipModuleArea');
       if(!area) return;
       window._shipModuleData = mod;
-      // 開關關閉或無模組資料：維持原本「前往賣貨便」按鈕（一般畫面）
+      try { console.log('[shipModule] 收到資料 =', mod, '| published =', mod && mod.published); } catch(e){}
+      // 開關關閉或無模組資料：不顯示任何配送內容（綠框已由 renderShipPage 隱藏）
       if(!mod || !mod.published){
-        area.innerHTML = `<button class="ship-cta-primary" onclick="openShipMenuCheckout()"><i class="bi bi-cart-check"></i> 前往賣貨便下單</button>`;
+        area.innerHTML = '';
         return;
       }
       const state = mod.state;
