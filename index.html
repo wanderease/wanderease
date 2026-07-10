@@ -1298,7 +1298,11 @@
       const area = document.getElementById('shipModuleArea');
       if(!area) return;
       window._shipModuleData = mod;
-      try { console.log('[shipModule] 收到資料 =', mod, '| published =', mod && mod.published); } catch(e){}
+      try {
+        console.log('[shipModule] 收到資料 =', mod, '| published =', mod && mod.published);
+        if(mod && mod._error) console.error('[shipModule] 後端錯誤 =', mod._error, mod._errorStack);
+        if(mod && mod._debug) console.log('[shipModule] 診斷 =', JSON.stringify(mod._debug));
+      } catch(e){}
       // 開關關閉或無模組資料：不顯示任何配送內容（綠框已由 renderShipPage 隱藏）
       if(!mod || !mod.published){
         area.innerHTML = '';
