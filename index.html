@@ -1187,6 +1187,7 @@
       // 🆕 前台顯示開關：未開放時，綠框與配送選擇都不顯示（維持一般畫面，只留尚未出貨列表）
       const _shipMod = shipData.shipModule || null;
       const _shipPublished = !!(_shipMod && _shipMod.published);
+      window._shipTotalItems = totalItems;  // 供送出時計算保留尾款（件數×20）
       if(!_shipPublished){
         wrap.style.display = 'none';
         if(empty) empty.style.display = 'none';
@@ -1587,7 +1588,8 @@
         unavailable = { from:from, to:to };
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
-      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl });
+      const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
+      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items });
       try{
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
@@ -1598,6 +1600,7 @@
             confirmed:true, locked:true, shipChoice:choice,
             shipFee:(dd.shipFee!=null?dd.shipFee:null),
             myshipAmount:(dd.myshipAmount!=null?dd.myshipAmount:null),
+            itemCount:(dd.itemCount!=null?dd.itemCount:null),
             finalDue:(dd.finalDue!=null?dd.finalDue:null),
             payOpened:!!dd.payOpened, paid:false,
             payDeadlineTs:(dd.payDeadlineTs!=null?dd.payDeadlineTs:null),
@@ -1605,6 +1608,10 @@
             unavailable:unavailable, last5:''
           };
           // 非賣貨便：彈出應匯款視窗；賣貨便：直接完成
+          // 補上帳戶分行資料到 mod，供綠框下方顯示
+          if(dd.shipBankCode!=null) mod.shipBankCode = dd.shipBankCode;
+          if(dd.shipBankAcct!=null) mod.shipBankAcct = dd.shipBankAcct;
+          if(dd.shipBankInfo!=null) mod.shipBankInfo = dd.shipBankInfo;
           if(dd.needPay){
             feShowPayModal(choice, dd, mod.shipBankInfo || dd.shipBankInfo || '');
           } else {
@@ -1619,10 +1626,24 @@
 
     // 匯款彈窗（送出後立即顯示應匯金額 + 期限 + 帳戶）
     window.feCloseModal = function(){ const h=document.getElementById('feModalHolder'); if(h)h.remove(); };
+    // 匯款帳戶分行顯示（銀行代碼 / 匯款帳號 + 備註提醒）
+    function _feBankHtml(code, acct, fallback){
+      if(!code && !acct){
+        return `<div style="font-size:13px;color:#111827;white-space:pre-wrap;">${escHTML(fallback||'（帳戶整理中，請稍候）')}</div>`;
+      }
+      return `
+        <div style="font-size:13px;color:#111827;line-height:1.9;">
+          <div>銀行代碼：<b>${escHTML(code||'')}</b></div>
+          <div>匯款帳號：<b>${escHTML(acct||'')}</b></div>
+        </div>
+        <div style="font-size:11.5px;color:#dc2626;margin-top:4px;">⚠️ 請勿填寫備註，會對不到帳</div>`;
+    }
+
     window.feShowPayModal = function(choice, data, bankInfo){
       const due = (data.finalDue!=null)?data.finalDue:0;
       const ship = (data.shipFee!=null)?data.shipFee:0;
       const mAmt = (data.myshipAmount!=null)?data.myshipAmount:0;
+      const iCnt = (data.itemCount!=null)?data.itemCount:0;
       let deadlineStr = '';
       if(data.payDeadlineTs){ const dt=new Date(data.payDeadlineTs); deadlineStr = `${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
       const html = `
@@ -1631,15 +1652,15 @@
           <div style="font-weight:900;font-size:16px;color:#b45309;text-align:center;margin-bottom:4px;">💳 應匯款資訊</div>
           <div style="font-size:12px;color:#6b7280;text-align:center;margin-bottom:12px;">${escHTML(SHIPFE_LABEL[choice]||choice)}</div>
           <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;">
-            <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>賣貨便金額</span><span>$${mAmt}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>按件數保留的尾款</span><span>$${mAmt}</span></div>
             <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>運費</span><span>$${ship}</span></div>
             <div style="border-top:1px dashed #fbbf24;margin:6px 0;"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:22px;font-weight:900;color:#b91c1c;">$${due}</span></div>
           </div>
           ${deadlineStr?`<div style="text-align:center;font-size:12.5px;color:#dc2626;font-weight:700;margin:10px 0;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
           <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-top:6px;">
-            <div style="font-weight:700;color:#374151;font-size:12.5px;">運費專屬匯款帳戶</div>
-            <div style="font-size:13px;color:#111827;white-space:pre-wrap;margin-top:3px;">${escHTML(bankInfo||'（帳戶整理中，請稍候，可稍後於下方查看）')}</div>
+            <div style="font-weight:700;color:#374151;font-size:12.5px;margin-bottom:3px;">運費專屬匯款帳戶</div>
+            ${_feBankHtml(data.shipBankCode, data.shipBankAcct, bankInfo)}
           </div>
           <button class="ship-cta-primary" style="margin-top:14px;width:100%;background:#5fab7e;color:#fff;" onclick="feCloseModal()">我知道了</button>
           <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">匯款資訊也會顯示在出貨頁下方，可隨時回來查看與填寫後五碼</div>
@@ -1688,14 +1709,14 @@
           <span style="font-weight:800;color:#92400e;">💳 應匯款</span>
           ${statusBadge}
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>賣貨便金額</span><span>$${mAmt}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>按件數保留的尾款</span><span>$${mAmt}</span></div>
         <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>運費</span><span>$${ship}</span></div>
         <div style="border-top:1px dashed #fde68a;margin:6px 0;"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:20px;font-weight:900;color:#b91c1c;">$${due}</span></div>
         ${deadlineStr?`<div style="text-align:center;font-size:12px;color:#dc2626;font-weight:700;margin-top:6px;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
         <div style="border-top:1px dashed #fde68a;padding-top:8px;margin-top:8px;">
-          <div style="font-weight:700;color:#92400e;font-size:12.5px;">運費專屬匯款帳戶</div>
-          <div style="font-size:13px;color:#374151;white-space:pre-wrap;margin-top:2px;">${escHTML(mod.shipBankInfo||'（帳戶整理中，請稍候）')}</div>
+          <div style="font-weight:700;color:#92400e;font-size:12.5px;margin-bottom:3px;">運費專屬匯款帳戶</div>
+          ${_feBankHtml(mod.shipBankCode, mod.shipBankAcct, mod.shipBankInfo)}
         </div>`;
 
       if(state.paid){
@@ -1707,7 +1728,7 @@
             <input class="shipf-inp" id="shipLast5Inp" value="${escHTML(state.last5||'')}" placeholder="輸入後五碼" style="flex:1;" maxlength="5" inputmode="numeric">
             <button class="ship-cta-primary" style="width:auto;padding:8px 16px;" onclick="feSubmitShipLast5()">送出</button>
           </div>
-          ${state.last5?`<div style="font-size:11.5px;color:#0369a1;margin-top:4px;">已提供後五碼：${escHTML(state.last5)}，待客服確認收款後將顯示「已匯款」</div>`:`<div style="font-size:11px;color:#9ca3af;margin-top:4px;">匯款後請填後五碼，客服核對收款後會為您標記已匯款</div>`}
+          ${state.last5?`<div style="font-size:11.5px;color:#0369a1;margin-top:4px;">已提供後五碼：${escHTML(state.last5)}，待對帳確認收款後將顯示「已匯款」並且會開始安排出貨</div>`:`<div style="font-size:11px;color:#9ca3af;margin-top:4px;">匯款後請填後五碼，對帳確認收款後會為您標記已匯款並安排出貨</div>`}
         </div>`;
       }
       h += `</div>`;
