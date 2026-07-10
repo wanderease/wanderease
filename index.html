@@ -1173,13 +1173,14 @@
         wrap.style.display = 'block';
         if(empty) empty.style.display = 'none';
         document.getElementById('shipFrameCount').innerText = `${series.length} 系列 · ${totalItems} 件`;
+        const _pkgVal = (up.packageValue != null) ? up.packageValue : totalAmount;
         document.getElementById('shipInfoRow').innerHTML = `
           <div class="ship-cell"><div class="lbl">待出件數</div><div class="val">${totalItems} 件</div></div>
-          <div class="ship-cell"><div class="lbl">賣貨便總額</div><div class="val">$${totalAmount}</div></div>
+          <div class="ship-cell"><div class="lbl">本次包裹價值</div><div class="val">$${_pkgVal}</div></div>
         `;
         document.getElementById('shipSeriesList').innerHTML = series.map(s => {
           const itemsHtml = (Array.isArray(s.items) ? s.items : []).map(it =>
-            `<div class="sc-item-row"><span>• ${escHTML(it.name||'')} ×${it.qty||1}</span></div>`
+            `<div class="sc-item-row" style="display:flex;justify-content:space-between;gap:8px;"><span>• ${escHTML(it.name||'')} ×${it.qty||1}</span>${(it.amount!=null&&it.amount>0)?`<span style="color:#6b7280;white-space:nowrap;">$${it.amount}</span>`:''}</div>`
           ).join('');
           return `
           <div class="ship-series-card">
@@ -1392,7 +1393,7 @@
         const c = rates.crossmart || _feCalcCrossmart(declared);
         let boxesHtml = c.boxes.map((b,i)=>`<div>第${i+1}箱 報值$${b.value} → 運費 $${b.fee}</div>`).join('');
         return `<div style="font-size:12px;color:#4b5563;line-height:1.7;">
-          本筆申報價值 $${declared}${c.boxes.length>1?`，分 ${c.boxes.length} 箱寄出：`:''}
+          本次包裹價值 $${declared}${c.boxes.length>1?`，分 ${c.boxes.length} 箱寄出：`:''}
           <div style="margin:4px 0;padding:6px 8px;background:#f9fafb;border-radius:6px;">${boxesHtml}<div style="font-weight:700;margin-top:2px;">運費合計 $${c.fee}</div></div>
           報值級距表：<br>1~1000元…$60｜1001~2000…$70｜2001~3000…$80｜3001~4000…$90｜4001~5000…$100<br>
           在 7-11 取貨，需先匯運費。</div>
@@ -1504,7 +1505,8 @@
         if(!from||!to){ alert('已勾選無法收貨期間，請填寫起訖日期'); return; }
         unavailable = { from:from, to:to };
       }
-      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable });
+      const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
+      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl });
       try{
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
