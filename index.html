@@ -1721,12 +1721,35 @@
         </div>`;
       }
 
+      // 🆕 貨運單號（有單號＝已出貨）
+      const _tNos = Array.isArray(state.trackingNos) ? state.trackingNos.filter(s=>String(s||'').trim()!=='') : [];
+      const _shipped = _tNos.length > 0;
+      let trackRows = '';
+      if(_shipped){
+        const _isCvsShip = (choice==='myship' || choice==='crossmart');
+        const _trackUrl = 'https://eservice.7-11.com.tw/e-tracking/search.aspx';
+        const noList = _tNos.map((t,i)=>`<div style="font-weight:700;color:#111827;">${_tNos.length>1?`第 ${i+1} 箱：`:''}${escHTML(t)}</div>`).join('');
+        trackRows = `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
+            <span style="color:#6b7280;min-width:62px;flex-shrink:0;">寄送單號</span>
+            <div>${noList}</div>
+          </div>`;
+        if(_isCvsShip){
+          trackRows += `<div style="margin-top:8px;">
+            <a href="${_trackUrl}" target="_blank" rel="noopener" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:700;">
+              🔍 查詢包裹貨況
+            </a>
+            <div style="font-size:11px;color:#9ca3af;margin-top:4px;">點擊後於 7-11 官方頁面輸入上方單號即可查詢</div>
+          </div>`;
+        }
+      }
+
       let h = `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;margin:10px 0;">
-        <div style="font-weight:800;color:#166534;margin-bottom:6px;">✅ 已確認配送方式</div>
+        <div style="font-weight:800;color:#166534;margin-bottom:6px;">${_shipped?'🚚 已安排出貨':'✅ 已確認配送方式'}</div>
         <div style="border-top:1px solid #bbf7d0;padding-top:6px;">
           ${_row('配送方式', `<b>${escHTML(SHIPFE_LABEL[choice]||choice)}</b>`)}
           ${recvRows}
           ${unavailRow}
+          ${trackRows}
         </div>
       </div>`;
 
@@ -1756,13 +1779,18 @@
         <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#374151;"><span>運費</span><span>$${ship}</span></div>
         <div style="border-top:1px dashed #fde68a;margin:6px 0;"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:20px;font-weight:900;color:#b91c1c;">$${due}</span></div>
-        ${deadlineStr?`<div style="text-align:center;font-size:12px;color:#dc2626;font-weight:700;margin-top:6px;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
-        <div style="border-top:1px dashed #fde68a;padding-top:8px;margin-top:8px;">
+        ${(!_shipped && deadlineStr)?`<div style="text-align:center;font-size:12px;color:#dc2626;font-weight:700;margin-top:6px;">⏰ 請於 ${deadlineStr} 前完成匯款</div>`:''}
+        ${_shipped ? '' : `<div style="border-top:1px dashed #fde68a;padding-top:8px;margin-top:8px;">
           <div style="font-weight:700;color:#92400e;font-size:12.5px;margin-bottom:3px;">運費專屬匯款帳戶</div>
           ${_feBankHtml(mod.shipBankCode, mod.shipBankAcct, mod.shipBankInfo)}
-        </div>`;
+        </div>`}`;
 
-      if(state.paid){
+      if(_shipped){
+        // 🆕 已有單號＝已出貨，隱藏匯款帳戶防止重複匯款
+        h += `<div style="margin-top:10px;padding:8px 10px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;font-size:12.5px;color:#166534;">
+          ✅ 款項已確認，包裹已寄出，無需再匯款${state.last5?`（後五碼 ${escHTML(state.last5)}）`:''}
+        </div>`;
+      } else if(state.paid){
         h += `<div style="margin-top:10px;font-size:12.5px;color:#166534;">✅ 客服已確認收到您的匯款，感謝！${state.last5?`（後五碼 ${escHTML(state.last5)}）`:''}</div>`;
       } else {
         h += `<div style="margin-top:10px;">
