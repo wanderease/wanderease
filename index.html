@@ -315,10 +315,10 @@
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
 
     /* 出貨框內容 */
-    .ship-info-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px;position:relative;z-index:1;}
-    .ship-cell{background:rgba(255,255,255,.22);border-radius:8px;padding:7px 9px;}
-    .ship-cell .lbl{font-size:9.5px;opacity:.92;}
-    .ship-cell .val{font-size:15px;font-weight:700;margin-top:1px;}
+    .ship-info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px;position:relative;z-index:1;}
+    .ship-cell{background:rgba(255,255,255,.22);border-radius:8px;padding:7px 8px;min-width:0;}
+    .ship-cell .lbl{font-size:9px;opacity:.92;line-height:1.25;}
+    .ship-cell .val{font-size:14px;font-weight:700;margin-top:2px;white-space:nowrap;}
     /* 系列卡片：白底加深、文字用深綠，提升可讀性 */
     .ship-series-card{background:rgba(255,255,255,.92);border-radius:8px;padding:8px 10px;margin-bottom:7px;position:relative;z-index:1;}
     .ship-series-card .sc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
@@ -351,6 +351,9 @@
     .shipf-emap-btn:active{background:#bbf7d0;}
     .shipf-hint{font-size:11px;color:#16a34a;margin:4px 0 2px;}
     .shipf-firsthint{font-size:11.5px;color:#0369a1;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 8px;margin-bottom:8px;}
+    .shipf-submit-btn{display:block;width:100%;margin-top:12px;background:#16a34a;color:#fff;border:none;border-radius:10px;padding:13px;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 3px 10px rgba(22,163,74,.3);transition:.15s;}
+    .shipf-submit-btn:hover{background:#15803d;}
+    .shipf-submit-btn:active{transform:scale(.98);}
     .shipf-check{display:flex;gap:6px;align-items:center;font-size:12.5px;color:#4b5563;cursor:pointer;}
     .shipf-agree{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:12px;cursor:pointer;}
     .shipf-agree input{margin-top:2px;}
@@ -1200,6 +1203,7 @@
         const _pkgVal = (up.packageValue != null) ? up.packageValue : totalAmount;
         document.getElementById('shipInfoRow').innerHTML = `
           <div class="ship-cell"><div class="lbl">待出件數</div><div class="val">${totalItems} 件</div></div>
+          <div class="ship-cell"><div class="lbl">按件數保留的尾款</div><div class="val">$${totalAmount}</div></div>
           <div class="ship-cell"><div class="lbl">本次包裹價值</div><div class="val">$${_pkgVal}</div></div>
         `;
         document.getElementById('shipSeriesList').innerHTML = series.map(s => {
@@ -1307,7 +1311,7 @@
       M: { label:'61~90cm', color:'#ea580c' },
       L: { label:'90~120cm', color:'#dc2626' }
     };
-    const SHIPFE_LABEL = { myship:'賣貨便（7-11取貨）', crossmart:'7-11 交貨便', blackcat:'黑貓宅急便', post:'郵局包裹' };
+    const SHIPFE_LABEL = { myship:'賣貨便', crossmart:'7-11 交貨便', blackcat:'黑貓宅急便', post:'郵局包裹' };
 
     // 交貨便分箱
     function _feCrossmartBoxFee(v){ if(v<=1000)return 60; if(v<=2000)return 70; if(v<=3000)return 80; if(v<=4000)return 90; return 100; }
@@ -1372,7 +1376,7 @@
       // 選項
       h += `<div style="font-weight:700;color:#374151;margin:6px 0;font-size:13.5px;">選擇台灣端配送方式</div>`;
       h += `<div id="shipOptList">`;
-      h += _feOptRow('myship', '賣貨便（7-11取貨）', `$${rates.myship?rates.myship.fee:38}`, true);
+      h += _feOptRow('myship', '賣貨便', `$${rates.myship?rates.myship.fee:38}`, true);
       h += _feOptRow('crossmart', '7-11 交貨便', `$${rates.crossmart?rates.crossmart.fee:'--'}`, true);
       const bcAvail = rates.blackcat && rates.blackcat.available;
       h += _feOptRow('blackcat', '黑貓宅急便', rates.blackcat?`$${rates.blackcat.fee}`:'需箱型', bcAvail && !!boxInfo, !boxInfo?'請待客服設定箱型':(!bcAvail?'商品價值超過2萬，不適用':''));
@@ -1420,15 +1424,11 @@
         info = `
           <div class="sd-block sd-fee">
             <div class="sd-title">💰 運費</div>
-            <ul class="sd-list"><li>固定 <b>$38</b>，於 7-11 取貨</li></ul>
+            <ul class="sd-list"><li>固定 <b>$38</b>，於 7-11 取貨時，取貨付款</li></ul>
           </div>
           <div class="sd-block sd-warn">
             <div class="sd-title">⚠️ 賠償</div>
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
-          </div>
-          <div class="sd-block sd-pay">
-            <div class="sd-title">💳 運費付款</div>
-            <ul class="sd-list"><li>賣貨便無需事先匯款，剩餘費用於取貨時付款</li></ul>
           </div>`;
       } else if(choice==='crossmart'){
         const c = rates.crossmart || _feCalcCrossmart(declared);
@@ -1549,7 +1549,7 @@
           ${fields}
           <div class="sd-formtitle" style="margin-top:12px;">出貨排除期間（選填）</div>
           <label class="shipf-check">
-            <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間無法出貨
+            <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間無法收貨
           </label>
           <div id="shipf-unavail-dates-${choice}" style="display:none;margin-top:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
@@ -1560,7 +1560,7 @@
             <input type="checkbox" id="shipf-agree-${choice}">
             <span>我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。</span>
           </label>
-          <button class="ship-cta-primary" style="margin-top:12px;width:100%;" onclick="feSubmitShip('${choice}')">✅ 確認送出，可以出我的貨</button>
+          <button class="shipf-submit-btn" onclick="feSubmitShip('${choice}')">✅ 確認送出，可以出我的貨</button>
           <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">送出後即鎖定，如需修改請聯繫客服</div>
         </div>`;
     }
@@ -1627,14 +1627,35 @@
     // 匯款彈窗（送出後立即顯示應匯金額 + 期限 + 帳戶）
     window.feCloseModal = function(){ const h=document.getElementById('feModalHolder'); if(h)h.remove(); };
     // 匯款帳戶分行顯示（銀行代碼 / 匯款帳號 + 備註提醒）
+    // 相容：若後台尚未填新的兩個欄位，自動從舊的單一欄位字串解析出代碼與帳號
+    function _feParseBank(fallback){
+      const s = String(fallback||'');
+      let code = '', acct = '';
+      // 支援「銀行代碼：700 郵局 匯款帳號：01210370281612」這類寫法
+      const mCode = s.match(/銀行代碼[:：]?\s*([^\s匯]+(?:\s+[^\s匯：:]+)?)/);
+      const mAcct = s.match(/(?:匯款)?帳號[:：]?\s*([0-9\-]{5,})/);
+      if(mCode) code = mCode[1].trim();
+      if(mAcct) acct = mAcct[1].trim();
+      // 沒有關鍵字時，抓最長的數字串當帳號
+      if(!acct){
+        const nums = s.match(/[0-9\-]{8,}/g);
+        if(nums && nums.length) acct = nums.sort((a,b)=>b.length-a.length)[0];
+      }
+      return { code: code, acct: acct };
+    }
     function _feBankHtml(code, acct, fallback){
+      // 新欄位空 → 嘗試從舊欄位解析
+      if(!code && !acct && fallback){
+        const p = _feParseBank(fallback);
+        code = p.code; acct = p.acct;
+      }
       if(!code && !acct){
         return `<div style="font-size:13px;color:#111827;white-space:pre-wrap;">${escHTML(fallback||'（帳戶整理中，請稍候）')}</div>`;
       }
       return `
         <div style="font-size:13px;color:#111827;line-height:1.9;">
-          <div>銀行代碼：<b>${escHTML(code||'')}</b></div>
-          <div>匯款帳號：<b>${escHTML(acct||'')}</b></div>
+          ${code?`<div>銀行代碼：<b>${escHTML(code)}</b></div>`:''}
+          ${acct?`<div>匯款帳號：<b>${escHTML(acct)}</b></div>`:''}
         </div>
         <div style="font-size:11.5px;color:#dc2626;margin-top:4px;">⚠️ 請勿填寫備註，會對不到帳</div>`;
     }
@@ -1675,16 +1696,38 @@
       const choice = state.shipChoice;
       const isMyship = (choice==='myship');
       const r = state.recipient || {};
-      let recvLine = '';
-      if(r.type==='cvs') recvLine = `${escHTML(r.storeName||'')} ${escHTML(r.store||'')} · ${escHTML(r.name||'')} / ${escHTML(r.phone||'')}`;
-      else if(r.type==='addr') recvLine = `${escHTML(r.zip||'')} ${escHTML(r.address||'')} · ${escHTML(r.name||'')} / ${escHTML(r.phone||'')}`;
-      let unavailLine = '';
-      if(state.unavailable && state.unavailable.from) unavailLine = `<div style="color:#dc2626;font-weight:700;font-size:12px;margin-top:2px;">⛔ 無法出貨：${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</div>`;
+      // 依標題分行顯示
+      const _row = (label, val) => val ? `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
+          <span style="color:#6b7280;min-width:62px;flex-shrink:0;">${label}</span>
+          <span style="color:#111827;font-weight:600;word-break:break-all;">${val}</span>
+        </div>` : '';
+      let recvRows = '';
+      if(r.type==='cvs'){
+        recvRows = _row('取貨門市', escHTML(r.storeName||''))
+                 + _row('門市店號', escHTML(r.store||''))
+                 + _row('收件人', escHTML(r.name||''))
+                 + _row('手機', escHTML(r.phone||''));
+      } else if(r.type==='addr'){
+        recvRows = _row('郵遞區號', escHTML(r.zip||''))
+                 + _row('收件地址', escHTML(r.address||''))
+                 + _row('收件人', escHTML(r.name||''))
+                 + _row('手機', escHTML(r.phone||''));
+      }
+      let unavailRow = '';
+      if(state.unavailable && state.unavailable.from){
+        unavailRow = `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
+          <span style="color:#6b7280;min-width:62px;flex-shrink:0;">無法收貨</span>
+          <span style="color:#dc2626;font-weight:700;">${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</span>
+        </div>`;
+      }
 
       let h = `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;margin:10px 0;">
-        <div style="font-weight:800;color:#166534;">✅ 已確認配送方式：${escHTML(SHIPFE_LABEL[choice]||choice)}</div>
-        ${recvLine?`<div style="font-size:12.5px;color:#374151;margin-top:4px;">收件：${recvLine}</div>`:''}
-        ${unavailLine}
+        <div style="font-weight:800;color:#166534;margin-bottom:6px;">✅ 已確認配送方式</div>
+        <div style="border-top:1px solid #bbf7d0;padding-top:6px;">
+          ${_row('配送方式', `<b>${escHTML(SHIPFE_LABEL[choice]||choice)}</b>`)}
+          ${recvRows}
+          ${unavailRow}
+        </div>
       </div>`;
 
       if(isMyship){
