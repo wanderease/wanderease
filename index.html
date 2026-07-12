@@ -1362,7 +1362,7 @@
         <div style="font-size:12.5px;color:#78350f;line-height:1.7;white-space:pre-wrap;">${escHTML(note || '從海外出貨、國際運送到台灣海關查驗出關為止，全程由 Wander Ease 負責。商品在台完成包裝後的境內配送，若途中發生包裹遺失或損毀，賠償將由貨運公司負責——能獲得多少賠償，取決於您在下方選擇的配送方式。請依需求選擇合適的配送方式並確認。')}</div>
       </div>`;
 
-      // 箱子區間
+      // 包裹尺寸區間
       if(boxInfo){
         h += `<div style="display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
           <span style="font-size:12.5px;color:#374151;">📦 您的包裹尺寸區間</span>
@@ -1370,7 +1370,7 @@
           <span style="font-size:11px;color:#9ca3af;">郵局、黑貓依此區間計算</span>
         </div>`;
       } else {
-        h += `<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#6b7280;">📦 包裹尺寸整理中，黑貓/郵局運費待客服設定箱型後顯示；您仍可先選擇賣貨便或交貨便。</div>`;
+        h += `<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#6b7280;">📦 包裹尺寸整理中，黑貓/郵局運費待客服設定包裹尺寸區間後顯示；您仍可先選擇賣貨便或交貨便。</div>`;
       }
 
       // 🆕 分箱提示（後台判斷商品太多，需分成多箱寄出）
@@ -1405,19 +1405,22 @@
       h += _feOptRow('myship', `賣貨便${_bTag(_bc.myship || _mb)}`, `$${rates.myship?rates.myship.fee:38}`, true);
       h += _feOptRow('crossmart', `7-11 交貨便${_bTag(_crossN)}`, `$${rates.crossmart?rates.crossmart.fee:'--'}`, true);
       const bcAvail = rates.blackcat && rates.blackcat.available;
-      h += _feOptRow('blackcat', `黑貓宅急便${_bTag(_bc.blackcat || _mb)}`, rates.blackcat?`$${rates.blackcat.fee}`:'需箱型', bcAvail && !!boxInfo, !boxInfo?'請待客服設定箱型':(!bcAvail?'商品價值超過2萬，不適用':''));
-      h += _feOptRow('post', `郵局包裹${_bTag(_bc.post || _mb)}`, rates.post?`$${rates.post.fee}`:'需箱型', !!boxInfo, !boxInfo?'請待客服設定箱型':'');
+      h += _feOptRow('blackcat', `黑貓宅急便${_bTag(_bc.blackcat || _mb)}`, rates.blackcat?`$${rates.blackcat.fee}`:'需設定尺寸', bcAvail && !!boxInfo, !boxInfo?'請待客服設定包裹尺寸區間':(!bcAvail?'商品價值超過2萬，不適用':''));
+      h += _feOptRow('post', `郵局包裹${_bTag(_bc.post || _mb)}`, rates.post?`$${rates.post.fee}`:'需設定尺寸', !!boxInfo, !boxInfo?'請待客服設定包裹尺寸區間':'');
       h += `</div>`;
-      h += `<div style="font-size:11.5px;color:#6b7280;margin-top:8px;">💡 點選任一項會展開該貨運的級距與詳細說明。賣貨便以外的方式皆需先匯運費。</div>`;
+      h += `<div style="font-size:11.5px;color:#6b7280;margin-top:8px;">💡 點選任一項會展開該貨運的級距與詳細說明；<b>再點一次標題可收起</b>，方便比較各方案。賣貨便以外的方式皆需先匯運費。</div>`;
       return h;
     }
 
     function _feOptRow(choice, label, feeText, enabled, disableReason){
       const dis = !enabled;
       return `<div class="ship-opt-row" data-choice="${choice}" style="border:1.5px solid #e5e7eb;border-radius:10px;padding:10px 12px;margin-bottom:8px;${dis?'opacity:.5;background:#f9fafb;':'cursor:pointer;background:#fff;'}" ${dis?'':`onclick="feSelectShip('${choice}')"`}>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
           <span style="font-weight:700;color:#374151;font-size:13.5px;">${escHTML(label)}</span>
-          <span style="font-weight:800;color:#111827;">${escHTML(feeText)}</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span style="font-weight:800;color:#111827;">${escHTML(feeText)}</span>
+            ${dis?'':`<i class="bi bi-chevron-down" id="shipOptChev-${choice}" style="font-size:12px;color:#9ca3af;transition:transform .2s;"></i>`}
+          </span>
         </div>
         ${dis&&disableReason?`<div style="font-size:11px;color:#9ca3af;margin-top:2px;">${escHTML(disableReason)}</div>`:''}
         <div class="ship-opt-detail" id="shipOptDetail-${choice}" onclick="event.stopPropagation()" style="display:none;margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb;"></div>
@@ -1425,20 +1428,54 @@
     }
 
     // 點選：展開說明 + 記錄選擇
+    // 🆕 已展開的再點一次 → 收合（可以繼續點下一個看）
+    //    收合時「只隱藏、不清空」，客人填到一半的收件表單不會消失
     window.feSelectShip = function(choice){
       const mod = window._shipModuleData; if(!mod) return;
       const detail = document.getElementById(`shipOptDetail-${choice}`);
-      // 若此項已經展開，再點一次不重繪（避免正在輸入的表單被重建而無法打字）
-      if(detail && detail.style.display==='block' && detail.innerHTML.trim()!==''){
+      if(!detail) return;
+
+      const isOpen = (detail.style.display === 'block' && detail.innerHTML.trim() !== '');
+
+      // 箭頭方向切換
+      const _chev = c => document.getElementById(`shipOptChev-${c}`);
+      const _setChev = (c, open) => {
+        const el = _chev(c);
+        if(el) el.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+      };
+
+      // ── 已展開 → 收合此項（保留已填內容）──
+      if(isOpen){
+        detail.style.display = 'none';          // ★ 不清空 innerHTML
+        const row0 = document.querySelector(`.ship-opt-row[data-choice="${choice}"]`);
+        if(row0){ row0.style.borderColor='#e5e7eb'; row0.style.boxShadow='none'; }
+        _setChev(choice, false);
+        window._shipSelectedChoice = null;      // 取消選擇
         return;
       }
+
+      // ── 未展開 → 收合其他、展開此項 ──
       window._shipSelectedChoice = choice;
-      // 收合其他、展開此項
-      document.querySelectorAll('.ship-opt-detail').forEach(el=>{ el.style.display='none'; el.innerHTML=''; });
-      document.querySelectorAll('.ship-opt-row').forEach(el=>{ el.style.borderColor='#e5e7eb'; el.style.boxShadow='none'; });
+
+      // 其他項只隱藏，不清空（客人可能填過）
+      document.querySelectorAll('.ship-opt-detail').forEach(el=>{
+        if(el.id !== `shipOptDetail-${choice}`) el.style.display = 'none';
+      });
+      document.querySelectorAll('.ship-opt-row').forEach(el=>{
+        el.style.borderColor='#e5e7eb'; el.style.boxShadow='none';
+      });
+      ['myship','crossmart','blackcat','post'].forEach(c => _setChev(c, false));
+
       const row = document.querySelector(`.ship-opt-row[data-choice="${choice}"]`);
       if(row){ row.style.borderColor='#6366f1'; row.style.boxShadow='0 0 0 2px rgba(99,102,241,.15)'; }
-      if(detail){ detail.style.display='block'; detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{}); }
+
+      detail.style.display = 'block';
+      _setChev(choice, true);
+
+      // 首次展開才建立內容；已建立過的直接顯示（保留填過的字）
+      if(detail.innerHTML.trim() === ''){
+        detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{});
+      }
     };
 
     // 說明區塊（條列式分區：運費計算 / 賠償責任 / 匯款提醒）
@@ -1484,13 +1521,22 @@
           </div>`;
       } else if(choice==='blackcat'){
         const b = rates.blackcat;
-        if(!b){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div></div>`; }
+        if(!b){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
+        // 🆕 逐箱列出運費（分箱時每箱各自收費）
+        const bBoxes = b.boxes || [];
+        const bN = bBoxes.length || 1;
+        const bPer = b.base || 0;
+        const bBoxLi = (bN > 1)
+          ? bBoxes.map((x,i)=>`<li>第 ${i+1} 箱：運費 <b>$${bPer}</b></li>`).join('')
+          : '';
         info = `
           <div class="sd-block sd-fee">
-            <div class="sd-title">💰 運費</div>
+            <div class="sd-title">💰 運費計算</div>
             <ul class="sd-list">
-              <li>箱子區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b></li>
-              <li>運費 <b>$${b.fee}</b></li>
+              <li>包裹尺寸區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b></li>
+              <li>單箱運費 <b>$${bPer}</b>${bN>1?`，本次需分 <b>${bN} 箱</b>寄出`:''}</li>
+              ${bBoxLi}
+              <li class="sd-total">運費合計 <b>$${b.fee}</b>${bN>1?`（$${bPer} × ${bN} 箱）`:''}</li>
             </ul>
           </div>
           <div class="sd-block sd-warn">
@@ -1498,6 +1544,7 @@
             <ul class="sd-list">
               <li>未申報包裹最高賠償 <b>2 萬</b></li>
               <li>最終以貨運方接收訂單截圖與相關資料後判定</li>
+              ${bN>1?`<li><b>賠償以「箱」為單位</b>，每箱各自計算</li>`:''}
             </ul>
           </div>
           <div class="sd-block sd-pay">
@@ -1506,23 +1553,38 @@
           </div>`;
       } else if(choice==='post'){
         const p = rates.post;
-        if(!p){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定箱型後顯示。</div></div>`; }
+        if(!p){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
+        // 🆕 逐箱列出：每箱各自報值（賠償按箱計算）
+        const pBoxes = p.boxes || [];
+        const pN = pBoxes.length || 1;
+        const pBoxLi = (pN > 1)
+          ? pBoxes.map((x,i)=>
+              `<li>第 ${i+1} 箱：報值 $${x.value} → 基本 $${x.base} + 報值費 $${x.insurance} = <b>$${x.fee}</b></li>`
+            ).join('')
+          : `<li>包裹尺寸區間運費 <b>$${p.base}</b></li>
+             <li>報值費 <b>$${p.insurance}</b>（報值 $${declared}）</li>`;
         info = `
           <div class="sd-block sd-fee">
             <div class="sd-title">💰 運費計算</div>
             <ul class="sd-list">
-              <li>箱子區間運費 <b>$${p.base}</b></li>
-              <li>報值費 <b>$${p.insurance}</b>（報值 $${declared}）</li>
+              <li>包裹尺寸區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b>${pN>1?`，本次需分 <b>${pN} 箱</b>寄出`:''}</li>
+              ${pBoxLi}
               <li class="sd-total">運費合計 <b>$${p.fee}</b></li>
             </ul>
           </div>
           <div class="sd-block sd-info">
             <div class="sd-title">📋 報值費規則</div>
-            <ul class="sd-list"><li>每滿 1,000 元加 $4，上限報值 5 萬</li></ul>
+            <ul class="sd-list">
+              <li>每滿 1,000 元加 $4，上限報值 5 萬</li>
+              ${pN>1?`<li>分箱時，包裹價值平均分配到各箱，<b>每箱都會各自報值</b></li>`:''}
+            </ul>
           </div>
           <div class="sd-block sd-warn">
             <div class="sd-title">⚠️ 賠償</div>
-            <ul class="sd-list"><li>依報值金額賠償</li></ul>
+            <ul class="sd-list">
+              <li>依報值金額賠償</li>
+              ${pN>1?`<li><b>賠償以「箱」為單位</b>，每箱依該箱報值金額賠償</li>`:''}
+            </ul>
           </div>
           <div class="sd-block sd-pay">
             <div class="sd-title">💳 運費付款</div>
