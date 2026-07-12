@@ -1373,14 +1373,40 @@
         h += `<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#6b7280;">📦 包裹尺寸整理中，黑貓/郵局運費待客服設定箱型後顯示；您仍可先選擇賣貨便或交貨便。</div>`;
       }
 
+      // 🆕 分箱提示（後台判斷商品太多，需分成多箱寄出）
+      //    賠償按「箱」計算，所以每箱都會各自報值，包裹價值平均分配到各箱
+      const _mb = Number(rates.manualBoxes) || 1;
+      if (_mb > 1) {
+        const _per = Math.floor(declared / _mb);
+        const _first = declared - _per * (_mb - 1);   // 餘數給第一箱
+        h += `<div style="border:2px solid #f97316;background:#fff7ed;border-radius:12px;padding:10px 14px;margin-bottom:10px;">
+          <div style="font-weight:800;color:#c2410c;font-size:13.5px;margin-bottom:5px;">
+            📦📦 因商品較多，您的包裹將分 ${_mb} 箱寄出
+          </div>
+          <div style="font-size:12px;color:#9a3412;line-height:1.7;">
+            包裹總價值 <b>$${declared}</b> 會平均分配到 ${_mb} 箱，<b>每一箱都會各自報值</b>，
+            確保萬一發生遺失或損毀時，每箱都在賠償範圍內。<br>
+            <span style="color:#7c2d12;">
+              每箱申報價值約 $${_first === _per ? _per : `${_per}～${_first}`}
+            </span><br>
+            下方運費已包含 ${_mb} 箱的費用。
+          </div>
+        </div>`;
+      }
+
       // 選項
       h += `<div style="font-weight:700;color:#374151;margin:6px 0;font-size:13.5px;">選擇台灣端配送方式</div>`;
       h += `<div id="shipOptList">`;
-      h += _feOptRow('myship', '賣貨便', `$${rates.myship?rates.myship.fee:38}`, true);
-      h += _feOptRow('crossmart', '7-11 交貨便', `$${rates.crossmart?rates.crossmart.fee:'--'}`, true);
+      // 🆕 箱數標註（各貨運的箱數可能不同：交貨便會因金額額外拆箱）
+      const _bc = rates.boxCount || {};
+      const _bTag = function(n){ return (Number(n)||1) > 1 ? ` · ${n} 箱` : ''; };
+      const _crossN = (rates.crossmart && rates.crossmart.boxes) ? rates.crossmart.boxes.length : _mb;
+
+      h += _feOptRow('myship', `賣貨便${_bTag(_bc.myship || _mb)}`, `$${rates.myship?rates.myship.fee:38}`, true);
+      h += _feOptRow('crossmart', `7-11 交貨便${_bTag(_crossN)}`, `$${rates.crossmart?rates.crossmart.fee:'--'}`, true);
       const bcAvail = rates.blackcat && rates.blackcat.available;
-      h += _feOptRow('blackcat', '黑貓宅急便', rates.blackcat?`$${rates.blackcat.fee}`:'需箱型', bcAvail && !!boxInfo, !boxInfo?'請待客服設定箱型':(!bcAvail?'商品價值超過2萬，不適用':''));
-      h += _feOptRow('post', '郵局包裹', rates.post?`$${rates.post.fee}`:'需箱型', !!boxInfo, !boxInfo?'請待客服設定箱型':'');
+      h += _feOptRow('blackcat', `黑貓宅急便${_bTag(_bc.blackcat || _mb)}`, rates.blackcat?`$${rates.blackcat.fee}`:'需箱型', bcAvail && !!boxInfo, !boxInfo?'請待客服設定箱型':(!bcAvail?'商品價值超過2萬，不適用':''));
+      h += _feOptRow('post', `郵局包裹${_bTag(_bc.post || _mb)}`, rates.post?`$${rates.post.fee}`:'需箱型', !!boxInfo, !boxInfo?'請待客服設定箱型':'');
       h += `</div>`;
       h += `<div style="font-size:11.5px;color:#6b7280;margin-top:8px;">💡 點選任一項會展開該貨運的級距與詳細說明。賣貨便以外的方式皆需先匯運費。</div>`;
       return h;
