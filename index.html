@@ -1648,12 +1648,50 @@
             <input type="checkbox" id="shipf-agree-${choice}">
             <span>我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。</span>
           </label>
-          <button class="shipf-submit-btn" onclick="feSubmitShip('${choice}')">✅ 確認送出，可以出我的貨</button>
+          <button class="shipf-submit-btn" onclick="feSubmitShip('${choice}', this)">✅ 確認送出，可以出我的貨</button>
           <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">送出後即鎖定，如需修改請聯繫客服</div>
         </div>`;
     }
 
-    window.feSubmitShip = async function(choice){
+    // ═══════════════════════════════════════════════════════════
+    // 🔒 送出防連點：後端要跑幾秒，這段時間內按鈕會沒反應，
+    //    客人會以為沒送出而重複點擊 → 造成重複送出。
+    //    用「旗標 + 按鈕鎖 + loading 文字」三重防護。
+    // ═══════════════════════════════════════════════════════════
+    window._feBusy = {};   // key → true 表示送出中
+
+    /**
+     * 開始送出：鎖住旗標與按鈕
+     * @returns {Object|null}  null = 已在送出中（本次呼叫應直接中止）
+     */
+    function feLockSubmit(key, btn, busyText){
+      if(window._feBusy[key]) return null;      // ★ 已在送出中，擋掉
+      window._feBusy[key] = true;
+
+      let orig = null;
+      if(btn){
+        orig = { html: btn.innerHTML, disabled: btn.disabled, cursor: btn.style.cursor, opacity: btn.style.opacity };
+        btn.disabled = true;
+        btn.style.cursor = 'not-allowed';
+        btn.style.opacity = '0.65';
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm" style="width:14px;height:14px;vertical-align:-2px;margin-right:6px;"></span>${busyText || '送出中，請稍候…'}`;
+      }
+      return { key: key, btn: btn, orig: orig };
+    }
+
+    /** 結束送出：解鎖（成功後若畫面會重繪，可傳 keepLocked=true 不還原按鈕） */
+    function feUnlockSubmit(lock, keepLocked){
+      if(!lock) return;
+      window._feBusy[lock.key] = false;
+      if(lock.btn && lock.orig && !keepLocked){
+        lock.btn.disabled  = lock.orig.disabled;
+        lock.btn.innerHTML = lock.orig.html;
+        lock.btn.style.cursor  = lock.orig.cursor;
+        lock.btn.style.opacity = lock.orig.opacity;
+      }
+    }
+
+    window.feSubmitShip = async function(choice, _btn){
       if(!choice) choice = window._shipSelectedChoice;
       if(!choice) return;
       const isCvs = (choice==='myship' || choice==='crossmart');
@@ -1678,6 +1716,13 @@
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
       const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
       const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items });
+
+      // 🔒 上鎖（所有驗證都通過之後才鎖，這樣驗證失敗時按鈕不會卡住）
+      const _btnEl = _btn || document.querySelector(`#shipOptDetail-${choice} .shipf-submit-btn`);
+      const _lock = feLockSubmit('shipChoice', _btnEl, '送出中，請勿重複點擊…');
+      if(!_lock) return;   // ★ 已在送出中 → 直接忽略這次點擊
+      let _ok = false;
+
       try{
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
@@ -1700,16 +1745,27 @@
           if(dd.shipBankCode!=null) mod.shipBankCode = dd.shipBankCode;
           if(dd.shipBankAcct!=null) mod.shipBankAcct = dd.shipBankAcct;
           if(dd.shipBankInfo!=null) mod.shipBankInfo = dd.shipBankInfo;
-          if(dd.needPay){
+          if(dd.duplicated){
+            // 後端偵測到重複送出（內容完全相同）→ 不再彈視窗，靜默同步畫面即可
+            console.log('[shipChoice] 重複送出，已忽略');
+          } else if(dd.needPay){
             feShowPayModal(choice, dd, mod.shipBankInfo || dd.shipBankInfo || '');
           } else {
             alert('✅ 已送出！賣貨便無需事先匯款，剩餘費用於取貨時付款。');
           }
-          renderShipModule(mod);
+          _ok = true;
+          renderShipModule(mod);   // 成功 → 整區重繪，按鈕會消失，不需還原
         } else {
           alert(d.message||'送出失敗');
         }
-      }catch(e){ alert('連線異常：'+e.message); }
+      }catch(e){
+        alert('連線異常：'+e.message);
+      }finally{
+        // 🔓 一定解鎖：成功時畫面已重繪（keepLocked=true 不還原按鈕，
+        //    避免重繪前一瞬間閃回「確認送出」讓客人又點一次）；
+        //    失敗／例外則還原按鈕，讓客人可以重試。
+        feUnlockSubmit(_lock, _ok);
+      }
     };
 
     // 匯款彈窗（送出後立即顯示應匯金額 + 期限 + 帳戶）
@@ -1919,7 +1975,7 @@
           <label style="font-size:12.5px;color:#374151;font-weight:700;">匯款帳號後五碼</label>
           <div style="display:flex;gap:8px;margin-top:4px;">
             <input class="shipf-inp" id="shipLast5Inp" value="${escHTML(state.last5||'')}" placeholder="輸入後五碼" style="flex:1;" maxlength="5" inputmode="numeric">
-            <button class="ship-cta-primary" style="width:auto;padding:8px 16px;" onclick="feSubmitShipLast5()">送出</button>
+            <button class="ship-cta-primary" style="width:auto;padding:8px 16px;" onclick="feSubmitShipLast5(this)">送出</button>
           </div>
           ${state.last5?`<div style="font-size:11.5px;color:#0369a1;margin-top:4px;">已提供後五碼：${escHTML(state.last5)}，待對帳確認收款後將顯示「已匯款」並且會開始安排出貨</div>`:`<div style="font-size:11px;color:#9ca3af;margin-top:4px;">匯款後請填後五碼，對帳確認收款後會為您標記已匯款並安排出貨</div>`}
         </div>`;
@@ -1928,17 +1984,37 @@
       return h;
     }
 
-    window.feSubmitShipLast5 = async function(){
+    window.feSubmitShipLast5 = async function(_btn){
       const el = document.getElementById('shipLast5Inp'); if(!el) return;
       const v = el.value.trim();
       if(!/^\d{5}$/.test(v)){ alert('請輸入匯款帳號後五碼（5 位數字）'); return; }
       const payload = JSON.stringify({ lineUid: currentLineUid, last5: v });
+
+      // 🔒 防連點（後端要跑幾秒，客人會以為沒反應而重複點）
+      const _lock = feLockSubmit('shipLast5', _btn, '送出中…');
+      if(!_lock) return;
+      let _ok = false;
+
+      // 同時鎖住輸入框，避免送出過程中被改動
+      const _origRO = el.readOnly;
+      el.readOnly = true;
+
       try{
         const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipLast5',payload:payload})});
         const d = await r.json();
-        if(d.status==='SUCCESS'){ alert('✅ 已送出後五碼'); const mod=window._shipModuleData; if(mod&&mod.state){mod.state.last5=v;renderShipModule(mod);} }
+        if(d.status==='SUCCESS'){
+          _ok = true;
+          alert('✅ 已送出後五碼');
+          const mod=window._shipModuleData;
+          if(mod&&mod.state){ mod.state.last5=v; renderShipModule(mod); }
+        }
         else alert(d.message||'送出失敗');
-      }catch(e){ alert('連線異常：'+e.message); }
+      }catch(e){
+        alert('連線異常：'+e.message);
+      }finally{
+        feUnlockSubmit(_lock, _ok);
+        el.readOnly = _origRO;
+      }
     };
 
 
