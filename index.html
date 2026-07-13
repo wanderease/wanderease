@@ -1515,6 +1515,14 @@
               <li>4,001 ~ 5,000 元 …… $100</li>
             </ul>
           </div>
+          <div class="sd-block sd-warn">
+            <div class="sd-title">⚠️ 賠償</div>
+            <ul class="sd-list">
+              <li>依申報包裹價值賠償，單箱申報上限 <b>$5,000</b></li>
+              ${c.boxes.length>1?`<li><b>賠償以「箱」為單位</b>，每箱依該箱申報價值賠償</li>`:''}
+              <li>最終賠償認定以貨運方判定為主</li>
+            </ul>
+          </div>
           <div class="sd-block sd-pay">
             <div class="sd-title">💳 運費付款</div>
             <ul class="sd-list"><li>包裹於 7-11 取貨，運費於確認送出後，須先匯款</li></ul>
@@ -1584,6 +1592,7 @@
             <ul class="sd-list">
               <li>依報值金額賠償</li>
               ${pN>1?`<li><b>賠償以「箱」為單位</b>，每箱依該箱報值金額賠償</li>`:''}
+              <li>最終賠償認定以貨運方判定為主</li>
             </ul>
           </div>
           <div class="sd-block sd-pay">
