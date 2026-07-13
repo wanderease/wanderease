@@ -1339,7 +1339,9 @@
       }
       const state = mod.state;
       // 已確認：依階段顯示（等待 / 開放匯款）
-      if(state && state.confirmed){
+      // ★ 送出即鎖定：confirmed 或 locked 任一為 true 就不能再改
+      //   （唯一例外：客服在後台按「放行」，兩個旗標都會被清掉）
+      if(state && (state.confirmed || state.locked)){
         area.innerHTML = renderShipConfirmed(mod, state);
         return;
       }
