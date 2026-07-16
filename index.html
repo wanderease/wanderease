@@ -1854,6 +1854,7 @@
       const ship = (data.shipFee!=null)?data.shipFee:0;
       const mAmt = (data.myshipAmount!=null)?data.myshipAmount:0;
       const iCnt = (data.itemCount!=null)?data.itemCount:0;
+      const pendPay = (data.pendingPayAmount!=null)?data.pendingPayAmount:0;   // 🆕 待匯款貨款
       let deadlineStr = '';
       if(data.payDeadlineTs){ const dt=new Date(data.payDeadlineTs); deadlineStr = `${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
       const html = `
@@ -1863,6 +1864,7 @@
           <div style="font-size:12px;color:#6b7280;text-align:center;margin-bottom:12px;">${escHTML(SHIPFE_LABEL[choice]||choice)}</div>
           <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;">
             <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>按件數保留的尾款</span><span>$${mAmt}</span></div>
+            ${pendPay>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#b45309;font-weight:700;margin:2px 0;"><span>本次商品貨款（未匯款）</span><span>$${pendPay}</span></div>`:''}
             <div style="display:flex;justify-content:space-between;font-size:13px;color:#374151;margin:2px 0;"><span>運費</span><span>$${ship}</span></div>
             <div style="border-top:1px dashed #fbbf24;margin:6px 0;"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:700;color:#92400e;">應匯合計</span><span style="font-size:22px;font-weight:900;color:#b91c1c;">$${due}</span></div>
