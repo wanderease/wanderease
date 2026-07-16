@@ -692,7 +692,7 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     // ===== 管理員清除 Cache =====
@@ -1642,10 +1642,28 @@
           <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="${nameHint}">
           <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       }
+      // 🎟️ 賣貨便免運券勾選（只有賣貨便顯示）
+      //    勾選 → 隱藏收件資訊（客人之後用連結自己下單填）→ 顯示通知文字
+      const couponBlock = (choice === 'myship') ? `
+        <label class="shipf-check" style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:8px;padding:8px 10px;margin-bottom:10px;display:flex;align-items:flex-start;gap:8px;">
+          <input type="checkbox" id="shipf-coupon-myship" onchange="feToggleCoupon(this.checked)" style="margin-top:2px;">
+          <span style="font-size:12.5px;color:#92400e;line-height:1.5;">
+            <b>🎟️ 我這次出貨要用賣貨便免運券</b><br>
+            <span style="font-size:11px;color:#b45309;">勾選後不需填收件資訊，我們會再提供賣貨便連結通知您自行下單。</span>
+          </span>
+        </label>
+        <div id="shipf-coupon-notice" style="display:none;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;padding:12px 14px;margin-bottom:10px;">
+          <div style="font-size:13px;color:#1e40af;font-weight:700;"><i class="bi bi-bell"></i> 會再提供賣貨便連結通知您下單</div>
+          <div style="font-size:11.5px;color:#3b82f6;margin-top:4px;">請留意通知，屆時點擊連結即可使用免運券自行下單。</div>
+        </div>` : '';
+
       return `
         <div class="sd-formbox">
+          ${couponBlock}
+          <div id="shipf-recip-block-${choice}">
           <div class="sd-formtitle">✍️ 收件資訊</div>
           ${fields}
+          </div>
           <div class="sd-formtitle" style="margin-top:12px;">出貨排除期間（選填）</div>
           <label class="shipf-check">
             <input type="checkbox" id="shipf-unavail-${choice}" onchange="var e=document.getElementById('shipf-unavail-dates-${choice}');if(e)e.style.display=this.checked?'block':'none'"> 我有一段時間無法收貨
@@ -1702,15 +1720,31 @@
       }
     }
 
+    // 🎟️ 切換免運券：勾選 → 隱藏收件資訊、顯示通知
+    window.feToggleCoupon = function(checked){
+      const block  = document.getElementById('shipf-recip-block-myship');
+      const notice = document.getElementById('shipf-coupon-notice');
+      if(block)  block.style.display  = checked ? 'none' : 'block';
+      if(notice) notice.style.display = checked ? 'block' : 'none';
+    };
+
     window.feSubmitShip = async function(choice, _btn){
       if(!choice) choice = window._shipSelectedChoice;
       if(!choice) return;
       const isCvs = (choice==='myship' || choice==='crossmart');
       const agree = document.getElementById(`shipf-agree-${choice}`);
       if(!agree || !agree.checked){ alert('請先勾選並閱讀配送責任說明'); return; }
+
+      // 🎟️ 免運券模式：不驗證收件資訊（客人之後用連結自己下單填）
+      const couponEl = document.getElementById('shipf-coupon-myship');
+      const useCoupon = (choice==='myship' && couponEl && couponEl.checked);
+
       const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
       let recipient = {};
-      if(isCvs){
+      if(useCoupon){
+        // 收件資訊：原本有預填就保留，沒有就空（下單後從賣貨便訂單清單回填）
+        recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
+      } else if(isCvs){
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ alert('請完整填寫店號、店名、收件人與手機'); return; }
       } else {
@@ -1726,7 +1760,7 @@
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
       const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
-      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items });
+      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: useCoupon });
 
       // 🔒 上鎖（所有驗證都通過之後才鎖，這樣驗證失敗時按鈕不會卡住）
       const _btnEl = _btn || document.querySelector(`#shipOptDetail-${choice} .shipf-submit-btn`);
@@ -1876,6 +1910,30 @@
       const choice = state.shipChoice;
       const isMyship = (choice==='myship');
       const r = state.recipient || {};
+
+      // 🎟️ 免運券模式：專屬顯示（通知下單 / 下單按鈕）
+      if(state.useMyshipCoupon){
+        const linkReady = !!(state.couponLinkReady || (mod && mod.myshipUrl));
+        const url = (mod && mod.myshipUrl) ? mod.myshipUrl : '';
+        let unav = '';
+        if(state.unavailable && state.unavailable.from){
+          unav = `<div style="font-size:12px;color:#dc2626;margin-top:8px;">🚫 您指定的無法收貨期間：${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</div>`;
+        }
+        if(linkReady && url){
+          return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
+            <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:8px;"><i class="bi bi-check-circle-fill"></i> 賣貨便免運券 · 可以下單囉！</div>
+            <div style="font-size:12.5px;color:#374151;line-height:1.6;">請點下方按鈕前往賣貨便賣場，使用您的免運券完成下單。</div>
+            <a href="${escHTML(url)}" target="_blank" style="display:block;text-align:center;margin-top:12px;padding:12px;background:#16a34a;color:#fff;font-weight:800;font-size:15px;border-radius:10px;text-decoration:none;">🛒 前往賣貨便下單</a>
+            ${unav}
+          </div>`;
+        }
+        return `<div class="details-box shadow-sm mb-3" style="border:2px solid #bfdbfe;">
+          <div style="font-size:14px;font-weight:800;color:#1e40af;margin-bottom:8px;"><i class="bi bi-bell-fill"></i> 已收到您的免運券需求</div>
+          <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們會再提供賣貨便連結通知您下單，請留意通知。</div>
+          ${unav}
+        </div>`;
+      }
+
       // 依標題分行顯示
       const _row = (label, val) => val ? `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
           <span style="color:#6b7280;min-width:62px;flex-shrink:0;">${label}</span>
