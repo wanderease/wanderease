@@ -1726,25 +1726,24 @@
     };
 
     window.feSubmitShip = async function(choice, _btn){
+      console.log('[shipSubmit] 版本 v2-myshipLink｜choice =', choice);   // 版本標記：console 看得到＝跑最新版
       if(!choice) choice = window._shipSelectedChoice;
       if(!choice) return;
-      const isCvs = (choice==='myship' || choice==='crossmart');
+      const isMyshipLink = (choice==='myship');   // ★ 賣貨便＝連結下單
       const agree = document.getElementById(`shipf-agree-${choice}`);
       if(!agree || !agree.checked){ alert('請先勾選並閱讀配送責任說明'); return; }
 
-      // ★ 賣貨便＝連結下單：不驗證收件資訊（客人之後用連結自己下單）
-      //   沿用 useMyshipCoupon 旗標當「賣貨便連結下單」標記。
-      const isMyshipLink = (choice==='myship');
-
       const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
       let recipient = {};
+      // ★★★ 賣貨便：完全不驗證、不讀收件欄位，只帶空 recipient ★★★
       if(isMyshipLink){
-        // 賣貨便：不填收件（下單後從訂單資訊檔回填）
-        recipient = {};
+        recipient = {};   // 下單後從賣貨便訂單資訊檔回填
       } else if(choice==='crossmart'){
+        // 交貨便（超商取貨）：必填店號店名收件人手機
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ alert('請完整填寫店號、店名、收件人與手機'); return; }
       } else {
+        // 黑貓／郵局（宅配）：必填郵遞區號地址收件人手機
         recipient = { zip:val(`shipf-zip-${choice}`), address:val(`shipf-address-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.zip||!recipient.address||!recipient.name||!recipient.phone){ alert('請完整填寫郵遞區號、地址、收件人與手機'); return; }
       }
@@ -1779,7 +1778,7 @@
             finalDue:(dd.finalDue!=null?dd.finalDue:null),
             payOpened:!!dd.payOpened, paid:false,
             payDeadlineTs:(dd.payDeadlineTs!=null?dd.payDeadlineTs:null),
-            recipient:Object.assign({type:isCvs?'cvs':'addr'},recipient),
+            recipient:Object.assign({type:(choice==='myship'||choice==='crossmart')?'cvs':'addr'},recipient),
             unavailable:unavailable, last5:''
           };
           // 非賣貨便：彈出應匯款視窗；賣貨便：直接完成
