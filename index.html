@@ -1647,16 +1647,8 @@
       //   其他貨運＝填收件資訊（照舊）。
       const isMyshipChoice = (choice === 'myship');
 
-      // 賣貨便：顯示連結下單說明區塊（取代收件表單）
-      const myshipLinkBlock = isMyshipChoice ? `
-        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:14px 16px;margin-bottom:10px;">
-          <div style="font-size:14px;color:#1e40af;font-weight:800;margin-bottom:6px;"><i class="bi bi-box-seam"></i> 賣貨便：由您自行下單</div>
-          <div style="font-size:12.5px;color:#3b82f6;line-height:1.7;">
-            選擇賣貨便後，<b>不需在此填寫收件資訊</b>。<br>
-            我們會提供賣貨便下單連結，您點擊後自行選擇取件門市、填寫資料完成下單即可。<br>
-            下單後系統會自動記錄，您可隨時回來查詢包裹進度。
-          </div>
-        </div>` : '';
+      // 賣貨便：不顯示收件表單，也不用一大串說明（送出後直接跳賣貨便下單）
+      const myshipLinkBlock = '';
 
       // 收件表單：只有非賣貨便顯示
       const recipBlock = isMyshipChoice ? '' : `
@@ -1682,7 +1674,7 @@
             <input type="checkbox" id="shipf-agree-${choice}">
             <span>我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。</span>
           </label>
-          <button class="shipf-submit-btn" onclick="feSubmitShip('${choice}', this)">✅ 確認送出，可以出我的貨</button>
+          <button class="shipf-submit-btn" onclick="feSubmitShip('${choice}', this)">${isMyshipChoice ? '✅ 確認送出，前往賣貨便下單' : '✅ 確認送出，可以出我的貨'}</button>
           <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;">送出後即鎖定，如需修改請聯繫客服</div>
         </div>`;
     }
@@ -1798,10 +1790,19 @@
           if(dd.duplicated){
             // 後端偵測到重複送出（內容完全相同）→ 不再彈視窗，靜默同步畫面即可
             console.log('[shipChoice] 重複送出，已忽略');
+          } else if(choice==='myship'){
+            // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
+            const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
+            if(_murl){
+              alert('✅ 已送出！即將前往賣貨便下單頁面，請選擇取件門市並完成下單。');
+              window.open(_murl, '_blank');
+            } else {
+              alert('✅ 已送出！賣貨便下單連結尚未提供，我們會盡快通知您。');
+            }
           } else if(dd.needPay){
             feShowPayModal(choice, dd, mod.shipBankInfo || dd.shipBankInfo || '');
           } else {
-            alert('✅ 已送出！賣貨便無需事先匯款，剩餘費用於取貨時付款。');
+            alert('✅ 已送出！剩餘費用於取貨時付款。');
           }
           _ok = true;
           renderShipModule(mod);   // 成功 → 整區重繪，按鈕會消失，不需還原
