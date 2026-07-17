@@ -1176,6 +1176,7 @@
       const unship = document.getElementById('unshipListSection');
       if(!wrap) return;
       window._shipMyshipUrl = (shipData && shipData.myshipUrl) ? shipData.myshipUrl : '';
+      window._shipDeliveryMap = (shipData && shipData.deliveryMap) ? shipData.deliveryMap : {};   // 🆕 CM→D70
       // 後端尚未提供 shipData：先全部隱藏，留 empty
       if(!shipData || (!shipData.upcoming && !shipData.unshipped)){
         wrap.style.display = 'none';
@@ -1964,32 +1965,42 @@
       // 🆕 出貨判斷：交貨便/黑貓/郵局＝有單號；賣貨便＝後台已建立訂單（無單號）
       const _tNos = Array.isArray(state.trackingNos) ? state.trackingNos.filter(s=>String(s||'').trim()!=='') : [];
       const _isMyshipChoice = (choice==='myship');
-      const _shipped = _isMyshipChoice ? !!state.myshipExported : (_tNos.length > 0);
+      const _isCvsShip = (choice==='crossmart');
+      const _shipped = _isMyshipChoice ? (!!state.myshipExported || _tNos.length > 0) : (_tNos.length > 0);
+      // 🆕 CM → D70 對應（後端從出貨表撈）：客人查 7-11 包裹進度用
+      const _dMap = window._shipDeliveryMap || {};
+      // 7-11 追蹤網址（帶寄件編號 D70，客人直接查得到，不用自己輸入）
+      const _mk711 = (d70) => `https://eservice.7-11.com.tw/E-Tracking/search.aspx?CRM_PaymentNo=${encodeURIComponent(d70)}&FLAG=93&FROM=C2CPlatform`;
+
       let trackRows = '';
-      if(_shipped && _isMyshipChoice){
-        // 賣貨便：無單號，導引至賣貨便頁面查詢
-        trackRows = `<div style="margin-top:8px;padding:8px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:12.5px;color:#1e40af;">
-            📦 訂單已建立，可至<b>賣貨便頁面</b>查詢貨況
+      if(_shipped && (_isMyshipChoice || _isCvsShip)){
+        // 賣貨便 / 交貨便：統一用 D70 查 7-11
+        //   每箱各自的 CM → 找對應 D70 → 各自查詢連結
+        //   沒有 CM 單號時 fallback 用 state 的（相容）
+        const _boxNos = _tNos.length > 0 ? _tNos : [''];
+        let anyD70 = false;
+        const rowsHtml = _boxNos.map((cm, i) => {
+          const d70 = cm && _dMap[cm] ? _dMap[cm] : '';
+          const boxLabel = _boxNos.length > 1 ? `第 ${i+1} 箱` : '';
+          if(d70){
+            anyD70 = true;
+            return `<div style="border:1px solid #bbf7d0;background:#f0fdf4;border-radius:8px;padding:8px 10px;margin:4px 0;">
+                <div style="font-size:12px;color:#374151;">${boxLabel?`<b>${boxLabel}</b>｜`:''}寄件編號：<span style="font-weight:700;color:#111827;">${escHTML(d70)}</span>
+                  <button type="button" onclick="feCopyTrack(this,'${escHTML(d70).replace(/'/g,"\\'")}')" style="border:1px solid #86efac;background:#fff;color:#166534;font-size:10px;font-weight:700;padding:1px 7px;border-radius:5px;cursor:pointer;margin-left:4px;">複製</button>
+                </div>
+                <a href="${_mk711(d70)}" target="_blank" rel="noopener" style="display:inline-block;margin-top:6px;background:#16a34a;color:#fff;text-decoration:none;padding:6px 14px;border-radius:8px;font-size:12.5px;font-weight:700;">🔍 查詢包裹進度</a>
+              </div>`;
+          } else {
+            // 已出貨但還沒回填 D70 → 訂單處理中
+            return `<div style="border:1px solid #fde68a;background:#fffbeb;border-radius:8px;padding:8px 10px;margin:4px 0;font-size:12.5px;color:#92400e;">
+                ${boxLabel?`<b>${boxLabel}</b>｜`:''}📦 訂單處理中，寄件單號產生後即可查詢包裹進度
+              </div>`;
+          }
+        }).join('');
+        trackRows = `<div style="margin-top:6px;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:2px;">📮 包裹查詢</div>
+            ${rowsHtml}
           </div>`;
-      } else if(_shipped){
-        const _isCvsShip = (choice==='crossmart');
-        const _trackUrl = 'https://eservice.7-11.com.tw/e-tracking/search.aspx';
-        const noList = _tNos.map((t,i)=>`<div style="display:flex;align-items:center;gap:6px;margin:1px 0;">
-            <span style="font-weight:700;color:#111827;">${_tNos.length>1?`第 ${i+1} 箱：`:''}${escHTML(t)}</span>
-            <button type="button" onclick="feCopyTrack(this,'${escHTML(t).replace(/'/g,"\\'")}')" style="border:1px solid #86efac;background:#f0fdf4;color:#166534;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;cursor:pointer;white-space:nowrap;">複製</button>
-          </div>`).join('');
-        trackRows = `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
-            <span style="color:#6b7280;min-width:62px;flex-shrink:0;">寄送單號</span>
-            <div>${noList}</div>
-          </div>`;
-        if(_isCvsShip){
-          trackRows += `<div style="margin-top:8px;">
-            <a href="${_trackUrl}" target="_blank" rel="noopener" style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:700;">
-              🔍 查詢包裹貨況
-            </a>
-            <div style="font-size:11px;color:#9ca3af;margin-top:4px;">點擊後於 7-11 官方頁面輸入上方單號即可查詢</div>
-          </div>`;
-        }
       }
 
       let h = `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;margin:10px 0;">
