@@ -1222,7 +1222,9 @@
         }).join('');
       } else {
         wrap.style.display = 'none';
-        if(empty) empty.style.display = 'block';
+        // 🆕 已確認配送（出貨後）→ 有配送模組狀態就不顯示「沒有出貨內容」，讓三階段狀態顯示
+        const _hasShipState = !!(_shipMod && _shipMod.state && (_shipMod.state.confirmed || _shipMod.state.locked));
+        if(empty) empty.style.display = _hasShipState ? 'none' : 'block';
       }
       // 🆕 配送模組（客人自選貨運）— 僅開關開放時渲染
       if(_shipPublished){
