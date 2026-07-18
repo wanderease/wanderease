@@ -1200,6 +1200,11 @@
       } else if(series.length > 0){
         wrap.style.display = 'block';
         if(empty) empty.style.display = 'none';
+        // 重設上半部顯示（可能被前一位「出貨後」客人藏過）
+        const _fh = wrap.querySelector('.frame-head'); if(_fh) _fh.style.display = '';
+        const _ir = document.getElementById('shipInfoRow'); if(_ir) _ir.style.display = '';
+        const _sl = document.getElementById('shipSeriesList'); if(_sl) _sl.style.display = '';
+        const _wm = wrap.querySelector('.watermark'); if(_wm) _wm.style.display = '';
         document.getElementById('shipFrameCount').innerText = `${series.length} 系列 · ${totalItems} 件`;
         const _pkgVal = (up.packageValue != null) ? up.packageValue : totalAmount;
         document.getElementById('shipInfoRow').innerHTML = `
@@ -1221,10 +1226,21 @@
           </div>`;
         }).join('');
       } else {
-        wrap.style.display = 'none';
-        // 🆕 已確認配送（出貨後）→ 有配送模組狀態就不顯示「沒有出貨內容」，讓三階段狀態顯示
+        // 🆕 已確認配送（出貨後）→ 有配送模組狀態時，wrap 要顯示（否則裡面的 shipModuleArea 被一起藏掉），
+        //   但把上半部「近期將出貨」系列區藏起來，只露出配送模組（三階段狀態/包裹查詢）。
         const _hasShipState = !!(_shipMod && _shipMod.state && (_shipMod.state.confirmed || _shipMod.state.locked));
-        if(empty) empty.style.display = _hasShipState ? 'none' : 'block';
+        if(_hasShipState){
+          wrap.style.display = 'block';
+          // 藏掉待出貨系列部分（標題/件數/系列卡），只留 shipModuleArea
+          const _fh = wrap.querySelector('.frame-head'); if(_fh) _fh.style.display = 'none';
+          const _ir = document.getElementById('shipInfoRow'); if(_ir) _ir.style.display = 'none';
+          const _sl = document.getElementById('shipSeriesList'); if(_sl) _sl.style.display = 'none';
+          const _wm = wrap.querySelector('.watermark'); if(_wm) _wm.style.display = 'none';
+          if(empty) empty.style.display = 'none';
+        } else {
+          wrap.style.display = 'none';
+          if(empty) empty.style.display = 'block';
+        }
       }
       // 🆕 配送模組（客人自選貨運）— 僅開關開放時渲染
       if(_shipPublished){
