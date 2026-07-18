@@ -1952,24 +1952,50 @@
         // ① 已下單（後台偵測到 CM）→ 三階段狀態顯示
         if(hasOrdered){
           const ship = (mod && mod.myshipShip) ? mod.myshipShip : {};
-          const _mk711url = (d70) => `https://eservice.7-11.com.tw/E-Tracking/search.aspx?CRM_PaymentNo=${encodeURIComponent(d70)}&FLAG=93&FROM=C2CPlatform`;
+          // 7-11 查詢首頁（不帶參數，避免「不允許查詢」防盜連）
+          const _url711 = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
 
-          // 階段三：已揀貨完成 → 顯示揀貨完成時間 + 7-11 查詢連結
-          if(ship.picked && ship.d70){
+          // 明細清單（理賠快照品項）
+          const _itemsHtml = (Array.isArray(ship.items) && ship.items.length > 0)
+            ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
+                 <div style="font-size:11px;color:#6b7280;margin-bottom:3px;">📦 出貨明細</div>
+                 ${ship.items.map(it => `<div style="font-size:12px;color:#374151;">• ${escHTML(it.name||'')} ×${it.qty||1}</div>`).join('')}
+               </div>`
+            : '';
+
+          // 寄件編號分列（多個分行）＋ 複製按鈕
+          const _d70s = (Array.isArray(ship.d70List) && ship.d70List.length > 0) ? ship.d70List : (ship.d70 ? [ship.d70] : []);
+          const _d70Html = _d70s.length > 0
+            ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
+                 <div style="font-size:11px;color:#6b7280;margin-bottom:3px;">🚚 寄件編號${_d70s.length>1?`（${_d70s.length} 件）`:''}</div>
+                 ${_d70s.map(d => `<div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                     <span style="font-family:monospace;font-size:13px;font-weight:700;color:#0e7490;">${escHTML(d)}</span>
+                     <button onclick="navigator.clipboard.writeText('${escHTML(d)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:10px;padding:2px 8px;background:#e0f2fe;color:#0369a1;border:none;border-radius:4px;cursor:pointer;">複製</button>
+                   </div>`).join('')}
+               </div>`
+            : '';
+
+          // 階段三：已揀貨完成 → 明細 + 寄件編號 + 查詢首頁（自行貼上編號查）
+          if(ship.picked && (ship.d70 || _d70s.length > 0)){
             const pickedStr = String(ship.pickedAt||'').replace('T',' ').slice(0,16);
             return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
               <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 賣貨便 · 已完成揀貨</div>
               <div style="font-size:12.5px;color:#374151;line-height:1.6;">已於 <b>${escHTML(pickedStr)}</b> 完成揀貨，將於 48 小時內完成寄件。</div>
-              <a href="${_mk711url(ship.d70)}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 查詢包裹進度</a>
+              ${_itemsHtml}
+              ${_d70Html}
+              <a href="${_url711}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 前往 7-11 貨態查詢</a>
+              <div style="font-size:11px;color:#9ca3af;margin-top:6px;text-align:center;line-height:1.5;">開啟後，將上方寄件編號貼入查詢欄即可查看包裹進度。</div>
               ${unav}
             </div>`;
           }
 
-          // 階段二：已申請寄送單號（有 D70）、還沒揀貨完成 → 不給查詢連結
+          // 階段二：已申請寄送單號（有 D70）、還沒揀貨完成 → 顯示明細+編號，不給查詢
           if(ship.hasD70){
             return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
               <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-truck"></i> 賣貨便 · 已向賣貨便申請寄送單號</div>
               <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已為您向賣貨便申請寄送單號，完成揀貨後即可查詢包裹進度。</div>
+              ${_itemsHtml}
+              ${_d70Html}
               ${unav}
             </div>`;
           }
