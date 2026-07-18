@@ -2188,9 +2188,30 @@
         };
         const _url711home = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
         // 明細（含金額）
-        const _cvsItems = (Array.isArray(_cvsShip.items) && _cvsShip.items.length>0)
-          ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;"><div style="font-size:11px;color:#6b7280;margin-bottom:3px;">📦 出貨明細</div>${_cvsShip.items.map(it=>`<div style="font-size:12px;color:#374151;">• ${escHTML(it.name||'')} ×${it.qty||1}</div>`).join('')}</div>`
-          : '';
+        // 🆕 出貨明細：有分箱（boxes 多箱）→ 按箱顯示（跟後台分箱一致）；單箱→整單列
+        let _cvsItems = '';
+        const _boxes = Array.isArray(_cvsShip.boxes) ? _cvsShip.boxes : [];
+        if (_boxes.length > 1) {
+          // 多箱：依箱號排序，每箱顯示品項+申報價值+單號
+          const _sortedBoxes = _boxes.slice().sort(function(a,b){ return (a.boxNo||0)-(b.boxNo||0); });
+          _cvsItems = `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">📦 出貨明細（共 ${_sortedBoxes.length} 箱）</div>
+            ${_sortedBoxes.map(function(bx){
+              const _its = (bx.items||[]).map(function(it){ return `<div style="font-size:12px;color:#374151;padding-left:6px;">• ${escHTML(it.name||'')} ×${it.qty||1}</div>`; }).join('');
+              return `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 8px;margin-bottom:5px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                  <span style="font-size:11.5px;font-weight:800;color:#15803d;">第 ${bx.boxNo} 箱</span>
+                  ${bx.declared!=null?`<span style="font-size:10.5px;color:#c2410c;font-weight:700;">申報 $${bx.declared}</span>`:''}
+                </div>
+                ${_its}
+                ${bx.d70?`<div style="font-size:10.5px;color:#0e7490;font-family:monospace;margin-top:3px;padding-left:6px;">單號：${escHTML(bx.d70)}</div>`:''}
+              </div>`;
+            }).join('')}
+          </div>`;
+        } else if (Array.isArray(_cvsShip.items) && _cvsShip.items.length>0) {
+          // 單箱：整單列
+          _cvsItems = `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;"><div style="font-size:11px;color:#6b7280;margin-bottom:3px;">📦 出貨明細</div>${_cvsShip.items.map(it=>`<div style="font-size:12px;color:#374151;">• ${escHTML(it.name||'')} ×${it.qty||1}</div>`).join('')}</div>`;
+        }
         // 寄送單號（多個分列+複製）
         const _cvsD70s = (Array.isArray(_cvsShip.d70List) && _cvsShip.d70List.length>0) ? _cvsShip.d70List : (_cvsShip.d70 ? [_cvsShip.d70] : []);
         const _cvsD70Html = _cvsD70s.length>0
