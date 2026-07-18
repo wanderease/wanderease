@@ -1931,8 +1931,32 @@
           unav = `<div style="font-size:12px;color:#dc2626;margin-top:8px;">🚫 您指定的無法收貨期間：${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</div>`;
         }
 
-        // ① 已下單（後台偵測到 CM）→ 拿掉前往下單按鈕，顯示已下單
+        // ① 已下單（後台偵測到 CM）→ 三階段狀態顯示
         if(hasOrdered){
+          const ship = (mod && mod.myshipShip) ? mod.myshipShip : {};
+          const _mk711url = (d70) => `https://eservice.7-11.com.tw/E-Tracking/search.aspx?CRM_PaymentNo=${encodeURIComponent(d70)}&FLAG=93&FROM=C2CPlatform`;
+
+          // 階段三：已揀貨完成 → 顯示揀貨完成時間 + 7-11 查詢連結
+          if(ship.picked && ship.d70){
+            const pickedStr = String(ship.pickedAt||'').replace('T',' ').slice(0,16);
+            return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
+              <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 賣貨便 · 已完成揀貨</div>
+              <div style="font-size:12.5px;color:#374151;line-height:1.6;">已於 <b>${escHTML(pickedStr)}</b> 完成揀貨，將於 48 小時內完成寄件。</div>
+              <a href="${_mk711url(ship.d70)}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 查詢包裹進度</a>
+              ${unav}
+            </div>`;
+          }
+
+          // 階段二：已申請寄送單號（有 D70）、還沒揀貨完成 → 不給查詢連結
+          if(ship.hasD70){
+            return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
+              <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-truck"></i> 賣貨便 · 已向賣貨便申請寄送單號</div>
+              <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已為您向賣貨便申請寄送單號，完成揀貨後即可查詢包裹進度。</div>
+              ${unav}
+            </div>`;
+          }
+
+          // 階段一：已下單、還沒申請寄送單號
           return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> 賣貨便 · 已完成下單</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已收到您的賣貨便訂單，將盡快為您安排出貨。</div>
