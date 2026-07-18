@@ -1919,7 +1919,9 @@
       const r = state.recipient || {};
 
       // ★ 賣貨便連結下單模式：專屬顯示
-      if(state.useMyshipCoupon){
+      //   判斷改用 shipChoice=myship（賣貨便都是連結下單），不靠 useMyshipCoupon
+      //   （早期舊模式選賣貨便的客人沒有 useMyshipCoupon 旗標，也要能顯示連結）
+      if(isMyship){
         const url = (mod && mod.myshipUrl) ? mod.myshipUrl : '';
         // 已下單判斷：有 CM 訂單編號（trackingNos）＝客人已在賣貨便下單
         const _cms = (Array.isArray(state.trackingNos) ? state.trackingNos : []).filter(function(t){ return /^CM/i.test(String(t||'').trim()); });
