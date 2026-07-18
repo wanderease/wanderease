@@ -521,6 +521,7 @@
             </div>
             <div id="shipEmpty" style="display:none;text-align:center;padding:30px 16px;color:#888;font-size:13px;font-weight:600;background:#fff;border-radius:12px;margin-bottom:7px;">🚚 目前沒有需要下單的出貨內容</div>
             <div id="unshipListSection"></div>
+            <div id="shipHistorySection"></div>
           </div>
         </div>
         <!-- 頁 3：候補 -->
@@ -1301,6 +1302,77 @@
       } else {
         unship.innerHTML = '';
       }
+
+      // 🆕 出貨歷史（已結束批次）
+      try { renderShipHistory(Array.isArray(shipData.shipHistory) ? shipData.shipHistory : []); }
+      catch(e){ console.warn('shipHistory render fail', e); }
+    }
+
+    // 🆕 出貨歷史摺疊區
+    function renderShipHistory(history){
+      const box = document.getElementById('shipHistorySection');
+      if(!box) return;
+      if(!Array.isArray(history) || history.length === 0){ box.innerHTML = ''; return; }
+
+      // 時間轉台灣（UTC+8）
+      const _twTime = (iso) => {
+        try {
+          const dt = new Date(iso);
+          if(isNaN(dt.getTime())) return String(iso||'').replace('T',' ').slice(0,16);
+          const tw = new Date(dt.getTime() + 8*3600*1000);
+          const p = n => String(n).padStart(2,'0');
+          return `${tw.getUTCFullYear()}-${p(tw.getUTCMonth()+1)}-${p(tw.getUTCDate())} ${p(tw.getUTCHours())}:${p(tw.getUTCMinutes())}`;
+        } catch(e){ return String(iso||''); }
+      };
+      const _url711 = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
+
+      const cards = history.map(h => {
+        const pickedStr = h.pickedAt ? _twTime(h.pickedAt) : '';
+        // 明細（含金額）
+        const itemsHtml = (Array.isArray(h.items) && h.items.length > 0)
+          ? `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e5e7eb;">
+               ${h.items.map(it => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#374151;">
+                   <span>• ${escHTML(it.name||'')} ×${it.qty||1}</span>
+                   ${(it.amount!=null&&it.amount>0)?`<span style="color:#6b7280;white-space:nowrap;">$${it.amount}</span>`:''}
+                 </div>`).join('')}
+             </div>`
+          : '';
+        // 寄件編號（多個分列＋複製）
+        const d70s = Array.isArray(h.d70List) ? h.d70List : [];
+        const d70Html = d70s.length > 0
+          ? `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e5e7eb;">
+               <div style="font-size:11px;color:#9ca3af;margin-bottom:2px;">🚚 寄件編號${d70s.length>1?`（${d70s.length} 件）`:''}</div>
+               ${d70s.map(d => `<div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                   <span style="font-family:monospace;font-size:12.5px;font-weight:700;color:#0e7490;">${escHTML(d)}</span>
+                   <button onclick="navigator.clipboard.writeText('${escHTML(d)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:10px;padding:1px 7px;background:#e0f2fe;color:#0369a1;border:none;border-radius:4px;cursor:pointer;">複製</button>
+                 </div>`).join('')}
+             </div>`
+          : '';
+        const query711 = d70s.length > 0
+          ? `<a href="${_url711}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:8px;padding:7px;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:12.5px;border:1px solid #bbf7d0;border-radius:8px;text-decoration:none;">🔍 前往 7-11 貨態查詢</a>`
+          : '';
+        return `
+          <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;font-weight:800;color:#15803d;"><i class="bi bi-check-circle-fill"></i> 已完成揀貨</span>
+              ${pickedStr?`<span style="font-size:11px;color:#9ca3af;">${escHTML(pickedStr)}</span>`:''}
+            </div>
+            ${itemsHtml}
+            ${d70Html}
+            ${query711}
+          </div>`;
+      }).join('');
+
+      box.innerHTML = `
+        <div class="unship-page-section" style="margin-top:10px;">
+          <div class="unship-page-title" style="cursor:pointer;" onclick="const c=document.getElementById('shipHistBody');const i=this.querySelector('.hist-arrow');if(c){const open=c.style.display!=='none';c.style.display=open?'none':'block';if(i)i.style.transform=open?'rotate(0deg)':'rotate(90deg)';}">
+            <i class="bi bi-clock-history"></i> 出貨歷史 <span class="count">近 ${history.length} 筆</span>
+            <i class="bi bi-chevron-right hist-arrow" style="float:right;transition:transform .2s;"></i>
+          </div>
+          <div id="shipHistBody" style="display:none;margin-top:8px;">
+            ${cards}
+          </div>
+        </div>`;
     }
 
     window.openShipMenuCheckout=function(){
