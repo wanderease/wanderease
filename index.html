@@ -1977,7 +1977,18 @@
 
           // 階段三：已揀貨完成 → 明細 + 寄件編號 + 查詢首頁（自行貼上編號查）
           if(ship.picked && (ship.d70 || _d70s.length > 0)){
-            const pickedStr = String(ship.pickedAt||'').replace('T',' ').slice(0,16);
+            // Airtable 存 UTC（...Z）→ 轉台灣時間（UTC+8）顯示
+            let pickedStr = '';
+            try {
+              const _dt = new Date(ship.pickedAt);
+              if (!isNaN(_dt.getTime())) {
+                const _tw = new Date(_dt.getTime() + 8*3600*1000);
+                const _p = n => String(n).padStart(2,'0');
+                pickedStr = `${_tw.getUTCFullYear()}-${_p(_tw.getUTCMonth()+1)}-${_p(_tw.getUTCDate())} ${_p(_tw.getUTCHours())}:${_p(_tw.getUTCMinutes())}`;
+              } else {
+                pickedStr = String(ship.pickedAt||'').replace('T',' ').slice(0,16);
+              }
+            } catch(e) { pickedStr = String(ship.pickedAt||'').replace('T',' ').slice(0,16); }
             return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
               <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 賣貨便 · 已完成揀貨</div>
               <div style="font-size:12.5px;color:#374151;line-height:1.6;">已於 <b>${escHTML(pickedStr)}</b> 完成揀貨，將於 48 小時內完成寄件。</div>
