@@ -1187,6 +1187,9 @@
       }
       const up = shipData.upcoming || {};
       const series = Array.isArray(up.series) ? up.series : [];
+      // 🆕 存商品明細供送出檢查（單件 > $5000 提醒用）
+      window._shipItemsForCheck = [];
+      series.forEach(function(s){ (Array.isArray(s.items)?s.items:[]).forEach(function(it){ window._shipItemsForCheck.push({ name: it.name||'', amount: Number(it.amount)||0, qty: it.qty||1 }); }); });
       const totalItems = up.totalItems || 0;
       const totalAmount = up.totalAmount || 0;
       // 🆕 前台顯示開關：未開放時，綠框與配送選擇都不顯示（維持一般畫面，只留尚未出貨列表）
@@ -1832,6 +1835,16 @@
         // 交貨便（超商取貨）：必填店號店名收件人手機
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ alert('請完整填寫店號、店名、收件人與手機'); return; }
+        // 🆕 交貨便：有單件商品 > $5000 → 提醒賠償上限（客人可繼續或返回重選）
+        const _items = window._shipItemsForCheck || [];
+        const _highItems = _items.filter(function(it){ const _unit = (it.qty>0)? (it.amount/it.qty) : it.amount; return _unit > 5000; });
+        if(_highItems.length > 0){
+          const _names = _highItems.map(function(it){ const _unit = Math.round((it.qty>0)?(it.amount/it.qty):it.amount); return `${it.name}（$${_unit}）`; }).join('、');
+          const _ok = window.confirm(
+            `⚠️ 提醒：有商品單件價值超過 $5000\n\n${_names}\n\n若使用交貨便，貨運方最高賠償只會有 $5000（超過部分無法理賠）。\n\n・按「確定」＝了解並繼續使用交貨便\n・按「取消」＝返回重新選擇其他貨運方式`
+          );
+          if(!_ok) return;   // 返回重選
+        }
       } else {
         // 黑貓／郵局（宅配）：必填郵遞區號地址收件人手機
         recipient = { zip:val(`shipf-zip-${choice}`), address:val(`shipf-address-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
@@ -2204,7 +2217,11 @@
                   ${bx.declared!=null?`<span style="font-size:10.5px;color:#c2410c;font-weight:700;">申報 $${bx.declared}</span>`:''}
                 </div>
                 ${_its}
-                ${bx.d70?`<div style="font-size:10.5px;color:#0e7490;font-family:monospace;margin-top:3px;padding-left:6px;">單號：${escHTML(bx.d70)}</div>`:''}
+                ${bx.d70?`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;padding-left:6px;">
+                  <span style="font-size:11px;color:#6b7280;">單號：</span>
+                  <span style="font-family:monospace;font-size:12px;font-weight:700;color:#0e7490;">${escHTML(bx.d70)}</span>
+                  <button onclick="navigator.clipboard.writeText('${escHTML(bx.d70)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:9.5px;padding:1px 7px;background:#e0f2fe;color:#0369a1;border:none;border-radius:4px;cursor:pointer;">複製</button>
+                </div>`:''}
               </div>`;
             }).join('')}
           </div>`;
@@ -2224,7 +2241,7 @@
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 7-11 交貨便 · 已完成揀貨</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">已於 <b>${escHTML(_pk)}</b> 完成揀貨，將於 48 小時內完成寄件。</div>
-            ${_cvsItems}${_cvsD70Html}
+            ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
             <a href="${_url711home}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 前往 7-11 貨態查詢</a>
             <div style="font-size:11px;color:#9ca3af;margin-top:6px;text-align:center;line-height:1.5;">開啟後，將上方寄送單號貼入查詢欄即可查看包裹進度。</div>
           </div>`;
@@ -2234,7 +2251,7 @@
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-truck"></i> 7-11 交貨便 · 已向物流申請寄送單號</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已為您申請寄送單號，完成揀貨後即可查詢包裹進度。</div>
-            ${_cvsItems}${_cvsD70Html}
+            ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
           </div>`;
         }
         // 階段一：已確認配送方式（paid=true，還沒單號）
