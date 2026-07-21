@@ -2021,6 +2021,29 @@
       const isMyship = (choice==='myship');
       const r = state.recipient || {};
 
+      // 🆕 第4階段判斷：揀貨完成滿 48 小時 → 視為「已寄出」
+      const _isShippedOut = (pickedAtIso) => {
+        if (!pickedAtIso) return false;
+        try {
+          const t = new Date(pickedAtIso).getTime();
+          if (isNaN(t)) return false;
+          return (Date.now() - t) >= 48 * 3600 * 1000;   // 滿 48 小時
+        } catch(e) { return false; }
+      };
+      // 🆕 第4階段 HTML（統一樣式）：包裹已寄出 + 連結 + 寄件單號
+      const _stage4Html = (d70s, trackUrl, trackSiteName, itemsHtml) => {
+        const _d70Rows = (d70s && d70s.length>0)
+          ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #bfdbfe;"><div style="font-size:11px;color:#6b7280;margin-bottom:3px;">🚚 寄件單號${d70s.length>1?`（${d70s.length} 件）`:''}</div>${d70s.map(dd=>`<div style="display:flex;align-items:center;gap:6px;margin-top:2px;"><span style="font-family:monospace;font-size:13px;font-weight:700;color:#1d4ed8;">${escHTML(dd)}</span><button onclick="navigator.clipboard.writeText('${escHTML(dd)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:10px;padding:2px 8px;background:#dbeafe;color:#1d4ed8;border:none;border-radius:4px;cursor:pointer;">複製</button></div>`).join('')}</div>`
+          : '';
+        return `<div class="details-box shadow-sm mb-3" style="border:2px solid #2563eb;">
+          <div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:6px;"><i class="bi bi-truck"></i> 包裹已寄出</div>
+          <div style="font-size:12.5px;color:#374151;line-height:1.6;">您的包裹已寄出，可透過以下連結與寄件單號查詢貨況。</div>
+          ${itemsHtml||''}${_d70Rows}
+          <a href="${trackUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#2563eb;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 前往${trackSiteName}</a>
+          <div style="font-size:11px;color:#9ca3af;margin-top:6px;text-align:center;line-height:1.5;">開啟後，將上方寄件單號貼入查詢欄即可查看包裹進度。</div>
+        </div>`;
+      };
+
       // ★ 賣貨便連結下單模式：專屬顯示
       //   判斷改用 shipChoice=myship（賣貨便都是連結下單），不靠 useMyshipCoupon
       //   （早期舊模式選賣貨便的客人沒有 useMyshipCoupon 旗標，也要能顯示連結）
@@ -2064,6 +2087,10 @@
                </div>`
             : '';
 
+          // 🆕 第4階段：揀貨完成滿 48 小時 → 包裹已寄出（優先於階段三）
+          if(ship.picked && _isShippedOut(ship.pickedAt) && (ship.d70 || _d70s.length > 0)){
+            return _stage4Html(_d70s.length>0?_d70s:(ship.d70?[ship.d70]:[]), _url711, '7-11 貨態查詢', _itemsHtml) + unav;
+          }
           // 階段三：已揀貨完成 → 明細 + 寄件編號 + 查詢首頁（自行貼上編號查）
           if(ship.picked && (ship.d70 || _d70s.length > 0)){
             // Airtable 存 UTC（...Z）→ 轉台灣時間（UTC+8）顯示
@@ -2249,8 +2276,12 @@
           ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;"><div style="font-size:11px;color:#6b7280;margin-bottom:3px;">🚚 寄送單號${_cvsD70s.length>1?`（${_cvsD70s.length} 件）`:''}</div>${_cvsD70s.map(dd=>`<div style="display:flex;align-items:center;gap:6px;margin-top:2px;"><span style="font-family:monospace;font-size:13px;font-weight:700;color:#0e7490;">${escHTML(dd)}</span><button onclick="navigator.clipboard.writeText('${escHTML(dd)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:10px;padding:2px 8px;background:#e0f2fe;color:#0369a1;border:none;border-radius:4px;cursor:pointer;">複製</button></div>`).join('')}</div>`
           : '';
 
-        // 階段三：已揀貨完成
-        if(_cvsShip.picked && (_cvsShip.hasD70 || _cvsD70s.length>0)){
+        // 🆕 第4階段：揀貨完成滿 48 小時 → 包裹已寄出（優先於階段三）
+        if(_cvsShip.picked && _isShippedOut(_cvsShip.pickedAt) && (_cvsShip.hasD70 || _cvsD70s.length>0)){
+          _cvsStageHtml = _stage4Html(_cvsD70s, _url711home, _trackSiteName, _cvsItems);
+        }
+        // 階段三：已揀貨完成（未滿 48 小時）
+        else if(_cvsShip.picked && (_cvsShip.hasD70 || _cvsD70s.length>0)){
           const _pk = _twTime(_cvsShip.pickedAt);
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 7-11 交貨便 · 已完成揀貨</div>
