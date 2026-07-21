@@ -2156,6 +2156,9 @@
       const _tNos = Array.isArray(state.trackingNos) ? state.trackingNos.filter(s=>String(s||'').trim()!=='') : [];
       const _isMyshipChoice = (choice==='myship');
       const _isCvsShip = (choice==='crossmart');
+      const _isBlackcat = (choice==='blackcat');
+      const _isPost = (choice==='post');
+      const _isManualShip = (_isBlackcat || _isPost);   // 🆕 黑貓/郵局：手動單號，比照交貨便顯示
       const _shipped = _isMyshipChoice ? (!!state.myshipExported || _tNos.length > 0) : (_tNos.length > 0);
       // 🆕 CM → D70 對應（後端從出貨表撈）：客人查 7-11 包裹進度用
       const _dMap = window._shipDeliveryMap || {};
@@ -2195,7 +2198,7 @@
 
       // 🆕 交貨便三階段（跟賣貨便對齊）：① 已確認配送(paid) ② 已申請單號(有D70) ③ 已揀貨完成(pickedAt)
       let _cvsStageHtml = '';
-      if(_isCvsShip){
+      if(_isCvsShip || _isManualShip){
         const _cvsShip = (mod && mod.myshipShip) ? mod.myshipShip : {};
         const _twTime = (iso) => {
           try { const dt=new Date(iso); if(isNaN(dt.getTime()))return String(iso||'').replace('T',' ').slice(0,16);
@@ -2203,7 +2206,14 @@
             return `${tw.getUTCFullYear()}-${p(tw.getUTCMonth()+1)}-${p(tw.getUTCDate())} ${p(tw.getUTCHours())}:${p(tw.getUTCMinutes())}`;
           } catch(e){ return String(iso||''); }
         };
-        const _url711home = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
+        // 🆕 依承運商決定名稱 + 查詢網址（交貨便=7-11、黑貓=t-cat、郵局=中華郵政）
+        const _carrierName = _isCvsShip ? '7-11 交貨便' : (_isBlackcat ? '黑貓宅急便' : '郵局包裹');
+        const _carrierIcon = _isCvsShip ? '7-11' : (_isBlackcat ? '🐱' : '📮');
+        const _url711home = _isCvsShip
+          ? "https://eservice.7-11.com.tw/E-Tracking/search.aspx"
+          : (_isBlackcat ? "https://www.t-cat.com.tw/inquire/trace.aspx"
+                         : "https://postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100");
+        const _trackSiteName = _isCvsShip ? '7-11 貨態查詢' : (_isBlackcat ? '黑貓宅急便查詢' : '中華郵政查詢');
         // 明細（含金額）
         // 🆕 出貨明細：有分箱（boxes 多箱）→ 按箱顯示（跟後台分箱一致）；單箱→整單列
         let _cvsItems = '';
@@ -2246,14 +2256,14 @@
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-box-seam-fill"></i> 7-11 交貨便 · 已完成揀貨</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">已於 <b>${escHTML(_pk)}</b> 完成揀貨，將於 48 小時內完成寄件。</div>
             ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
-            <a href="${_url711home}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 前往 7-11 貨態查詢</a>
+            <a href="${_url711home}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:12px;padding:10px;background:#16a34a;color:#fff;font-weight:800;font-size:14px;border-radius:10px;text-decoration:none;">🔍 前往${_trackSiteName}</a>
             <div style="font-size:11px;color:#9ca3af;margin-top:6px;text-align:center;line-height:1.5;">開啟後，將上方寄送單號貼入查詢欄即可查看包裹進度。</div>
           </div>`;
         }
         // 階段二：已申請寄送單號（有 D70，還沒揀貨完成）
         else if(_cvsShip.hasD70 || _cvsD70s.length>0){
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
-            <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-truck"></i> 7-11 交貨便 · 已向物流申請寄送單號</div>
+            <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-truck"></i> ${_carrierName} · 已向物流申請寄送單號</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已為您申請寄送單號，完成揀貨後即可查詢包裹進度。</div>
             ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
           </div>`;
@@ -2261,14 +2271,14 @@
         // 階段一：已確認配送方式（paid=true，還沒單號）
         else if(state.paid){
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
-            <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> 7-11 交貨便 · 已確認配送方式</div>
+            <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> ${_carrierName} · 已確認配送方式</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">已收到您的款項與配送選擇，將盡快為您安排出貨。</div>
           </div>`;
         }
         // paid=false → 不顯示配送階段框（下方匯款區會顯示待匯款）
       }
 
-      let h = _isCvsShip
+      let h = (_isCvsShip || _isManualShip)
         ? `${_cvsStageHtml}<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;margin:10px 0;">
         <div style="border-top:0;padding-top:0;">
           ${_row('配送方式', `<b>${escHTML(SHIPFE_LABEL[choice]||choice)}</b>`)}
