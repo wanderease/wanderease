@@ -1370,6 +1370,7 @@
             ${itemsHtml}
             ${d70Html}
             ${query711}
+            ${_feAgreedHtml(h.agreed)}
           </div>`;
       }).join('');
 
@@ -1413,6 +1414,32 @@
       L: { label:'90~120cm', color:'#dc2626' }
     };
     const SHIPFE_LABEL = { myship:'賣貨便', crossmart:'7-11 交貨便', blackcat:'黑貓宅急便', post:'郵局包裹' };
+
+    // 🆕 配送責任說明：條文版本對照（日後條文改動就新增版本，舊訂單仍顯示當時版本）
+    const FE_AGREE_TEXTS = {
+      v1: '我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。'
+    };
+    // 產生「已同意配送責任說明」區塊（已確認畫面 / 歷史紀錄共用）
+    function _feAgreedHtml(ag){
+      if(!ag || !ag.at) return '';
+      const _tw = (iso)=>{
+        try{ const dt=new Date(iso); if(isNaN(dt.getTime())) return String(iso||'').replace('T',' ').slice(0,16);
+          const tw=new Date(dt.getTime()+8*3600*1000); const p=n=>String(n).padStart(2,'0');
+          return `${tw.getUTCFullYear()}-${p(tw.getUTCMonth()+1)}-${p(tw.getUTCDate())} ${p(tw.getUTCHours())}:${p(tw.getUTCMinutes())}`;
+        }catch(e){ return String(iso||''); }
+      };
+      const txt = FE_AGREE_TEXTS[ag.ver] || FE_AGREE_TEXTS.v1;
+      const chLabel = SHIPFE_LABEL[ag.ch] || ag.ch || '';
+      return `<div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+        <div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:3px;">
+          <i class="bi bi-check-circle-fill"></i> 已同意配送責任說明
+        </div>
+        <div style="font-size:11px;color:#4b5563;line-height:1.6;">${escHTML(txt)}</div>
+        <div style="font-size:10.5px;color:#9ca3af;margin-top:4px;">
+          同意時間：${escHTML(_tw(ag.at))}${chLabel?`　配送方式：${escHTML(chLabel)}`:''}
+        </div>
+      </div>`;
+    }
 
     // 交貨便分箱
     function _feCrossmartBoxFee(v){ if(v<=1000)return 60; if(v<=2000)return 70; if(v<=3000)return 80; if(v<=4000)return 90; return 100; }
@@ -1963,7 +1990,16 @@
           }
         } catch(e) {}
       }
-      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: isMyshipLink, boxDetails: _boxDetails });
+      // ★ 配送責任說明：記錄客人同意的事實（保護雙方，歷史訂單可回查）
+      const _agreeText = '我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。';
+      const _agreement = {
+        agreed: true,
+        at: new Date().toISOString(),
+        choice: choice,
+        ver: 'v1',              // 條文版本，日後條文改動可辨識
+        text: _agreeText
+      };
+      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: isMyshipLink, boxDetails: _boxDetails, agreement: _agreement });
 
       // 🔒 上鎖（所有驗證都通過之後才鎖，這樣驗證失敗時按鈕不會卡住）
       const _btnEl = _btn || document.querySelector(`#shipOptDetail-${choice} .shipf-submit-btn`);
@@ -2282,6 +2318,9 @@
           <span style="color:#dc2626;font-weight:700;">${escHTML(state.unavailable.from)} ~ ${escHTML(state.unavailable.to||'')}</span>
         </div>`;
       }
+
+      // 🆕 配送責任說明：顯示客人已同意的記錄（保護雙方，可回查）
+      unavailRow += _feAgreedHtml(state.agreed);
 
       // 🆕 出貨判斷：交貨便/黑貓/郵局＝有單號；賣貨便＝後台已建立訂單（無單號）
       const _tNos = Array.isArray(state.trackingNos) ? state.trackingNos.filter(s=>String(s||'').trim()!=='') : [];
