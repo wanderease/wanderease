@@ -1825,7 +1825,7 @@
       const firstHint = isFirstTime ? `<div class="shipf-firsthint">💡 初次填寫，往後將自動帶入，不需每次重新輸入</div>` : '';
       // 交貨便需查驗證件填全名；賣貨便取貨較寬鬆
       const nameHint = (choice==='crossmart')
-        ? '取貨人姓名（因無需取貨付款，店員會查驗證件，必須填寫真實全名）'
+        ? '店員會查證件，請填真實姓名'
         : (choice==='myship' ? '取貨人姓名' : '收件人姓名');
       let fields = '';
       if(isCvs){
