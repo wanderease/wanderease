@@ -343,6 +343,7 @@
     .sd-warn{background:#fff7ed;border-color:#fed7aa;}   .sd-warn .sd-title{color:#c2410c;}
     .sd-pay{background:#f5f3ff;border-color:#ddd6fe;}    .sd-pay .sd-title{color:#6d28d9;}
     .sd-info{background:#f9fafb;border-color:#e5e7eb;}   .sd-info .sd-title{color:#374151;}
+    .sd-pack{background:#fffbeb;border:2px solid #fbbf24;}  .sd-pack .sd-title{color:#b45309;font-size:14px;}
     /* 內嵌表單 */
     .sd-formbox{margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;}
     .sd-formtitle{font-weight:800;font-size:13px;color:#374151;margin-bottom:4px;}
@@ -1677,14 +1678,6 @@
           </li>`;
         }).join('');
         info = `
-          <div class="sd-block sd-fee">
-            <div class="sd-title">💰 運費計算${c.packed?'（依實際商品分箱）':''}</div>
-            <ul class="sd-list">
-              <li>本次包裹價值 <b>$${declared}</b>${c.boxes.length>1?`，需分 <b>${c.boxes.length}</b> 箱寄出`:''}</li>
-              ${boxesLi}
-              <li class="sd-total">運費合計 <b>$${c.fee}</b></li>
-            </ul>
-          </div>
           <div class="sd-block sd-info">
             <div class="sd-title">📋 報值級距表</div>
             <ul class="sd-list sd-tier">
@@ -1706,6 +1699,14 @@
           <div class="sd-block sd-pay">
             <div class="sd-title">💳 運費付款</div>
             <ul class="sd-list"><li>包裹於 7-11 取貨，運費於確認送出後，須先匯款</li></ul>
+          </div>
+          <div class="sd-block sd-pack">
+            <div class="sd-title">📦 分箱與運費計算${c.packed?'（依實際商品）':''}</div>
+            <ul class="sd-list">
+              <li>本次包裹價值 <b>$${declared}</b>${c.boxes.length>1?`，需分 <b>${c.boxes.length}</b> 箱寄出`:''}</li>
+              ${boxesLi}
+              <li class="sd-total">運費合計 <b>$${c.fee}</b></li>
+            </ul>
           </div>`;
       } else if(choice==='blackcat'){
         const b = rates.blackcat;
