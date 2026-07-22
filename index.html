@@ -1351,13 +1351,19 @@
                  </div>`).join('')}
              </div>`
           : '';
+        // ★ 依承運商給正確查詢連結（之前寫死 7-11，黑貓/郵局會導錯）
+        const _c = String(h.carrier||'');
+        const _isBc = _c.indexOf('黑貓')>=0, _isPo = _c.indexOf('郵局')>=0;
+        const _qUrl  = _isBc ? 'https://www.t-cat.com.tw/inquire/trace.aspx'
+                     : (_isPo ? 'https://postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100' : _url711);
+        const _qName = _isBc ? '黑貓宅急便查詢' : (_isPo ? '中華郵政查詢' : '7-11 貨態查詢');
         const query711 = d70s.length > 0
-          ? `<a href="${_url711}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:8px;padding:7px;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:12.5px;border:1px solid #bbf7d0;border-radius:8px;text-decoration:none;">🔍 前往 7-11 貨態查詢</a>`
+          ? `<a href="${_qUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:8px;padding:7px;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:12.5px;border:1px solid #bbf7d0;border-radius:8px;text-decoration:none;">🔍 前往${_qName}</a>`
           : '';
         return `
           <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="font-size:13px;font-weight:800;color:#15803d;"><i class="bi bi-check-circle-fill"></i> 已完成揀貨</span>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+              <span style="font-size:13px;font-weight:800;color:#15803d;"><i class="bi bi-check-circle-fill"></i> 已完成揀貨${_c?`<span style="font-size:10.5px;font-weight:600;color:#6b7280;margin-left:6px;">${escHTML(_c)}</span>`:''}</span>
               ${pickedStr?`<span style="font-size:11px;color:#9ca3af;">${escHTML(pickedStr)}</span>`:''}
             </div>
             ${itemsHtml}
