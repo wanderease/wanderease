@@ -1415,7 +1415,72 @@
 
     // 交貨便分箱
     function _feCrossmartBoxFee(v){ if(v<=1000)return 60; if(v<=2000)return 70; if(v<=3000)return 80; if(v<=4000)return 90; return 100; }
-    function _feCalcCrossmart(val){
+    function _feCeilK(v){ return Math.ceil(Math.max(0,Number(v)||0)/1000)*1000; }   // 進位到千
+
+    // ★ 用「實際商品」裝箱（每箱報值上限 5000，商品不可分割）
+    //   之前是機械式切 5000（6800→5000+1800），但實際打包不可能這樣切，
+    //   造成前台報值與實際分箱對不上、收款有落差。改用實際商品湊箱。
+    //   單件 > 5000 → 自己一箱，報值仍以 5000 計（官方上限）
+    function _fePackBoxes(items){
+      const CAP = 5000;
+      // 1) 按「單件」展開（同品項多件可拆到不同箱）
+      const units = [];
+      (Array.isArray(items)?items:[]).forEach(function(it){
+        const qty = Math.max(1, Number(it.qty)||1);
+        const unit = Math.round((Number(it.amount)||0) / qty);   // 單價
+        for (let i=0;i<qty;i++) units.push({ name: it.name||'', value: unit });
+      });
+      if (units.length === 0) return { boxes:[], fee:60, hasOverItem:false };
+
+      // 2) 大到小排序（先放大的，比較容易湊滿）
+      units.sort(function(a,b){ return b.value - a.value; });
+
+      const boxes = [];
+      let hasOverItem = false;
+
+      units.forEach(function(u){
+        // 單件超過上限 → 自己一箱（報值仍以 5000 計）
+        if (u.value > CAP) {
+          hasOverItem = true;
+          boxes.push({ items:[u], sum:u.value, over:true });
+          return;
+        }
+        // 找「放得下、且放進去後最接近 5000」的箱（盡量湊滿）
+        let best = -1, bestAfter = -1;
+        for (let i=0;i<boxes.length;i++){
+          if (boxes[i].over) continue;                 // 超標箱不再放東西
+          const after = boxes[i].sum + u.value;
+          if (after > CAP) continue;                   // 放不下
+          if (after > bestAfter) { bestAfter = after; best = i; }
+        }
+        if (best >= 0) { boxes[best].items.push(u); boxes[best].sum = bestAfter; }
+        else boxes.push({ items:[u], sum:u.value, over:false });
+      });
+
+      // 3) 算每箱報值（進位到千，上限 5000）與運費
+      let fee = 0;
+      const out = boxes.map(function(b, i){
+        const declared = Math.min(CAP, _feCeilK(b.sum));
+        const bf = _feCrossmartBoxFee(declared);
+        fee += bf;
+        return {
+          boxNo: i+1,
+          value: declared,          // 報值（官方上限 5000）
+          goodsValue: b.sum,        // 實際商品總值
+          fee: bf,
+          over: !!b.over,           // 單件超過 5000（賠償上限提醒用）
+          items: b.items.map(function(x){ return { name:x.name, amount:x.value }; })
+        };
+      });
+      return { boxes: out, fee: fee, hasOverItem: hasOverItem };
+    }
+
+    // 相容舊呼叫：沒有商品明細時退回原本的機械切法
+    function _feCalcCrossmart(val, items){
+      if (Array.isArray(items) && items.length > 0) {
+        const r = _fePackBoxes(items);
+        if (r.boxes.length > 0) return { fee:r.fee, boxes:r.boxes, hasOverItem:r.hasOverItem, packed:true };
+      }
       let remain=Math.max(0,Math.round(val)); const boxes=[]; let fee=0;
       if(remain<=0){ boxes.push({value:0,fee:60}); return {fee:60,boxes:boxes}; }
       while(remain>0){ const v=Math.min(5000,remain); const bf=_feCrossmartBoxFee(v); boxes.push({value:v,fee:bf}); fee+=bf; remain-=v; }
@@ -1596,13 +1661,26 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        const c = rates.crossmart || _feCalcCrossmart(declared);
-        const boxesLi = c.boxes.map((b,i)=>`<li>第 ${i+1} 箱：報值 $${b.value} → 運費 <b>$${b.fee}</b></li>`).join('');
+        // ★ 用「實際商品」裝箱（商品不可分割），報值才與實際打包一致
+        const c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
+        // 完整顯示：每箱裝哪幾件、報值、運費
+        const boxesLi = c.boxes.map(function(b,i){
+          const _its = Array.isArray(b.items) && b.items.length>0
+            ? `<div style="font-size:11.5px;color:#6b7280;line-height:1.6;margin:2px 0 0 4px;">${b.items.map(function(it){ return '・'+escHTML(it.name||'')+' <span style="color:#9ca3af;">$'+it.amount+'</span>'; }).join('<br>')}</div>`
+            : '';
+          const _over = b.over
+            ? `<div style="font-size:11px;color:#b45309;margin:3px 0 0 4px;line-height:1.5;">⚠️ 此商品單件價值超過 $5,000，官方僅接受報值 $5,000；如發生遺失最高賠償 $5,000（最終仍由貨運方判定）。有疑慮請選擇其他配送方式。</div>`
+            : '';
+          return `<li style="margin-bottom:6px;">
+            <b>第 ${b.boxNo||(i+1)} 箱</b>：報值 <b>$${b.value}</b> → 運費 <b>$${b.fee}</b>
+            ${_its}${_over}
+          </li>`;
+        }).join('');
         info = `
           <div class="sd-block sd-fee">
-            <div class="sd-title">💰 運費計算</div>
+            <div class="sd-title">💰 運費計算${c.packed?'（依實際商品分箱）':''}</div>
             <ul class="sd-list">
-              <li>本次包裹價值 <b>$${declared}</b>${c.boxes.length>1?`，需分 ${c.boxes.length} 箱寄出`:''}</li>
+              <li>本次包裹價值 <b>$${declared}</b>${c.boxes.length>1?`，需分 <b>${c.boxes.length}</b> 箱寄出`:''}</li>
               ${boxesLi}
               <li class="sd-total">運費合計 <b>$${c.fee}</b></li>
             </ul>
@@ -1865,7 +1943,26 @@
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
       const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
-      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: isMyshipLink });
+      // ★ 交貨便：把前台算好的「實際商品分箱」一起送出，後台直接照這個打包（報值與收款一致）
+      let _boxDetails = null;
+      if (choice === 'crossmart') {
+        try {
+          const _pk = _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
+          if (_pk && _pk.packed && Array.isArray(_pk.boxes) && _pk.boxes.length > 0) {
+            _boxDetails = _pk.boxes.map(function(b){
+              return {
+                boxNo: b.boxNo,
+                declaredValue: b.value,      // 報值（上限 5000）
+                goodsValue: b.goodsValue,    // 實際商品總值
+                fee: b.fee,
+                over: !!b.over,
+                items: (b.items||[]).map(function(it){ return { name: it.name, amount: it.amount }; })
+              };
+            });
+          }
+        } catch(e) {}
+      }
+      const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: isMyshipLink, boxDetails: _boxDetails });
 
       // 🔒 上鎖（所有驗證都通過之後才鎖，這樣驗證失敗時按鈕不會卡住）
       const _btnEl = _btn || document.querySelector(`#shipOptDetail-${choice} .shipf-submit-btn`);
