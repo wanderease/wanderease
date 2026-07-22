@@ -1158,7 +1158,7 @@
           document.getElementById('ordFrameTitle').innerText = unpaid > 0 ? `${unpaid} 張訂單尚未匯款` : (shipping > 0 ? `${shipping} 張訂單待出貨` : `已完成 ${done} 張訂單`);
           document.getElementById('ordStatsRow').innerHTML = `
             <div class="order-stat-cell stat-clickable ${unpaid>0?'is-alert':''}" data-fstatus="unpaid" onclick="filterOrdersByStatus('unpaid')"><div class="n">${unpaid}</div><div class="l">未匯款</div></div>
-            <div class="order-stat-cell stat-clickable" data-fstatus="shipping" onclick="filterOrdersByStatus('shipping')"><div class="n">${shipping}</div><div class="l">待出貨</div></div>
+            <div class="order-stat-cell stat-clickable" data-fstatus="shipping" onclick="switchPageTab(1)" title="前往出貨頁"><div class="n">${shipping}</div><div class="l">待出貨 <i class="bi bi-chevron-right" style="font-size:9px;opacity:.6;"></i></div></div>
             <div class="order-stat-cell stat-clickable" data-fstatus="done" onclick="filterOrdersByStatus('done')"><div class="n">${done}</div><div class="l">已完成</div></div>
           `;
           // 渲染後處理「查看完整訂單列表」按鈕的有無
