@@ -516,6 +516,7 @@
                 <span class="frame-tag"><i class="bi bi-truck"></i> 近期將出貨</span>
                 <span class="frame-count" id="shipFrameCount"></span>
               </div>
+              <div id="shipOrderPeriod" style="display:none;"></div>
               <div class="ship-info-row" id="shipInfoRow"></div>
               <div class="ship-series-list" id="shipSeriesList"></div>
               <div id="shipModuleArea"></div>
@@ -1217,6 +1218,20 @@
           <div class="ship-cell"><div class="lbl">按件數保留的尾款</div><div class="val">$${totalAmount}</div></div>
           <div class="ship-cell"><div class="lbl">本次包裹價值</div><div class="val">$${_pkgVal}</div></div>
         `;
+        // 🆕 本批次出貨下單區間（後台設定，過期仍可下單）
+        (function(){
+          const _sm = shipData.shipModule || {};
+          const _f = _sm.orderFrom || '', _t = _sm.orderTo || '';
+          const _el = document.getElementById('shipOrderPeriod');
+          if (!_el) return;
+          if (!_f && !_t) { _el.style.display = 'none'; _el.innerHTML = ''; return; }
+          const _fmt = (s)=>String(s||'').replace(/-/g,'/');
+          _el.style.display = '';
+          _el.innerHTML = `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:12px;color:#1e40af;line-height:1.6;">
+            <b><i class="bi bi-calendar-range"></i> 本批次出貨下單時間：${escHTML(_fmt(_f)||'—')} 至 ${escHTML(_fmt(_t)||'—')}</b><br>
+            <span style="font-size:11.5px;color:#3b5bdb;">若錯過本批次下單，將安排下一次出貨</span>
+          </div>`;
+        })();
         document.getElementById('shipSeriesList').innerHTML = series.map(s => {
           const itemsHtml = (Array.isArray(s.items) ? s.items : []).map(it =>
             `<div class="sc-item-row" style="display:flex;justify-content:space-between;gap:8px;"><span>• ${escHTML(it.name||'')} ×${it.qty||1}</span>${(it.amount!=null&&it.amount>0)?`<span style="color:#6b7280;white-space:nowrap;">$${it.amount}</span>`:''}</div>`
@@ -1503,6 +1518,28 @@
       return { boxes: out, fee: fee, hasOverItem: hasOverItem };
     }
 
+    // 🆕 用後台預先分好的分箱（Set 手動分箱）→ 轉成前台顯示格式
+    //    itemKeys 是後台明細 recId，前台沒有；用金額對照品名顯示（盡量），對不上就只顯示報值
+    function _feBoxesFromAdmin(adminBd, items){
+      let fee = 0;
+      const boxes = adminBd.map(function(b, i){
+        const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue) || 0));
+        const bf = _feCrossmartBoxFee(declared);
+        fee += bf;
+        // 品項：後台有 itemKeys 但前台無法對應 recId，顯示金額即可（Set 內容本就不明）
+        return {
+          boxNo: b.boxNo || (i+1),
+          value: declared,
+          goodsValue: Number(b.goodsValue) || 0,
+          fee: bf,
+          over: declared >= 5000 && (Number(b.goodsValue) || 0) > 5000,
+          fromAdmin: !!b.fromManual,
+          items: []   // Set 分箱內容不明，不逐項顯示
+        };
+      });
+      return { fee: fee, boxes: boxes, packed: true, fromAdmin: true };
+    }
+
     // 相容舊呼叫：沒有商品明細時退回原本的機械切法
     function _feCalcCrossmart(val, items){
       if (Array.isArray(items) && items.length > 0) {
@@ -1538,9 +1575,73 @@
         area.innerHTML = renderShipConfirmed(mod, state);
         return;
       }
+      // 🆕 已選「這次不出貨」→ 顯示狀態卡（可取消改回下單）
+      if(state && state.skipBatch){
+        area.innerHTML = renderShipSkipped(mod, state);
+        return;
+      }
       // 未確認：顯示選擇介面
-      area.innerHTML = renderShipChooser(mod);
+      area.innerHTML = renderShipChooser(mod) + renderSkipOption();
     }
+
+    // 🆕「這次不出貨」選項（放在配送選擇下方）
+    function renderSkipOption(){
+      return `<div style="margin-top:10px;padding:10px 12px;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;">
+        <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12.5px;color:#4b5563;">
+          <input type="checkbox" id="shipSkipChk" onchange="feToggleSkipBatch(this)" style="margin-top:2px;">
+          <span><b style="color:#b45309;">這次不出貨</b>，想等之後的商品一起寄</span>
+        </label>
+      </div>`;
+    }
+
+    // 🆕 已選擇不出貨的狀態卡
+    function renderShipSkipped(mod, state){
+      const _tw = (iso)=>{
+        try{ const dt=new Date(iso); if(isNaN(dt.getTime())) return String(iso||'').replace('T',' ').slice(0,16);
+          const tw=new Date(dt.getTime()+8*3600*1000); const p=n=>String(n).padStart(2,'0');
+          return `${tw.getUTCFullYear()}-${p(tw.getUTCMonth()+1)}-${p(tw.getUTCDate())} ${p(tw.getUTCHours())}:${p(tw.getUTCMinutes())}`;
+        }catch(e){ return String(iso||''); }
+      };
+      return `<div class="details-box shadow-sm mb-3" style="border:2px solid #fbbf24;background:#fffbeb;">
+        <div style="font-size:14px;font-weight:800;color:#b45309;margin-bottom:6px;">
+          <i class="bi bi-pause-circle-fill"></i> 本批次選擇不出貨
+        </div>
+        <div style="font-size:12.5px;color:#78350f;line-height:1.7;">
+          您已選擇這次不出貨，商品會繼續為您保管，等下次出貨批次再一起安排。
+        </div>
+        <div style="font-size:11px;color:#a16207;margin-top:6px;">
+          設定時間：${escHTML(_tw(state.skipBatch.at||''))}
+        </div>
+        <div style="margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:8px;font-size:11.5px;color:#92400e;line-height:1.6;">
+          ⚠️ 為維護彼此的權益與商品的完整性，已到貨的商品只替各位保管 45 天。若希望等待一起寄的商品會超過 45 天，還請先行下單，讓我們先把商品安全送給您。
+        </div>
+        <button onclick="feToggleSkipBatch(null, false)" style="width:100%;margin-top:10px;padding:9px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:800;font-size:13px;cursor:pointer;">
+          ↩️ 取消，我要這次就出貨
+        </button>
+      </div>`;
+    }
+
+    // 🆕 切換「這次不出貨」
+    window.feToggleSkipBatch = function(chkEl, forceVal){
+      const skip = (forceVal !== undefined) ? forceVal : (chkEl ? chkEl.checked : false);
+      if (skip) {
+        const ok = confirm('為維護彼此的權益與商品的完整性，已到貨的商品只替各位保管 45 天。\n\n若希望等待一起寄的商品會超過 45 天，還請先行下單，讓我們先把商品安全送給您。\n\n確定這次不出貨嗎？');
+        if (!ok) { if (chkEl) chkEl.checked = false; return; }
+      }
+      const area = document.getElementById('shipModuleArea');
+      if (area) area.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280;font-size:13px;">處理中...</div>';
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: 'customerSkipBatch', payload: JSON.stringify({ lineUid: currentLineUid, skip: skip }) })
+      })
+      .then(r=>r.json())
+      .then(r=>{
+        if (r.status === 'SUCCESS') { location.reload(); }
+        else { alert(r.message || '設定失敗'); location.reload(); }
+      })
+      .catch(e=>{ alert('連線失敗：' + e.message); location.reload(); });
+    };
 
     // 階段1：選擇介面
     function renderShipChooser(mod){
@@ -1689,8 +1790,14 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        // ★ 用「實際商品」裝箱（商品不可分割），報值才與實際打包一致
-        const c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
+        // ★ 後台若已預先分好（Set 手動分箱）→ 用後台的；否則用實際商品自動裝箱
+        const _adminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
+        let c;
+        if (_adminBd) {
+          c = _feBoxesFromAdmin(_adminBd, window._shipItemsForCheck || []);
+        } else {
+          c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
+        }
         // 完整顯示：每箱裝哪幾件、報值、運費
         const boxesLi = c.boxes.map(function(b,i){
           const _its = Array.isArray(b.items) && b.items.length>0
@@ -1975,7 +2082,9 @@
       let _boxDetails = null;
       if (choice === 'crossmart') {
         try {
-          const _pk = _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
+          // ★ 後台已分好就用後台的，否則自動算
+          const _adminBd2 = (window._shipModuleData && Array.isArray(window._shipModuleData.adminBoxDetails) && window._shipModuleData.adminBoxDetails.length > 0) ? window._shipModuleData.adminBoxDetails : null;
+          const _pk = _adminBd2 ? _feBoxesFromAdmin(_adminBd2, window._shipItemsForCheck || []) : _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
           if (_pk && _pk.packed && Array.isArray(_pk.boxes) && _pk.boxes.length > 0) {
             _boxDetails = _pk.boxes.map(function(b){
               return {
