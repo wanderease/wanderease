@@ -2163,6 +2163,18 @@
       // ★★★ 賣貨便：完全不驗證、不讀收件欄位，只帶空 recipient ★★★
       if(isMyshipLink){
         recipient = {};   // 下單後從賣貨便訂單資訊檔回填
+        // 🆕 賣貨便分箱警示：送出前先提醒（多箱才提醒，單箱跳過）
+        const _smd = window._shipModuleData || {};
+        const _smRates = _smd.rates || {};
+        const _bcMyship = (_smRates.boxCount && _smRates.boxCount.myship) ? Number(_smRates.boxCount.myship) : 0;
+        const _bcManual = _smRates.manualBoxes ? Number(_smRates.manualBoxes) : 0;
+        const _bcAdmin = (Array.isArray(_smd.adminBoxDetails) && _smd.adminBoxDetails.length > 0) ? _smd.adminBoxDetails.length : 0;
+        const _myBoxN = Math.max(_bcMyship, _bcManual, _bcAdmin, 1);
+        console.log('[賣貨便分箱警示] boxCount.myship=' + _bcMyship + ' manualBoxes=' + _bcManual + ' adminBoxes=' + _bcAdmin + ' → 最終=' + _myBoxN);
+        if(_myBoxN > 1){
+          const _goOn = await feConfirm('您的包裹需分成 ' + _myBoxN + ' 箱寄出。\n\n若您在賣貨便建立的名稱有 2 個以上，代表要分箱出貨，請務必分開下單，每一箱各建立一筆訂單。\n\n確認了解後，即可前往下單。', {type:'warning', title:'⚠️ 請注意分箱', okText:'我了解，前往下單', cancelText:'返回'});
+          if(!_goOn) return;   // 客人按返回 → 不送出
+        }
       } else if(choice==='crossmart'){
         // 交貨便（超商取貨）：必填店號店名收件人手機
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
@@ -2260,19 +2272,9 @@
             console.log('[shipChoice] 重複送出，已忽略');
           } else if(choice==='myship'){
             // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
+            //   （分箱警示已在送出前提醒過，這裡直接跳轉）
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
-            // 🆕 分箱警示：賣貨便若需分箱（多箱），提醒客人分開下單
-            const _smd = window._shipModuleData || {};
-            const _smRates = _smd.rates || {};
-            // 賣貨便箱數：優先用 rates.boxCount.myship，否則用後台實際箱數
-            const _myBoxN = (_smRates.boxCount && _smRates.boxCount.myship) ? _smRates.boxCount.myship
-                          : (Array.isArray(_smd.adminBoxDetails) && _smd.adminBoxDetails.length > 0 ? _smd.adminBoxDetails.length : 1);
             if(_murl){
-              if(_myBoxN > 1){
-                await feAlert('您的包裹需分成 ' + _myBoxN + ' 箱寄出。\n\n若您在賣貨便建立的名稱有 2 個以上，代表要分箱出貨，請務必分開下單，每箱各建立一筆訂單。', {type:'warning', title:'⚠️ 請注意分箱', btnText:'我了解，前往下單'});
-              } else {
-                await feAlert('即將前往賣貨便下單頁面，請選擇取件門市並完成下單。', {type:'success', title:'✅ 已送出', btnText:'前往下單'});
-              }
               window.open(_murl, '_blank');
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
