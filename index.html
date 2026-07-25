@@ -1548,19 +1548,20 @@
       return remain;
     }
 
-    // 🆕 交貨便部分固定：固定箱（照後台報值）+ 其他品項按 $5000 自動拆
+    // 🆕 交貨便部分固定：只有 isFixed 的箱照後台報值 + 其他品項按 $5000 自動拆
     function _feCrossmartPartial(adminBd, items){
       let fee = 0; const boxes = [];
-      // 固定箱
-      (adminBd||[]).forEach(function(b,i){
+      const fixedBoxes = (adminBd||[]).filter(function(b){ return b.isFixed; });   // ★ 只取固定箱
+      // 固定箱：照後台報值
+      fixedBoxes.forEach(function(b,i){
         const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue)||0));
         const bf = _feCrossmartBoxFee(declared);
         fee += bf;
         boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
           over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:[] });
       });
-      // 其他品項自動拆
-      const remain = _feRemoveFixedItems(items, adminBd);
+      // 其他品項（扣掉固定箱裝的）→ 按 $5000 自動拆
+      const remain = _feRemoveFixedItems(items, fixedBoxes);
       if (remain.length > 0) {
         const auto = _fePackBoxes(remain);
         (auto.boxes||[]).forEach(function(b){ boxes.push(Object.assign({fromAdmin:false}, b)); fee += (b.fee||0); });
@@ -1840,19 +1841,16 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        // ★ 三種情況：
-        //   部分固定(adminPartialFixed) → 固定箱照後台 + 其他按$5000自動拆
-        //   全固定(adminBoxDetails 無 partialFixed) → 全照後台
-        //   沒設定 → 全自動算
+        // ★ 交貨便邏輯（交貨便無視實際箱數，只看金額$5000上限）：
+        //   有固定箱(partialFixed) → 固定箱照後台報值 + 非固定品項按$5000拆
+        //   全一般箱 / 沒設定 → 全部品項按$5000自動拆（無視後台分的箱數）
         const _adminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
-        const _partial = !!(mod && mod.adminPartialFixed);
+        const _hasFixed = _adminBd && _adminBd.some(function(b){ return b.isFixed; });
         let c;
-        if (_adminBd && _partial) {
-          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);
-        } else if (_adminBd) {
-          c = _feBoxesFromAdmin(_adminBd, window._shipItemsForCheck || []);
+        if (_hasFixed) {
+          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);   // 固定箱照報值+其他$5000拆
         } else {
-          c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
+          c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);      // 全按$5000拆（無視後台箱）
         }
         // 完整顯示：每箱裝哪幾件、報值、運費
         const boxesLi = c.boxes.map(function(b,i){
