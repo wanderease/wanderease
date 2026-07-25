@@ -586,6 +586,59 @@
     let wlInitialData={groups:[],cancelled:[]};
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+
+    // 🆕 漂亮彈窗（取代醜的原生 alert / confirm）
+    //   type: 'success'(綠) / 'warning'(橘) / 'danger'(紅) / 'info'(藍紫)
+    function feAlert(message, opts){
+      opts = opts || {};
+      const type = opts.type || 'info';
+      const title = opts.title || ({success:'✅ 完成', warning:'⚠️ 提醒', danger:'❗ 注意', info:'💬 訊息'}[type]);
+      const btnText = opts.btnText || '我知道了';
+      const headBg = ({success:'#16a34a', warning:'#f59e0b', danger:'#dc2626', info:'#7c3aed'}[type]);
+      const btnBg = ({success:'#16a34a', warning:'#f59e0b', danger:'#dc2626', info:'#7c3aed'}[type]);
+      return new Promise(function(resolve){
+        const bg = document.createElement('div');
+        bg.className = 'wl-modal-bg';
+        bg.style.zIndex = 3000;
+        bg.innerHTML = `
+          <div class="wl-modal-card" style="max-width:360px;">
+            <div class="wl-modal-head" style="background:${headBg};color:#fff;">${escHTML(title)}</div>
+            <div class="wl-modal-body" style="white-space:pre-wrap;text-align:center;">${escHTML(message)}</div>
+            <div class="wl-modal-actions">
+              <button class="wl-modal-btn" style="background:${btnBg};color:#fff;">${escHTML(btnText)}</button>
+            </div>
+          </div>`;
+        bg.querySelector('button').onclick = function(){ bg.remove(); resolve(true); };
+        document.body.appendChild(bg);
+      });
+    }
+
+    function feConfirm(message, opts){
+      opts = opts || {};
+      const type = opts.type || 'warning';
+      const title = opts.title || '請確認';
+      const okText = opts.okText || '確定';
+      const cancelText = opts.cancelText || '取消';
+      const headBg = ({success:'#16a34a', warning:'#f59e0b', danger:'#dc2626', info:'#7c3aed'}[type]);
+      const okBg = ({success:'#16a34a', warning:'#f59e0b', danger:'#dc2626', info:'#7c3aed'}[type]);
+      return new Promise(function(resolve){
+        const bg = document.createElement('div');
+        bg.className = 'wl-modal-bg';
+        bg.style.zIndex = 3000;
+        bg.innerHTML = `
+          <div class="wl-modal-card" style="max-width:380px;">
+            <div class="wl-modal-head" style="background:${headBg};color:#fff;">${escHTML(title)}</div>
+            <div class="wl-modal-body" style="white-space:pre-wrap;">${escHTML(message)}</div>
+            <div class="wl-modal-actions">
+              <button class="wl-modal-btn wl-modal-btn-secondary" data-act="cancel">${escHTML(cancelText)}</button>
+              <button class="wl-modal-btn" data-act="ok" style="background:${okBg};color:#fff;">${escHTML(okText)}</button>
+            </div>
+          </div>`;
+        bg.querySelector('[data-act="cancel"]').onclick = function(){ bg.remove(); resolve(false); };
+        bg.querySelector('[data-act="ok"]').onclick = function(){ bg.remove(); resolve(true); };
+        document.body.appendChild(bg);
+      });
+    }
     function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
     // ===== 品牌化通知元件（取代 alert/confirm）=====
     function weToast(msg, type){
@@ -1636,13 +1689,13 @@
         area.innerHTML = renderShipSkipped(mod, state);
         return;
       }
-      // 未確認：顯示選擇介面
-      area.innerHTML = renderShipChooser(mod) + renderSkipOption();
+      // 未確認：顯示選擇介面（不出貨選項已移到 renderShipChooser 裡的「選擇配送方式」之上）
+      area.innerHTML = renderShipChooser(mod);
     }
 
-    // 🆕「這次不出貨」選項（放在配送選擇下方）
+    // 🆕「這次不出貨」選項（放在配送選擇之上）
     function renderSkipOption(){
-      return `<div style="margin-top:10px;padding:10px 12px;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;">
+      return `<div style="margin-bottom:10px;padding:10px 12px;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;">
         <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12.5px;color:#4b5563;">
           <input type="checkbox" id="shipSkipChk" onchange="feToggleSkipBatch(this)" style="margin-top:2px;">
           <span><b style="color:#b45309;">這次不出貨</b>，想等之後的商品一起寄</span>
@@ -1678,10 +1731,10 @@
     }
 
     // 🆕 切換「這次不出貨」
-    window.feToggleSkipBatch = function(chkEl, forceVal){
+    window.feToggleSkipBatch = async function(chkEl, forceVal){
       const skip = (forceVal !== undefined) ? forceVal : (chkEl ? chkEl.checked : false);
       if (skip) {
-        const ok = confirm('為維護彼此的權益與商品的完整性，已到貨的商品只替各位保管 45 天。\n\n若希望等待一起寄的商品會超過 45 天，還請先行下單，讓我們先把商品安全送給您。\n\n確定這次不出貨嗎？');
+        const ok = await feConfirm('為維護彼此的權益與商品的完整性，已到貨的商品只替各位保管 45 天。\n\n若希望等待一起寄的商品會超過 45 天，還請先行下單，讓我們先把商品安全送給您。\n\n確定這次不出貨嗎？', {type:'warning', title:'📦 確認這次不出貨', okText:'確定不出貨', cancelText:'取消'});
         if (!ok) { if (chkEl) chkEl.checked = false; return; }
       }
       const area = document.getElementById('shipModuleArea');
@@ -1725,28 +1778,18 @@
         h += `<div style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#6b7280;">📦 包裹尺寸整理中，黑貓/郵局運費待客服設定包裹尺寸區間後顯示；您仍可先選擇賣貨便或交貨便。</div>`;
       }
 
-      // 🆕 分箱提示（後台判斷商品太多，需分成多箱寄出）
-      //    賠償按「箱」計算，所以每箱都會各自報值，包裹價值平均分配到各箱
+      // 🆕 分箱提示（後台判斷商品太多，需分成多箱寄出）— 只顯示箱數，詳細報值在下方選項展開時已列
       const _mb = Number(rates.manualBoxes) || 1;
       if (_mb > 1) {
-        const _per = Math.floor(declared / _mb);
-        const _first = declared - _per * (_mb - 1);   // 餘數給第一箱
         h += `<div style="border:2px solid #f97316;background:#fff7ed;border-radius:12px;padding:10px 14px;margin-bottom:10px;">
-          <div style="font-weight:800;color:#c2410c;font-size:13.5px;margin-bottom:5px;">
-            📦📦 因商品較多，您的包裹將分 ${_mb} 箱寄出
-          </div>
-          <div style="font-size:12px;color:#9a3412;line-height:1.7;">
-            包裹總價值 <b>$${declared}</b> 會平均分配到 ${_mb} 箱，<b>每一箱都會各自報值</b>，
-            確保萬一發生遺失或損毀時，每箱都在賠償範圍內。<br>
-            <span style="color:#7c2d12;">
-              每箱申報價值約 $${_first === _per ? _per : `${_per}～${_first}`}
-            </span><br>
-            下方運費已包含 ${_mb} 箱的費用。
+          <div style="font-weight:800;color:#c2410c;font-size:13.5px;">
+            📦 因商品較多，您的包裹將分 ${_mb} 箱寄出
           </div>
         </div>`;
       }
 
       // 選項
+      h += renderSkipOption();   // 🆕 「這次不出貨」移到配送方式選擇之上
       h += `<div style="font-weight:700;color:#374151;margin:6px 0;font-size:13.5px;">選擇台灣端配送方式</div>`;
       h += `<div id="shipOptList">`;
       // 🆕 箱數標註（各貨運的箱數可能不同：交貨便會因金額額外拆箱）
@@ -2123,7 +2166,7 @@
       } else if(choice==='crossmart'){
         // 交貨便（超商取貨）：必填店號店名收件人手機
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
-        if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ alert('請完整填寫店號、店名、收件人與手機'); return; }
+        if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ await feAlert('請完整填寫店號、店名、收件人與手機', {type:'warning'}); return; }
         // 🆕 交貨便：有單件商品 > $5000 → 提醒賠償上限（客人可繼續或返回重選）
         const _items = window._shipItemsForCheck || [];
         const _highItems = _items.filter(function(it){ const _unit = (it.qty>0)? (it.amount/it.qty) : it.amount; return _unit > 5000; });
@@ -2137,13 +2180,13 @@
       } else {
         // 黑貓／郵局（宅配）：必填郵遞區號地址收件人手機
         recipient = { zip:val(`shipf-zip-${choice}`), address:val(`shipf-address-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
-        if(!recipient.zip||!recipient.address||!recipient.name||!recipient.phone){ alert('請完整填寫郵遞區號、地址、收件人與手機'); return; }
+        if(!recipient.zip||!recipient.address||!recipient.name||!recipient.phone){ await feAlert('請完整填寫郵遞區號、地址、收件人與手機', {type:'warning'}); return; }
       }
       let unavailable = null;
       const uav = document.getElementById(`shipf-unavail-${choice}`);
       if(uav && uav.checked){
         const from=val(`shipf-from-${choice}`), to=val(`shipf-to-${choice}`);
-        if(!from||!to){ alert('已勾選無法收貨期間，請填寫起訖日期'); return; }
+        if(!from||!to){ await feAlert('已勾選無法收貨期間，請填寫起訖日期', {type:'warning'}); return; }
         unavailable = { from:from, to:to };
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
@@ -2218,16 +2261,22 @@
           } else if(choice==='myship'){
             // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
+            // 🆕 分箱警示：賣貨便若需分箱（多箱），提醒客人分開下單
+            const _myBoxN = (rates && rates.boxCount && rates.boxCount.myship) ? rates.boxCount.myship : ((mod && Array.isArray(mod.adminBoxDetails)) ? mod.adminBoxDetails.length : 1);
             if(_murl){
-              alert('✅ 已送出！即將前往賣貨便下單頁面，請選擇取件門市並完成下單。');
+              if(_myBoxN > 1){
+                await feAlert('您的包裹需分成 ' + _myBoxN + ' 箱寄出。\n\n若您在賣貨便建立的名稱有 2 個以上，代表要分箱出貨，請務必分開下單，每箱各建立一筆訂單。', {type:'warning', title:'⚠️ 請注意分箱', btnText:'我了解，前往下單'});
+              } else {
+                await feAlert('即將前往賣貨便下單頁面，請選擇取件門市並完成下單。', {type:'success', title:'✅ 已送出', btnText:'前往下單'});
+              }
               window.open(_murl, '_blank');
             } else {
-              alert('✅ 已送出！賣貨便下單連結尚未提供，我們會盡快通知您。');
+              await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
           } else if(dd.needPay){
             feShowPayModal(choice, dd, mod.shipBankInfo || dd.shipBankInfo || '');
           } else {
-            alert('✅ 已送出！剩餘費用於取貨時付款。');
+            await feAlert('剩餘費用於取貨時付款。', {type:'success', title:'✅ 已送出'});
           }
           _ok = true;
           renderShipModule(mod);   // 成功 → 整區重繪，按鈕會消失，不需還原
