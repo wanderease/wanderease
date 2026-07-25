@@ -1520,13 +1520,18 @@
 
     // 🆕 用後台預先分好的分箱（Set 手動分箱）→ 轉成前台顯示格式
     //    itemKeys 是後台明細 recId，前台沒有；用金額對照品名顯示（盡量），對不上就只顯示報值
-    // 🆕 部分固定：用「品名+數量」從自動池扣掉固定箱已裝的品項，剩下的交給前台自動分
+    // 🆕 部分固定：用「品名（正規化）+數量」從自動池扣掉固定箱已裝的品項
     function _feRemoveFixedItems(items, adminBd){
-      // 統計固定箱已裝的品項數量（依品名）
+      // 正規化品名：去空格、去頭尾標記、小寫（前後台品名格式可能有差）
+      const _norm = function(s){
+        return String(s||'').replace(/^\s*[\[\uFF3B][^\[\]\uFF3B\uFF3D]*[\]\uFF3D]\s*/,'')
+          .replace(/\s+/g,'').toLowerCase();
+      };
+      // 統計固定箱已裝的品項數量（依正規化品名）
       const used = {};
       (adminBd||[]).forEach(function(b){
         (b.itemNames||[]).forEach(function(it){
-          const nm = String((typeof it==='string'?it:(it&&it.name))||'').trim();
+          const nm = _norm(typeof it==='string'?it:(it&&it.name));
           const q = (typeof it==='object' && it && it.qty!=null) ? Number(it.qty)||1 : 1;
           if (nm) used[nm] = (used[nm]||0) + q;
         });
@@ -1534,16 +1539,14 @@
       // 從 items 扣除
       const remain = [];
       (items||[]).forEach(function(it){
-        const nm = String(it.name||'').trim();
+        const nm = _norm(it.name);
         let q = Math.max(1, Number(it.qty)||1);
+        const unit = Math.round((Number(it.amount)||0) / q);
         if (used[nm] > 0) {
           const take = Math.min(used[nm], q);
           used[nm] -= take; q -= take;
         }
-        if (q > 0) {
-          const unit = Math.round((Number(it.amount)||0) / Math.max(1,Number(it.qty)||1));
-          remain.push({ name: nm, amount: unit * q, qty: q });
-        }
+        if (q > 0) remain.push({ name: it.name, amount: unit * q, qty: q });
       });
       return remain;
     }
@@ -1552,13 +1555,16 @@
     function _feCrossmartPartial(adminBd, items){
       let fee = 0; const boxes = [];
       const fixedBoxes = (adminBd||[]).filter(function(b){ return b.isFixed; });   // ★ 只取固定箱
-      // 固定箱：照後台報值
+      // 固定箱：照後台報值，明細用 itemNames（含 name/amount）
       fixedBoxes.forEach(function(b,i){
         const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue)||0));
         const bf = _feCrossmartBoxFee(declared);
         fee += bf;
+        const _its = (b.itemNames||[]).map(function(it){
+          return { name: (typeof it==='string'?it:(it&&it.name))||'', amount: (typeof it==='object'&&it)?(Number(it.amount)||0):0 };
+        });
         boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
-          over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:[] });
+          over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:_its });
       });
       // 其他品項（扣掉固定箱裝的）→ 按 $5000 自動拆
       const remain = _feRemoveFixedItems(items, fixedBoxes);
