@@ -1520,6 +1520,55 @@
 
     // 🆕 用後台預先分好的分箱（Set 手動分箱）→ 轉成前台顯示格式
     //    itemKeys 是後台明細 recId，前台沒有；用金額對照品名顯示（盡量），對不上就只顯示報值
+    // 🆕 部分固定：用「品名+數量」從自動池扣掉固定箱已裝的品項，剩下的交給前台自動分
+    function _feRemoveFixedItems(items, adminBd){
+      // 統計固定箱已裝的品項數量（依品名）
+      const used = {};
+      (adminBd||[]).forEach(function(b){
+        (b.itemNames||[]).forEach(function(it){
+          const nm = String((typeof it==='string'?it:(it&&it.name))||'').trim();
+          const q = (typeof it==='object' && it && it.qty!=null) ? Number(it.qty)||1 : 1;
+          if (nm) used[nm] = (used[nm]||0) + q;
+        });
+      });
+      // 從 items 扣除
+      const remain = [];
+      (items||[]).forEach(function(it){
+        const nm = String(it.name||'').trim();
+        let q = Math.max(1, Number(it.qty)||1);
+        if (used[nm] > 0) {
+          const take = Math.min(used[nm], q);
+          used[nm] -= take; q -= take;
+        }
+        if (q > 0) {
+          const unit = Math.round((Number(it.amount)||0) / Math.max(1,Number(it.qty)||1));
+          remain.push({ name: nm, amount: unit * q, qty: q });
+        }
+      });
+      return remain;
+    }
+
+    // 🆕 交貨便部分固定：固定箱（照後台報值）+ 其他品項按 $5000 自動拆
+    function _feCrossmartPartial(adminBd, items){
+      let fee = 0; const boxes = [];
+      // 固定箱
+      (adminBd||[]).forEach(function(b,i){
+        const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue)||0));
+        const bf = _feCrossmartBoxFee(declared);
+        fee += bf;
+        boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
+          over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:[] });
+      });
+      // 其他品項自動拆
+      const remain = _feRemoveFixedItems(items, adminBd);
+      if (remain.length > 0) {
+        const auto = _fePackBoxes(remain);
+        (auto.boxes||[]).forEach(function(b){ boxes.push(Object.assign({fromAdmin:false}, b)); fee += (b.fee||0); });
+      }
+      boxes.forEach(function(b,i){ b.boxNo = i+1; });
+      return { fee:fee, boxes:boxes, packed:true, fromAdmin:true, partial:true };
+    }
+
     function _feBoxesFromAdmin(adminBd, items){
       let fee = 0;
       const boxes = adminBd.map(function(b, i){
@@ -1791,10 +1840,16 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        // ★ 後台若已預先分好（Set 手動分箱）→ 用後台的；否則用實際商品自動裝箱
+        // ★ 三種情況：
+        //   部分固定(adminPartialFixed) → 固定箱照後台 + 其他按$5000自動拆
+        //   全固定(adminBoxDetails 無 partialFixed) → 全照後台
+        //   沒設定 → 全自動算
         const _adminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
+        const _partial = !!(mod && mod.adminPartialFixed);
         let c;
-        if (_adminBd) {
+        if (_adminBd && _partial) {
+          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);
+        } else if (_adminBd) {
           c = _feBoxesFromAdmin(_adminBd, window._shipItemsForCheck || []);
         } else {
           c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
