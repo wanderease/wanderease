@@ -1752,10 +1752,20 @@
       // 🆕 箱數標註（各貨運的箱數可能不同：交貨便會因金額額外拆箱）
       const _bc = rates.boxCount || {};
       const _bTag = function(n){ return (Number(n)||1) > 1 ? ` · ${n} 箱` : ''; };
-      const _crossN = (rates.crossmart && rates.crossmart.boxes) ? rates.crossmart.boxes.length : _mb;
+      // ★ 交貨便箱數/運費：用跟「點開明細」同一套計算（部分固定 or 純金額拆），確保選項列與明細一致
+      const _cvsAdminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
+      const _cvsHasFixed = _cvsAdminBd && _cvsAdminBd.some(function(b){ return b.isFixed; });
+      let _cvsCalc;
+      if (_cvsHasFixed) {
+        _cvsCalc = _feCrossmartPartial(_cvsAdminBd, window._shipItemsForCheck || []);
+      } else {
+        _cvsCalc = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
+      }
+      const _crossN = (_cvsCalc && _cvsCalc.boxes) ? _cvsCalc.boxes.length : ((rates.crossmart && rates.crossmart.boxes) ? rates.crossmart.boxes.length : _mb);
+      const _crossFee = (_cvsCalc && _cvsCalc.fee != null) ? _cvsCalc.fee : (rates.crossmart ? rates.crossmart.fee : '--');
 
       h += _feOptRow('myship', `賣貨便${_bTag(_bc.myship || _mb)}`, `$${rates.myship?rates.myship.fee:38}`, true);
-      h += _feOptRow('crossmart', `7-11 交貨便${_bTag(_crossN)}`, `$${rates.crossmart?rates.crossmart.fee:'--'}`, true);
+      h += _feOptRow('crossmart', `7-11 交貨便${_bTag(_crossN)}`, `$${_crossFee}`, true);
       const bcAvail = rates.blackcat && rates.blackcat.available;
       h += _feOptRow('blackcat', `黑貓宅急便${_bTag(_bc.blackcat || _mb)}`, rates.blackcat?`$${rates.blackcat.fee}`:'需設定尺寸', bcAvail && !!boxInfo, !boxInfo?'請待客服設定包裹尺寸區間':(!bcAvail?'商品價值超過2萬，不適用':''));
       h += _feOptRow('post', `郵局包裹${_bTag(_bc.post || _mb)}`, rates.post?`$${rates.post.fee}`:'需設定尺寸', !!boxInfo, !boxInfo?'請待客服設定包裹尺寸區間':'');
