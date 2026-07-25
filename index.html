@@ -1540,6 +1540,61 @@
       return { fee: fee, boxes: boxes, packed: true, fromAdmin: true };
     }
 
+    // 🆕 部分固定：把「後台固定箱」對應掉的品項，從自動池移除，回傳剩餘品項
+    //    固定箱的 itemKeys 是後台 recId，前台品項對不上 → 用「箱數與品項數」推不準，
+    //    改用：固定箱已知「佔用了哪些品項」需靠後台傳 fixedItemNames（品名清單）比對
+    function _feRemoveFixedItems(items, adminBd){
+      // adminBd 每箱可能帶 itemNames（後台附上的品名，用來從自動池扣除）
+      const usedNames = {};
+      (adminBd||[]).forEach(function(b){
+        (b.itemNames||[]).forEach(function(nm){
+          const k = String(nm||'').replace(/\s+/g,'');
+          usedNames[k] = (usedNames[k]||0) + 1;
+        });
+      });
+      const remain = [];
+      (items||[]).forEach(function(it){
+        const k = String(it.name||'').replace(/\s+/g,'');
+        if (usedNames[k] > 0) { usedNames[k]--; return; }   // 被固定箱用掉，不進自動池
+        remain.push(it);
+      });
+      return remain;
+    }
+
+    // 🆕 其他品項平均分成 N 箱（郵局/黑貓：每箱報值=該箱金額千進位、上限5000）
+    function _feSplitRemainToN(remain, n){
+      const boxes = [];
+      const N = Math.max(1, Number(n)||1);
+      for(let i=0;i<N;i++) boxes.push({ items:[], goods:0 });
+      const sorted = (remain||[]).slice().sort((a,b)=>(Number(b.amount)||0)-(Number(a.amount)||0));
+      sorted.forEach(function(it){
+        let mi=0; for(let i=1;i<N;i++){ if(boxes[i].goods<boxes[mi].goods) mi=i; }
+        boxes[mi].items.push(it); boxes[mi].goods += (Number(it.amount)||0);
+      });
+      return boxes;
+    }
+
+    // 🆕 交貨便：固定箱（照後台報值）+ 其他商品自動 5000 拆
+    function _feCrossmartPartial(adminBd, items){
+      let fee = 0; const boxes = [];
+      // 固定箱
+      (adminBd||[]).forEach(function(b,i){
+        const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue)||0));
+        const bf = _feCrossmartBoxFee(declared);
+        fee += bf;
+        boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
+          over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:[] });
+      });
+      // 其他商品自動算
+      const remain = _feRemoveFixedItems(items, adminBd);
+      if (remain.length > 0) {
+        const auto = _fePackBoxes(remain);
+        auto.boxes.forEach(function(b){ boxes.push(Object.assign({fromAdmin:false}, b)); fee += b.fee; });
+      }
+      boxes.forEach(function(b,i){ b.boxNo = i+1; });
+      return { fee:fee, boxes:boxes, packed:true, fromAdmin:true, partial:true };
+    }
+
     // 相容舊呼叫：沒有商品明細時退回原本的機械切法
     function _feCalcCrossmart(val, items){
       if (Array.isArray(items) && items.length > 0) {
@@ -1780,20 +1835,40 @@
       const wrapOpen = `<div class="ship-detail-inner">`;
       let info = '';
       if(choice==='myship'){
+        // 🆕 部分固定：固定箱各算一個 $38；其他商品塞成一箱（也 $38）
+        const _adminBdM = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
+        const _partialM = !!(mod && mod.adminPartialFixed);
+        let _myshipFeeLi = '<li>固定 <b>$38</b>，於 7-11 取貨時，取貨付款</li>';
+        if (_adminBdM && _partialM) {
+          const _fixedN = _adminBdM.length;
+          const _remainM = _feRemoveFixedItems(window._shipItemsForCheck || [], _adminBdM);
+          // 其他商品照「你設定的一般箱數」；沒設定但有剩餘 → 至少 1 箱
+          const _nbc = Number(mod.adminNormalBoxCount) || 0;
+          const _otherN = _remainM.length > 0 ? (_nbc > 0 ? _nbc : 1) : 0;
+          const _totalN = _fixedN + _otherN;
+          const _totalFee = _totalN * 38;
+          _myshipFeeLi = `<li>共 <b>${_totalN} 箱</b>（固定 ${_fixedN} 箱${_otherN?(' + 其他商品 '+_otherN+' 箱'):''}），每箱 $38 → 運費 <b>$${_totalFee}</b>，於 7-11 取貨付款</li>`;
+        }
         info = `
           <div class="sd-block sd-fee">
             <div class="sd-title">💰 運費</div>
-            <ul class="sd-list"><li>固定 <b>$38</b>，於 7-11 取貨時，取貨付款</li></ul>
+            <ul class="sd-list">${_myshipFeeLi}</ul>
           </div>
           <div class="sd-block sd-warn">
             <div class="sd-title">⚠️ 賠償</div>
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        // ★ 後台若已預先分好（Set 手動分箱）→ 用後台的；否則用實際商品自動裝箱
+        // ★ 後台分箱三種情況：
+        //   partialFixed → 固定箱照後台 + 其他自動算
+        //   全固定（舊）  → 全照後台
+        //   沒設定        → 全自動算
         const _adminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
+        const _partial = !!(mod && mod.adminPartialFixed);
         let c;
-        if (_adminBd) {
+        if (_adminBd && _partial) {
+          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);
+        } else if (_adminBd) {
           c = _feBoxesFromAdmin(_adminBd, window._shipItemsForCheck || []);
         } else {
           c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);
