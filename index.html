@@ -1770,12 +1770,13 @@
 
       // 首次展開才建立內容；已建立過的直接顯示（保留填過的字）
       if(detail.innerHTML.trim() === ''){
-        detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{});
+        detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{}, mod);
       }
     };
 
     // 說明區塊（條列式分區：運費計算 / 賠償責任 / 匯款提醒）
-    function _feShipDetailHtml(choice, rates){
+    function _feShipDetailHtml(choice, rates, mod){
+      mod = mod || window._shipModuleData || {};   // 🔧 保底：確保 mod 一定有定義（避免 ReferenceError）
       const declared = rates.declaredValue||0;
       const wrapOpen = `<div class="ship-detail-inner">`;
       let info = '';
