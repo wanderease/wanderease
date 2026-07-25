@@ -2149,12 +2149,15 @@
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
       const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
       // ★ 交貨便：把前台算好的「實際商品分箱」一起送出，後台直接照這個打包（報值與收款一致）
+      //   ★★ 必須用跟「顯示給客人看」完全同一套計算，否則客人看到 3 箱、存回後台卻是 2 箱
       let _boxDetails = null;
       if (choice === 'crossmart') {
         try {
-          // ★ 後台已分好就用後台的，否則自動算
           const _adminBd2 = (window._shipModuleData && Array.isArray(window._shipModuleData.adminBoxDetails) && window._shipModuleData.adminBoxDetails.length > 0) ? window._shipModuleData.adminBoxDetails : null;
-          const _pk = _adminBd2 ? _feBoxesFromAdmin(_adminBd2, window._shipItemsForCheck || []) : _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
+          const _hasFixed2 = _adminBd2 && _adminBd2.some(function(b){ return b.isFixed; });
+          // 有固定箱 → 部分固定（固定箱照報值+其他$5000拆）；否則純金額拆。與 renderShipChooser/明細一致
+          const _pk = _hasFixed2 ? _feCrossmartPartial(_adminBd2, window._shipItemsForCheck || [])
+                                 : _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
           if (_pk && _pk.packed && Array.isArray(_pk.boxes) && _pk.boxes.length > 0) {
             _boxDetails = _pk.boxes.map(function(b){
               return {
@@ -2163,6 +2166,7 @@
                 goodsValue: b.goodsValue,    // 實際商品總值
                 fee: b.fee,
                 over: !!b.over,
+                fromAdmin: !!b.fromAdmin,    // 🆕 標記是否為後台固定箱
                 items: (b.items||[]).map(function(it){ return { name: it.name, amount: it.amount }; })
               };
             });
