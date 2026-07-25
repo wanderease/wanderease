@@ -2262,7 +2262,11 @@
             // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
             // 🆕 分箱警示：賣貨便若需分箱（多箱），提醒客人分開下單
-            const _myBoxN = (rates && rates.boxCount && rates.boxCount.myship) ? rates.boxCount.myship : ((mod && Array.isArray(mod.adminBoxDetails)) ? mod.adminBoxDetails.length : 1);
+            const _smd = window._shipModuleData || {};
+            const _smRates = _smd.rates || {};
+            // 賣貨便箱數：優先用 rates.boxCount.myship，否則用後台實際箱數
+            const _myBoxN = (_smRates.boxCount && _smRates.boxCount.myship) ? _smRates.boxCount.myship
+                          : (Array.isArray(_smd.adminBoxDetails) && _smd.adminBoxDetails.length > 0 ? _smd.adminBoxDetails.length : 1);
             if(_murl){
               if(_myBoxN > 1){
                 await feAlert('您的包裹需分成 ' + _myBoxN + ' 箱寄出。\n\n若您在賣貨便建立的名稱有 2 個以上，代表要分箱出貨，請務必分開下單，每箱各建立一筆訂單。', {type:'warning', title:'⚠️ 請注意分箱', btnText:'我了解，前往下單'});
