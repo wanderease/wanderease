@@ -1958,21 +1958,28 @@
       } else if(choice==='blackcat'){
         const b = rates.blackcat;
         if(!b){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
-        // 🆕 逐箱列出運費（分箱時每箱各自收費）
+        // 🆕 逐箱列出運費（分箱時每箱各自尺寸區間、各自收費）
         const bBoxes = b.boxes || [];
         const bN = bBoxes.length || 1;
-        const bPer = b.base || 0;
+        const _zLabel = {'S':'60↓','M':'61~90','L':'90~120'};
         const bBoxLi = (bN > 1)
-          ? bBoxes.map((x,i)=>`<li>第 ${i+1} 箱：運費 <b>$${bPer}</b></li>`).join('')
+          ? bBoxes.map((x,i)=>{
+              const _z = x.zone ? `區間 ${x.zone}(${_zLabel[x.zone]||''})` : '';
+              return `<li>第 ${i+1} 箱：${_z} → 運費 <b>$${x.fee}</b></li>`;
+            }).join('')
           : '';
+        const _bcSingleLabel = (bN===1 && bBoxes[0] && bBoxes[0].zone)
+          ? `${bBoxes[0].zone}（${_zLabel[bBoxes[0].zone]||''}）`
+          : ((rates.boxInfo&&rates.boxInfo.label)||'');
         info = `
           <div class="sd-block sd-fee">
             <div class="sd-title">💰 運費計算</div>
             <ul class="sd-list">
-              <li>包裹尺寸區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b></li>
-              <li>單箱運費 <b>$${bPer}</b>${bN>1?`，本次需分 <b>${bN} 箱</b>寄出`:''}</li>
+              ${bN>1
+                ? `<li>本次需分 <b>${bN} 箱</b>寄出，每箱依各自尺寸區間收費</li>`
+                : `<li>包裹尺寸區間：<b>${escHTML(_bcSingleLabel)}</b></li><li>運費 <b>$${bBoxes[0]?bBoxes[0].fee:b.fee}</b></li>`}
               ${bBoxLi}
-              <li class="sd-total">運費合計 <b>$${b.fee}</b>${bN>1?`（$${bPer} × ${bN} 箱）`:''}</li>
+              <li class="sd-total">運費合計 <b>$${b.fee}</b></li>
             </ul>
           </div>
           <div class="sd-block sd-warn">
@@ -1990,20 +1997,24 @@
       } else if(choice==='post'){
         const p = rates.post;
         if(!p){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
-        // 🆕 逐箱列出：每箱各自報值（賠償按箱計算）
+        // 🆕 逐箱列出：每箱各自報值（賠償按箱計算）+ 各自尺寸區間
         const pBoxes = p.boxes || [];
         const pN = pBoxes.length || 1;
+        const _pzLabel = {'S':'60↓','M':'61~90','L':'90~120'};
         const pBoxLi = (pN > 1)
-          ? pBoxes.map((x,i)=>
-              `<li>第 ${i+1} 箱：報值 $${x.value} → 基本 $${x.base} + 報值費 $${x.insurance} = <b>$${x.fee}</b></li>`
-            ).join('')
+          ? pBoxes.map((x,i)=>{
+              const _z = x.zone ? `[${x.zone}] ` : '';
+              return `<li>第 ${i+1} 箱：${_z}報值 $${x.value} → 基本 $${x.base} + 報值費 $${x.insurance} = <b>$${x.fee}</b></li>`;
+            }).join('')
           : `<li>包裹尺寸區間運費 <b>$${p.base}</b></li>
              <li>報值費 <b>$${p.insurance}</b>（報值 $${declared}）</li>`;
         info = `
           <div class="sd-block sd-fee">
             <div class="sd-title">💰 運費計算</div>
             <ul class="sd-list">
-              <li>包裹尺寸區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||'')}</b>${pN>1?`，本次需分 <b>${pN} 箱</b>寄出`:''}</li>
+              ${pN>1
+                ? `<li>本次需分 <b>${pN} 箱</b>寄出，每箱依各自尺寸區間收費</li>`
+                : `<li>包裹尺寸區間：<b>${escHTML((rates.boxInfo&&rates.boxInfo.label)||(pBoxes[0]&&pBoxes[0].zone)||'')}</b></li>`}
               ${pBoxLi}
               <li class="sd-total">運費合計 <b>$${p.fee}</b></li>
             </ul>
