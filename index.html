@@ -1617,7 +1617,7 @@
           return { name: (typeof it==='string'?it:(it&&it.name))||'', amount: (typeof it==='object'&&it)?(Number(it.amount)||0):0 };
         });
         boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
-          over: declared>=5000 && (Number(b.goodsValue)||0)>5000, fromAdmin:true, items:_its });
+          over: false, fromAdmin:true, items:_its });   // 🆕 固定箱是你手動設定報值的，不顯示「單件超5000」警示（已知情並接受）
       });
       // 其他品項（扣掉固定箱裝的）→ 按 $5000 自動拆
       const remain = _feRemoveFixedItems(items, fixedBoxes);
