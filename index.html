@@ -2287,9 +2287,16 @@
           } else if(choice==='myship'){
             // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
             //   （分箱警示已在送出前提醒過，這裡直接跳轉）
+            //   ★★ LINE 內建瀏覽器要用 liff.openWindow，否則 window.open 會被彈窗攔截（只跳出貨頁沒開連結）
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
             if(_murl){
-              window.open(_murl, '_blank');
+              try{
+                if(window.liff && liff.isInClient && liff.isInClient()){
+                  liff.openWindow({ url:_murl, external:true });
+                } else {
+                  window.open(_murl, '_blank');
+                }
+              }catch(e){ window.open(_murl, '_blank'); }
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
