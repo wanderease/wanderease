@@ -2285,18 +2285,12 @@
             // 後端偵測到重複送出（內容完全相同）→ 不再彈視窗，靜默同步畫面即可
             console.log('[shipChoice] 重複送出，已忽略');
           } else if(choice==='myship'){
-            // ★ 賣貨便：送出成功後直接跳到後台提供的賣貨便下單網址
-            //   （分箱警示已在送出前提醒過，這裡直接跳轉）
-            //   ★★ LINE 內建瀏覽器要用 liff.openWindow，否則 window.open 會被彈窗攔截（只跳出貨頁沒開連結）
+            // ★ 賣貨便：送出成功後要跳到賣貨便下單網址
+            //   ★★ 先標記 url，等 renderShipModule 重繪完成後再開，避免重繪打斷 liff.openWindow
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
+            console.log('[賣貨便下單] _shipMyshipUrl=' + (window._shipMyshipUrl||'(空)') + ' mod.myshipUrl=' + ((mod&&mod.myshipUrl)||'(空)') + ' → 最終url=' + (_murl||'(空)') + ' isInClient=' + (window.liff&&liff.isInClient?liff.isInClient():'無liff'));
             if(_murl){
-              try{
-                if(window.liff && liff.isInClient && liff.isInClient()){
-                  liff.openWindow({ url:_murl, external:true });
-                } else {
-                  window.open(_murl, '_blank');
-                }
-              }catch(e){ window.open(_murl, '_blank'); }
+              window.__pendingMyshipUrl = _murl;   // 標記，重繪後開
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
@@ -2307,6 +2301,20 @@
           }
           _ok = true;
           renderShipModule(mod);   // 成功 → 整區重繪，按鈕會消失，不需還原
+          // ★ 賣貨便：重繪完成後才開下單連結（避免重繪打斷；LINE 用 liff.openWindow）
+          if(window.__pendingMyshipUrl){
+            const _openUrl = window.__pendingMyshipUrl;
+            window.__pendingMyshipUrl = null;
+            setTimeout(function(){
+              try{
+                if(window.liff && liff.isInClient && liff.isInClient()){
+                  liff.openWindow({ url:_openUrl, external:true });
+                } else {
+                  window.open(_openUrl, '_blank');
+                }
+              }catch(e){ console.error('[賣貨便下單] 開窗失敗', e); window.open(_openUrl, '_blank'); }
+            }, 300);
+          }
         } else {
           alert(d.message||'送出失敗');
         }
