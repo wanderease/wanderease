@@ -2281,14 +2281,15 @@
           if(dd.shipBankCode!=null) mod.shipBankCode = dd.shipBankCode;
           if(dd.shipBankAcct!=null) mod.shipBankAcct = dd.shipBankAcct;
           if(dd.shipBankInfo!=null) mod.shipBankInfo = dd.shipBankInfo;
-          if(dd.duplicated){
+          if(dd.duplicated && choice!=='myship'){
             // 後端偵測到重複送出（內容完全相同）→ 不再彈視窗，靜默同步畫面即可
+            //   ★ 但賣貨便例外：客人重複點就是想再去下單頁，仍要開連結（往下走 myship 分支）
             console.log('[shipChoice] 重複送出，已忽略');
           } else if(choice==='myship'){
-            // ★ 賣貨便：送出成功後要跳到賣貨便下單網址
+            // ★ 賣貨便：送出成功（或重複送出）都要跳到賣貨便下單網址
             //   ★★ 先標記 url，等 renderShipModule 重繪完成後再開，避免重繪打斷 liff.openWindow
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
-            console.log('[賣貨便下單] _shipMyshipUrl=' + (window._shipMyshipUrl||'(空)') + ' mod.myshipUrl=' + ((mod&&mod.myshipUrl)||'(空)') + ' → 最終url=' + (_murl||'(空)') + ' isInClient=' + (window.liff&&liff.isInClient?liff.isInClient():'無liff'));
+            console.log('[賣貨便下單] dup=' + !!dd.duplicated + ' 最終url=' + (_murl||'(空)') + ' isInClient=' + (window.liff&&liff.isInClient?liff.isInClient():'無liff'));
             if(_murl){
               window.__pendingMyshipUrl = _murl;   // 標記，重繪後開
             } else {
