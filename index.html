@@ -748,7 +748,7 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     // ===== 會員 =====
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}/* 🆕 歷史訂單頁籤：所有客人皆可見 */var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';}window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     // ===== 管理員清除 Cache =====
@@ -1617,7 +1617,9 @@
           return { name: (typeof it==='string'?it:(it&&it.name))||'', amount: (typeof it==='object'&&it)?(Number(it.amount)||0):0 };
         });
         boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
-          over: false, fromAdmin:true, items:_its });   // 🆕 固定箱是你手動設定報值的，不顯示「單件超5000」警示（已知情並接受）
+          over: false, fromAdmin:true, items:_its,
+          itemKeys: Array.isArray(b.itemKeys)?b.itemKeys:undefined,   // 🆕 帶回後台 itemKeys（送出後台建揀貨單用）
+          zone: b.zone||undefined, size: b.size||undefined, isFixed:true });
       });
       // 其他品項（扣掉固定箱裝的）→ 按 $5000 自動拆
       const remain = _feRemoveFixedItems(items, fixedBoxes);
@@ -2229,7 +2231,7 @@
                                  : _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
           if (_pk && _pk.packed && Array.isArray(_pk.boxes) && _pk.boxes.length > 0) {
             _boxDetails = _pk.boxes.map(function(b){
-              return {
+              var o = {
                 boxNo: b.boxNo,
                 declaredValue: b.value,      // 報值（上限 5000）
                 goodsValue: b.goodsValue,    // 實際商品總值
@@ -2238,6 +2240,12 @@
                 fromAdmin: !!b.fromAdmin,    // 🆕 標記是否為後台固定箱
                 items: (b.items||[]).map(function(it){ return { name: it.name, amount: it.amount }; })
               };
+              // 🆕 固定箱：帶回後台的 itemKeys/zone/size（後台建揀貨單對應品項用）
+              if (Array.isArray(b.itemKeys) && b.itemKeys.length > 0) o.itemKeys = b.itemKeys;
+              if (b.zone) o.zone = b.zone;
+              if (b.size) o.size = b.size;
+              if (b.isFixed || b.fromAdmin) o.isFixed = true;
+              return o;
             });
           }
         } catch(e) {}
