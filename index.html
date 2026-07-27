@@ -1559,6 +1559,7 @@
         const declared = Math.min(CAP, _feCeilK(b.sum));
         const bf = _feCrossmartBoxFee(declared);
         fee += bf;
+        console.log('[交貨便自動箱] 第'+(i+1)+'箱 商品總值sum='+b.sum+' → 進位報值='+declared+' → 運費$'+bf+' | 品項:'+b.items.map(function(x){return x.name+'($'+x.value+')';}).join(', '));
         return {
           boxNo: i+1,
           value: declared,          // 報值（官方上限 5000）
