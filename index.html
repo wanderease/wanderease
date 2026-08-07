@@ -978,13 +978,21 @@
             }
           }
 
-          // === 公告（候補不顯示）===
+          // === 公告 ===
+          //   🆕 候補單也顯示公告（原本被 !isWL 直接排除，候補公告填了永遠看不到）。
+          //      後端 (前台查詢Code.gs) 已在 sourceType==='WAITLIST' 時把 groupNotice
+          //      換成候補專用公告 wlNotice，沒填才 fallback 成一般公告。
+          //      候補只顯示公告本體，不帶一般訂單的備註 groupMemo。
+          //      位置在 flowNote（📦 候補貨況&公告）上方，由卡片組裝順序 ${nh}${ph} 決定。
           let nh = '';
           if (isInstock) {
             // 🆕 現貨單：卡片內顯示現貨公告（後台現貨上架頁設定）
             const _ia = (gp && gp.instockAnnounce) ? String(gp.instockAnnounce).trim() : '';
             if (_ia) nh = `<div class="notice-box">📢 公告：<br>${escHTML(_ia).replace(/\n/g,'<br>')}</div>`;
-          } else if (!isWL && (o.groupNotice || o.groupMemo)) {
+          } else if (isWL) {
+            const _wn = o.groupNotice ? String(o.groupNotice).trim() : '';
+            if (_wn) nh = `<div class="notice-box">📢 公告：<br>${escHTML(_wn).replace(/\n/g,'<br>')}</div>`;
+          } else if (o.groupNotice || o.groupMemo) {
             nh = `<div class="notice-box">📢 公告：<br>${escHTML(o.groupNotice)}<br>${escHTML(o.groupMemo)}</div>`;
           }
 
