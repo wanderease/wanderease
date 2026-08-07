@@ -3390,17 +3390,24 @@
         const groups = wlGroupByBrandSeries(data.waitingConfirm);
         groups.forEach(g => {
           const c = wlGetBrandColor(g.brand);
-          let itemsHtml = g.items.map(i => `
+          let itemsHtml = g.items.map(i => {
+            // 🆕 成交單價（後台通知時定的價）；0 表示尚未定價，就不顯示金額
+            const _p = Number(i.dealPrice) || 0;
+            const priceHtml = _p > 0
+              ? `<span style="color:#8a5a2b;font-weight:800;">$${_p.toLocaleString()}/件</span>`
+              : '';
+            return `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
                 <div class="wl-v2-name">🎁 ${escHTML(i.product)} x${i.allocQty}</div>
-                <div class="wl-v2-meta" style="color:#a95a52;font-weight:700;"><span>✨ 已為您配到</span></div>
+                <div class="wl-v2-meta" style="color:#a95a52;font-weight:700;"><span>✨ 已為您配到</span>${priceHtml ? '<span style="margin-left:8px;">' + priceHtml + '</span>' : ''}</div>
               </div>
               <div class="wl-v2-actions">
-                <button class="wl-btn-confirm" onclick="wlConfirmItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">✓ 確認保留</button>
+                <button class="wl-btn-confirm" onclick="wlConfirmItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty},${_p})">✓ 確認保留</button>
                 <button class="wl-btn-abandon" onclick="wlAbandonItem('${i.recordId}','${escAttr(i.product)}',${i.allocQty})">⚠ 放棄</button>
               </div>
-            </div>`).join('');
+            </div>`;
+          }).join('');
           html += `
             <div class="wl-v2-card" style="border:1px solid #f5c2c7;">
               <div class="wl-v2-cardhead" style="background:${c.bg};">
@@ -3423,13 +3430,19 @@
         const groups = wlGroupByBrandSeries(data.confirmedItems);
         groups.forEach(g => {
           const c = wlGetBrandColor(g.brand);
-          let itemsHtml = g.items.map(i => `
+          let itemsHtml = g.items.map(i => {
+            const _p = Number(i.dealPrice) || 0;
+            const priceHtml = _p > 0
+              ? `<span style="margin-left:8px;color:#8a5a2b;font-weight:800;">$${_p.toLocaleString()}/件</span>`
+              : '';
+            return `
             <div class="wl-v2-item">
               <div class="wl-v2-info">
                 <div class="wl-v2-name">${escHTML(i.product)} x${i.allocQty}</div>
-                <div class="wl-v2-meta"><span style="color:#6f42c1;font-weight:700;">✅ 已確認，稍後會幫您建立正式訂單</span></div>
+                <div class="wl-v2-meta"><span style="color:#6f42c1;font-weight:700;">✅ 已確認，稍後會幫您建立正式訂單</span>${priceHtml}</div>
               </div>
-            </div>`).join('');
+            </div>`;
+          }).join('');
           html += `
             <div class="wl-v2-card">
               <div class="wl-v2-cardhead" style="background:${c.bg};">
@@ -3642,8 +3655,13 @@
     }
 
     // ===== 確認保留 =====
-    async function wlConfirmItem(recordId, productName, qty) {
-      if (!confirm(`確認保留此商品？\n\n${productName} × ${qty}\n\n確認後會由小幫手為您建立正式訂單並通知匯款。`)) return;
+    async function wlConfirmItem(recordId, productName, qty, dealPrice) {
+      // 🆕 帶出成交單價與該品項金額，讓客人在按下確認前就看得到要付多少
+      const _p = Number(dealPrice) || 0;
+      const _amtLine = _p > 0
+        ? `\n單價 $${_p.toLocaleString()} × ${qty} ＝ $${(_p * qty).toLocaleString()}`
+        : '';
+      if (!confirm(`確認保留此商品？\n\n${productName} × ${qty}${_amtLine}\n\n確認後會由小幫手為您建立正式訂單並通知匯款。`)) return;
       try {
         const r = await fetch(GAS_URL, {
           method: "POST",
