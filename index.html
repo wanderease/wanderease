@@ -3638,6 +3638,30 @@
       document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
+    // 🚀 樂觀更新：取消成功後直接在本地把該筆從「排隊中」移到「已取消」並重繪，
+    //    不再多打一次 getMyWaitlist（省掉一整趟 GAS 往返，體感從數秒變即時）。
+    //    後端資料已經寫好了，本地只是把畫面同步成同樣的結果。
+    function wlApplyLocalCancel(recordId) {
+      if (!wlCustomerData || !Array.isArray(wlCustomerData.queueItems)) return false;
+      const idx = wlCustomerData.queueItems.findIndex(i => i.recordId === recordId);
+      if (idx < 0) return false;
+
+      const item = wlCustomerData.queueItems.splice(idx, 1)[0];
+
+      // 補上取消備註，讓「我取消的候補」區塊能解析出取消時間
+      // 格式必須與後端一致：[yyyy-MM-dd HH:mm | ACT_CUST_CANCEL] …
+      const now = new Date();
+      const p2 = n => String(n).padStart(2, '0');
+      const ts = `${now.getFullYear()}-${p2(now.getMonth()+1)}-${p2(now.getDate())} ${p2(now.getHours())}:${p2(now.getMinutes())}`;
+      item.note = (item.note ? item.note + '\n' : '') + `[${ts} | ACT_CUST_CANCEL] 客人自行取消排隊`;
+
+      if (!Array.isArray(wlCustomerData.cancelledItems)) wlCustomerData.cancelledItems = [];
+      wlCustomerData.cancelledItems.unshift(item);
+
+      renderWL(wlCustomerData);
+      return true;
+    }
+
     async function wlExecCancel(recordId) {
       const btn = document.getElementById('wlBtnCancelOk');
       btn.disabled = true; btn.innerHTML = '處理中...';
@@ -3649,7 +3673,12 @@
         });
         const d = await r.json();
         wlCloseModal();
-        if (d.status === "SUCCESS") { alert("✅ 已取消排隊"); loadWaitlistData(); }
+        if (d.status === "SUCCESS") {
+          // 本地更新成功就不重打 API；找不到該筆（例如資料已變動）才退回完整重載
+          const ok = wlApplyLocalCancel(recordId);
+          alert("✅ 已取消排隊");
+          if (!ok) loadWaitlistData();
+        }
         else alert("失敗：" + d.message);
       } catch(e){ wlCloseModal(); alert("網路錯誤"); }
     }
