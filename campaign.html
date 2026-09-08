@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>開團預購 · Wander Ease</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#efe8df; --ink:#2c2c2f; --brown:#795238; --white:#fff;
+  --line:#e0d8d0; --mute:#a0907a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light only}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:600px;margin:0 auto}
+
+.top{padding:16px 18px 10px}
+.top a.back{font-size:13px;color:var(--mute);text-decoration:none;display:inline-flex;
+            align-items:center;gap:4px}
+.top h1{font-size:22px;font-weight:800;margin-top:8px}
+.top .sub{font-size:12.5px;color:var(--mute)}
+
+.list{padding:8px 18px 0;display:grid;gap:13px}
+.card{
+  background:var(--white);border:1px solid var(--line);border-radius:16px;overflow:hidden;
+  text-decoration:none;color:inherit;display:block;
+  box-shadow:0 4px 14px rgba(44,44,47,.04);transition:transform .12s;
+  -webkit-tap-highlight-color:transparent;
+}
+.card:active{transform:scale(.99)}
+.card.closed{opacity:.72}
+.card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#e6ded5}
+.card .noimg{aspect-ratio:16/9;background:#e6ded5;display:flex;align-items:center;
+             justify-content:center;color:#c3b8ac;font-size:30px}
+.card .b{padding:13px 15px 15px}
+.card .b b{font-size:17px;font-weight:800;display:block;line-height:1.35}
+.card .b s{font-size:12.5px;color:var(--mute);text-decoration:none;display:block;margin-top:3px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.tag{font-size:11.5px;padding:2px 9px;border-radius:99px;border:1px solid var(--line);color:#6b5d4f}
+.tag.open{background:#eef3e9;border-color:#cfdcc2;color:#4a6132}
+.tag.close{background:#f2ece6;border-color:#ddd2c6;color:#8a7360}
+.tag.mine{background:#fdf1e2;border-color:#f0d7b6;color:#96560a}
+
+.empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
+.sk{padding:8px 18px 0;display:grid;gap:13px}
+.sk div{background:#e6ded5;border-radius:16px;height:196px;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:.9}}
+
+.nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--white);
+  border-top:1px solid var(--line);display:flex;
+  padding:9px 0 calc(9px + env(safe-area-inset-bottom,4px));
+  box-shadow:0 -4px 16px rgba(0,0,0,.05);
+}
+.nav a{flex:1;text-align:center;text-decoration:none;color:#b8b0a8;font-size:11px;font-weight:700}
+.nav a i{display:block;font-size:22px;margin-bottom:2px}
+.nav a.on{color:var(--brown)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="/"><i class="bi bi-chevron-left"></i> 大廳</a>
+    <h1>開團預購</h1>
+    <div class="sub" id="sub">載入中…</div>
+  </div>
+
+  <div class="sk" id="sk"><div></div><div></div></div>
+  <div class="list" id="list"></div>
+</div>
+
+<div class="nav">
+  <a href="/c" class="on"><i class="bi bi-megaphone-fill"></i>開團</a>
+  <a href="/s"><i class="bi bi-bag"></i>現貨</a>
+  <a href="/m"><i class="bi bi-person"></i>會員</a>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+
+
+
+var LIFF_ID = "2009208139-8lZaYbbd";
+var CAMPS = [];
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+
+ 
+function fmtDue(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d)) return '';
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+function render() {
+  var list = document.getElementById('list');
+  document.getElementById('sk').style.display = 'none';
+
+  if (!CAMPS.length) {
+    list.innerHTML = '<div class="empty">目前沒有開放中的團。<br>新的團開放時會在社群通知你。</div>';
+    document.getElementById('sub').textContent = '';
+    return;
+  }
+
+  var open = CAMPS.filter(function (c) { return c.state === '開放收單'; }).length;
+  document.getElementById('sub').textContent =
+    open ? (open + ' 團開放中') : '目前沒有開放中的團';
+
+  var mine = {};
+  try { (JSON.parse(sessionStorage.getItem('we_ordered') || '[]')).forEach(function (x) { mine[x] = 1; }); } catch (e) {}
+
+  list.innerHTML = CAMPS.map(function (c) {
+    var closed = (c.state !== '開放收單');
+    var n = (c.products || []).length;
+    return '<a class="card' + (closed ? ' closed' : '') + '" href="/o/' + encodeURIComponent(c.id) + '">' +
+      (c.cover
+        ? '<img src="' + esc(c.cover) + '" alt="" loading="lazy">'
+        : '<div class="noimg"><i class="bi bi-bag"></i></div>') +
+      '<div class="b"><b>' + esc(c.name) + '</b>' +
+      '<s>' + esc(c.brand) + ' · ' + n + ' 個商品</s>' +
+      '<div class="tags">' +
+        (closed
+          ? '<span class="tag close">已於 ' + esc(fmtDue(c.due)) + ' 截止</span>'
+          : '<span class="tag open">收單至 ' + esc(fmtDue(c.due)) + '</span>') +
+        (mine[c.id] ? '<span class="tag mine">你已填過單</span>' : '') +
+      '</div></div></a>';
+  }).join('');
+}
+
+ 
+fetch('/data/campaigns.json', { cache: 'no-cache' })
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (d) {
+    CAMPS = (d && d.campaigns) ? d.campaigns : [];
+    render();
+  })
+  .catch(function () {
+    CAMPS = [];
+    render();
+  });
+
+ 
+(function () {
+  if (typeof liff === 'undefined') return;
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    if (!liff.isLoggedIn()) return;
+    return liff.getProfile().then(function (p) {
+      var me = {};
+      try { me = JSON.parse(sessionStorage.getItem('we_me') || '{}'); } catch (e) {}
+      me.uid = p.userId;
+      me.lineName = p.displayName;
+      if (!me.name) me.name = p.displayName;
+      try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
+      if (CAMPS.length) render();
+    });
+  }).catch(function () {});
+})();
+</script>
+</body>
+</html>
