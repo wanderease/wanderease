@@ -1,0 +1,48 @@
+{
+  "rewrites": [
+    {
+      "source": "/o/:code",
+      "destination": "/order.html"
+    },
+    {
+      "source": "/c",
+      "destination": "/campaign.html"
+    },
+    {
+      "source": "/s",
+      "destination": "/shop.html"
+    },
+    {
+      "source": "/m",
+      "destination": "/member.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive, nosnippet, noai, noimageai"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=60, stale-while-revalidate=300"
+        }
+      ]
+    }
+  ]
+}
