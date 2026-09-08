@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>開團訂購 · Wander Ease</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+:root{
+  --bg:#efe8df; --ink:#2c2c2f; --brown:#795238; --brown-hi:#5e3f2b;
+  --white:#fff; --line:#e0d8d0; --mute:#a0907a; --ok:#4a6132;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:light only}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));
+}
+.wrap{max-width:600px;margin:0 auto}
+
+.crumb{padding:12px 18px 0}
+.crumb a{font-size:13px;color:var(--mute);text-decoration:none}
+.cover{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#e6ded5;margin-top:10px}
+.hd{padding:16px 18px 8px}
+.hd .bd{font-size:11.5px;color:var(--mute);letter-spacing:.1em}
+.hd h1{font-size:22px;font-weight:800;margin:3px 0 8px;line-height:1.35}
+.due{display:inline-block;font-size:12px;background:var(--ink);color:#fff;padding:3px 11px;border-radius:99px}
+.due.closed{background:#a89a8c}
+.about{margin:0 18px 16px;font-size:13.5px;color:#4a4038;white-space:pre-wrap;line-height:1.75}
+
+.prod{margin:0 18px 16px;background:var(--white);border:1px solid var(--line);
+      border-radius:16px;overflow:hidden;padding-bottom:15px}
+.big{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e6ded5;cursor:zoom-in}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding:8px 13px 0;-webkit-overflow-scrolling:touch}
+.thumbs::-webkit-scrollbar{height:0}
+.thumbs img{width:54px;height:54px;object-fit:cover;border-radius:7px;flex:0 0 auto;
+            background:#e6ded5;cursor:zoom-in;border:2px solid transparent}
+.thumbs img.on{border-color:var(--brown)}
+.pinfo{padding:12px 15px 0}
+.pinfo h2{font-size:18px;font-weight:800;line-height:1.35}
+.pinfo .px{font-size:20px;font-weight:800;margin-top:4px}
+.pinfo .lim{display:inline-block;font-size:11.5px;background:#fdf1e2;color:#96560a;
+            border:1px solid #f0d7b6;padding:1px 9px;border-radius:99px;margin-top:7px}
+.pbody{padding:0 15px}
+.copy{font-size:13.5px;color:#4a4038;margin-top:12px;white-space:pre-wrap}
+.spec{margin-top:12px;border-top:1px solid #f0eae3;font-size:12.5px}
+.spec div{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f0eae3}
+.spec span:first-child{color:var(--mute);flex:0 0 76px}
+h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-size:13px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);
+      background:var(--white);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.chip.on{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:700}
+.srow{display:flex;align-items:center;gap:10px;border:1px solid #e9e3db;border-radius:10px;
+      padding:8px 9px 8px 14px;margin-top:6px}
+.srow.has{border-color:var(--brown);background:#faf6f2}
+.srow .sl{flex:1;font-size:14.5px;font-weight:600}
+.srow .sp{font-size:12px;color:var(--mute);font-weight:400}
+.stp{display:flex;align-items:center;gap:3px}
+.stp button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+            background:var(--white);font-size:17px;color:var(--ink)}
+.stp button:disabled{opacity:.3}
+.stp span{width:28px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.note{margin:0 18px 16px;background:#f3efe9;border:1px solid var(--line);border-radius:12px;
+      padding:13px 15px;font-size:12.5px;color:#5b4d40;white-space:pre-wrap}
+
+ 
+.step{padding:14px 18px 0}
+.step h2{font-size:19px;font-weight:800;margin-bottom:12px}
+.lines{background:var(--white);border:1px solid var(--line);border-radius:14px;
+       overflow:hidden;margin-bottom:14px}
+.ln{display:flex;gap:10px;padding:11px 13px;border-bottom:1px solid #f0eae3;
+    font-size:13.5px;align-items:center}
+.ln:last-child{border-bottom:0}
+.ln .n{flex:1;min-width:0}
+.ln .n b{display:block;font-weight:600}
+.ln .n s{font-size:11.5px;color:var(--mute);text-decoration:none}
+.ln .q{color:var(--mute);font-size:12.5px}
+.ln .a{font-weight:800;min-width:66px;text-align:right;font-variant-numeric:tabular-nums}
+.sums{background:var(--white);border:1px solid var(--line);border-radius:14px;
+      padding:13px 15px;margin-bottom:14px;font-size:13.5px}
+.sums div{display:flex;justify-content:space-between;padding:3px 0}
+.sums .tt{border-top:1px solid var(--line);margin-top:7px;padding-top:10px;
+          font-size:17px;font-weight:800}
+.idbox{background:var(--white);border:1px solid var(--line);border-radius:14px;
+       padding:15px;margin-bottom:14px}
+.idbox h4{font-size:14.5px;font-weight:800;margin-bottom:3px}
+.idbox .lead{font-size:12px;color:var(--mute);margin-bottom:12px}
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:5px;font-weight:600}
+.fld label b{color:var(--brown)}
+.fld input{width:100%;font-family:inherit;font-size:15.5px;color:var(--ink);
+           border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;background:#fbfaf9}
+.fld input:focus{outline:none;border-color:var(--brown);background:#fff}
+.fld .hint{font-size:11.5px;color:var(--mute);margin-top:4px}
+.agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin-bottom:16px;cursor:pointer}
+.agree input{width:20px;height:20px;margin-top:1px;flex:0 0 auto;accent-color:var(--brown)}
+
+ 
+.gate{margin:0 18px 16px;background:var(--white);border:1px solid var(--line);
+      border-radius:14px;padding:20px 18px;text-align:center}
+.gate .ic{font-size:34px;color:var(--brown)}
+.gate h4{font-size:16px;font-weight:800;margin:8px 0 6px}
+.gate p{font-size:13px;color:#5b4d40;margin-bottom:14px}
+.btn{display:block;width:100%;font-family:inherit;font-size:15.5px;font-weight:800;
+     background:var(--brown);color:#fff;border:0;border-radius:12px;padding:14px;
+     text-decoration:none;text-align:center}
+.btn:active{background:var(--brown-hi)}
+
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;max-width:600px;margin:0 auto;
+  background:rgba(255,255,255,.97);border-top:1px solid var(--line);
+  padding:10px 15px calc(10px + env(safe-area-inset-bottom,4px));
+  display:flex;align-items:center;gap:11px;box-shadow:0 -4px 16px rgba(0,0,0,.05);
+}
+.bar .t{flex:1;font-size:11.5px;color:var(--mute);min-width:0}
+.bar .t b{display:block;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar button{font-family:inherit;font-size:15px;font-weight:800;color:#fff;background:var(--brown);
+            border:0;border-radius:11px;padding:12px 22px;white-space:nowrap}
+.bar button:disabled{background:#bfb4a8}
+.bar .ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);font-weight:600;padding:12px 16px}
+
+.done{padding:52px 26px;text-align:center}
+.done .ic{font-size:44px;color:var(--ok)}
+.done h2{font-size:21px;font-weight:800;margin:12px 0 7px}
+.done p{font-size:13.5px;color:#5b4d40}
+
+.lb{position:fixed;inset:0;z-index:90;background:rgba(20,15,12,.95);display:none;
+    flex-direction:column;align-items:center;justify-content:center}
+.lb.on{display:flex}
+.lb .stage{width:100%;flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.lb img{max-width:92%;max-height:100%;object-fit:contain;border-radius:6px}
+.lb .nv{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;
+        border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:0;font-size:22px}
+.lb .nv.p{left:8px}.lb .nv.n{right:8px}
+.lb .bt{padding:14px 18px;display:flex;align-items:center;gap:14px;width:100%;color:#e7e0d6}
+.lb .bt .ix{flex:1;font-size:13px;text-align:center}
+.lb .bt button{background:none;border:0;color:#e7e0d6;font-size:24px}
+
+.empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div class="empty">載入中…</div>
+</div>
+
+<div class="lb" id="lb">
+  <div class="stage">
+    <button class="nv p" onclick="lbGo(-1)">‹</button>
+    <img id="lbimg" alt="">
+    <button class="nv n" onclick="lbGo(1)">›</button>
+  </div>
+  <div class="bt"><span class="ix" id="lbix"></span><button onclick="lbClose()">✕</button></div>
+</div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+
+
+
+var LIFF_ID = "2009208139-8lZaYbbd";
+var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+var DEPOSIT = 20;   
+
+var CODE = decodeURIComponent((location.pathname.match(/\/o\/([^/?#]+)/) || [])[1] || '');
+var C = null;        
+var step = 1;
+var colorSel = {};
+var cart = {};
+var agreed = false;
+var me = null;
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+  });
+}
+function fmtDue(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d)) return '';
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+ 
+var CART_KEY = 'we_cart_' + CODE;
+function saveCart() {
+  try { localStorage.setItem(CART_KEY, JSON.stringify({ cart: cart, sel: colorSel, at: Date.now() })); } catch (e) {}
+}
+function loadCart() {
+  try {
+    var o = JSON.parse(localStorage.getItem(CART_KEY) || 'null');
+    if (!o) return;
+    
+    if (Date.now() - (o.at || 0) > 3 * 864e5) { localStorage.removeItem(CART_KEY); return; }
+    cart = o.cart || {};
+    colorSel = o.sel || {};
+  } catch (e) {}
+}
+function clearCart() { try { localStorage.removeItem(CART_KEY); } catch (e) {} }
+
+ 
+function tot() {
+  var n = 0, s = 0;
+  Object.keys(cart).forEach(function (k) {
+    var q = cart[k];
+    if (!q) return;
+    n += q;
+    var pi = Number(k.split('|')[0]);
+    s += q * ((C.products[pi] || {}).price || 0);
+  });
+  return { n: n, sum: s, dep: n * DEPOSIT, pay: s - n * DEPOSIT };
+}
+function pQty(pi) {
+  var n = 0;
+  Object.keys(cart).forEach(function (k) {
+    if (Number(k.split('|')[0]) === pi) n += cart[k] || 0;
+  });
+  return n;
+}
+
+ 
+fetch('/data/campaigns.json', { cache: 'no-cache' })
+  .then(function (r) { return r.ok ? r.json() : null; })
+  .then(function (d) {
+    var list = (d && d.campaigns) || [];
+    C = list.filter(function (x) { return x.id === CODE; })[0] || null;
+    if (!C) {
+      document.getElementById('root').innerHTML =
+        '<div class="empty"><i class="bi bi-search" style="font-size:30px;display:block;margin-bottom:10px"></i>' +
+        '找不到這個團。<br>可能已經結束，或連結不正確。<br><br>' +
+        '<a href="/c" style="color:#795238">看看其他開放中的團</a></div>';
+      return;
+    }
+    loadCart();
+    draw();
+  })
+  .catch(function () {
+    document.getElementById('root').innerHTML = '<div class="empty">載入失敗，請重新整理。</div>';
+  });
+
+ 
+(function () {
+  try { me = JSON.parse(sessionStorage.getItem('we_me') || 'null'); } catch (e) {}
+  if (typeof liff === 'undefined') return;
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    if (!liff.isLoggedIn()) return;
+    return liff.getProfile().then(function (p) {
+      me = me || {};
+      me.uid = p.userId;
+      me.lineName = p.displayName;
+      if (!me.name) me.name = p.displayName;
+      try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
+      if (step === 2) draw();
+    });
+  }).catch(function () {});
+})();
+
+ 
+function draw() {
+  document.getElementById('root').innerHTML =
+    (step === 1 ? view1() : (step === 2 ? view2() : view3()));
+  window.scrollTo(0, 0);
+}
+
+function view1() {
+  var closed = (C.state !== '開放收單');
+  var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
+  if (C.cover) h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
+  h += '<div class="hd"><div class="bd">' + esc(C.brand) + '</div>' +
+       '<h1>' + esc(C.name) + '</h1>' +
+       '<span class="due' + (closed ? ' closed' : '') + '">' +
+       (closed ? '已於 ' + fmtDue(C.due) + ' 截止' : '收單至 ' + fmtDue(C.due)) +
+       '</span></div>';
+  if (C.about) h += '<div class="about">' + esc(C.about) + '</div>';
+
+  (C.products || []).forEach(function (p, pi) {
+    if (colorSel[pi] == null) colorSel[pi] = 0;
+    var c = (p.colors || [])[colorSel[pi]];
+    var gal = (c && c.img && c.img.length) ? c.img.concat(p.images || []) : (p.images || []);
+    gal = gal.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+    var main = gal[0] || '';
+
+    h += '<div class="prod">';
+    h += main ? '<img class="big" src="' + esc(main) + '" alt="" onclick="lb(' + pi + ',0)">'
+              : '<div class="big"></div>';
+    if (gal.length > 1) {
+      h += '<div class="thumbs">';
+      gal.forEach(function (u, gi) {
+        h += '<img src="' + esc(u) + '" alt="" loading="lazy" onclick="lb(' + pi + ',' + gi + ')">';
+      });
+      h += '</div>';
+    }
+    h += '<div class="pinfo"><h2>' + esc(p.name) + '</h2>' +
+         '<div class="px">NT$' + (p.price || 0).toLocaleString() + '</div>' +
+         (p.limit ? '<span class="lim">每人限購 ' + p.limit + ' 件，已選 ' + pQty(pi) + ' 件</span>' : '') +
+         '</div><div class="pbody">';
+
+    if (p.copy) h += '<div class="copy">' + esc(p.copy) + '</div>';
+    if (p.spec) {
+      h += '<div class="spec">';
+      String(p.spec).split('\n').forEach(function (l) {
+        var i = l.indexOf('：');
+        if (i > 0) h += '<div><span>' + esc(l.slice(0, i)) + '</span><span>' + esc(l.slice(i + 1)) + '</span></div>';
+      });
+      h += '</div>';
+    }
+
+    if ((p.colors || []).length) {
+      h += '<h3>顏色</h3><div class="chips">';
+      p.colors.forEach(function (cc, ci) {
+        h += '<span class="chip' + (ci === colorSel[pi] ? ' on' : '') +
+             '" onclick="pick(' + pi + ',' + ci + ')">' + esc(cc.n) + '</span>';
+      });
+      h += '</div>';
+    }
+
+    var full = (p.limit > 0 && pQty(pi) >= p.limit);
+    if ((p.sizes || []).length) {
+      h += '<h3>尺寸' + (c ? ' · ' + esc(c.n) : '') + '</h3>';
+      p.sizes.forEach(function (s) {
+        var k = pi + '|' + colorSel[pi] + '|' + s, q = cart[k] || 0;
+        h += stepRow(k, esc(s), p.price, q, full, closed, pi);
+      });
+    } else {
+      var k0 = pi + '|' + colorSel[pi] + '|-', q0 = cart[k0] || 0;
+      h += '<h3>數量</h3>' + stepRow(k0, '數量', p.price, q0, full, closed, pi);
+    }
+
+    if (p.note) h += '<div class="note" style="margin:14px 0 0">' + esc(p.note) + '</div>';
+    h += '</div></div>';
+  });
+
+  if (C.notice) h += '<div class="note">' + esc(C.notice) + '</div>';
+
+  var t = tot();
+  h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件') : '尚未選購') +
+       '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
+       (closed
+         ? '<button disabled>已截止</button>'
+         : '<button' + (t.n ? '' : ' disabled') + ' onclick="go(2)">下一步</button>') +
+       '</div>';
+  return h;
+}
+
+function stepRow(k, label, price, q, full, closed, pi) {
+  return '<div class="srow' + (q ? ' has' : '') + '">' +
+    '<span class="sl">' + label +
+    '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span></span>' +
+    '<span class="stp">' +
+    '<button' + (q ? '' : ' disabled') + ' onclick="ch(\'' + k + '\',-1)">−</button>' +
+    '<span>' + q + '</span>' +
+    '<button' + ((full || closed) ? ' disabled' : '') + ' onclick="ch(\'' + k + '\',1,' + pi + ')">＋</button>' +
+    '</span></div>';
+}
+
+function view2() {
+  var t = tot();
+  var official = (C.mode === '直接成立正式訂單');
+  var h = '<div class="step"><h2>' + (official ? '確認訂單與付款' : '確認訂單') + '</h2><div class="lines">';
+
+  Object.keys(cart).forEach(function (k) {
+    var q = cart[k];
+    if (!q) return;
+    var a = k.split('|'), p = C.products[Number(a[0])];
+    var c = (p.colors || [])[Number(a[1])];
+    h += '<div class="ln"><div class="n"><b>' + esc(p.name) +
+         (c ? '－' + esc(c.n) : '') + '</b>' +
+         (a[2] !== '-' ? '<s>尺寸 ' + esc(a[2]) + '</s>' : '') +
+         '</div><span class="q">×' + q + '</span>' +
+         '<span class="a">' + (p.price * q).toLocaleString() + '</span></div>';
+  });
+  h += '</div><div class="sums">';
+
+  if (official) {
+    h += '<div><span>貨款小計</span><span>NT$' + t.sum.toLocaleString() + '</span></div>' +
+         '<div><span>出貨預留尾款（' + t.n + ' 件 × ' + DEPOSIT + '）</span>' +
+         '<span>−NT$' + t.dep.toLocaleString() + '</span></div>' +
+         '<div style="color:#a0907a;font-size:12.5px">尾款將於日後出貨時支付</div>' +
+         '<div class="tt"><span>應匯金額</span><span>NT$' + t.pay.toLocaleString() + '</span></div></div>';
+  } else {
+    h += '<div class="tt"><span>總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div></div>' +
+         '<div class="note" style="margin:0 0 14px">本次填單不代表確定有貨，' +
+         '待官方售出後，會再通知有沒有購買到。</div>';
+  }
+
+  
+  
+  if (!me || !me.uid) {
+    h += '</div><div class="gate">' +
+      '<div class="ic"><i class="bi bi-chat-dots-fill"></i></div>' +
+      '<h4>請先登入 LINE</h4>' +
+      '<p>為了往後訂單能夠順利單獨通知您，<br>請先登入後再進行下單。</p>' +
+      '<button class="btn" onclick="doLogin()">使用 LINE 登入</button>' +
+      '<p style="margin:12px 0 0;font-size:12px;color:#a0907a">' +
+      '你選的商品會保留，登入後可以直接繼續。</p>' +
+      '</div>' +
+      '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
+      '<div class="t">' + (official ? '應匯' : '總金額') +
+      '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
+      '<button disabled>送出訂單</button></div>';
+    return h;
+  }
+
+  h += '<div class="idbox"><h4>你的資料</h4>' +
+    (me.bound
+      ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
+      : '<div class="lead">第一次下單？填完就會自動記住你，下次進來會自動帶入。</div>') +
+    '<div class="fld"><label>社群暱稱 <b>*</b></label>' +
+    '<input id="fName" value="' + esc(me.name || me.lineName || '') + '" placeholder="社群裡使用的名字"></div>' +
+    '<div class="fld"><label>手機號碼 <b>*</b></label>' +
+    '<input id="fPhone" inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
+    '<div class="hint">用來對應你過去的訂單，請填常用號碼。</div></div>' +
+    '<div class="fld"><label>電子信箱 <b>*</b></label>' +
+    '<input id="fMail" value="' + esc(me.email || '') + '" placeholder="必填"></div>' +
+    (official
+      ? '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
+        '<input id="fLast5" inputmode="numeric" maxlength="5"></div>'
+      : '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
+        '<input id="fLast5" inputmode="numeric" maxlength="5"></div>') +
+    '</div>';
+
+  if (C.notice) {
+    h += '<div class="note" style="margin:0 0 12px">' + esc(C.notice) + '</div>' +
+      '<label class="agree"><input type="checkbox" id="fAgree"' + (agreed ? ' checked' : '') +
+      ' onchange="setAgree(this.checked)"><span>我已閱讀並同意本團注意事項</span></label>';
+  }
+  h += '</div>';
+
+  var ok = (!C.notice || agreed);
+  h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
+    '<div class="t">' + (official ? '應匯' : '總金額') +
+    '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
+    '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">送出訂單</button></div>';
+  return h;
+}
+
+function view3() {
+  var official = (C.mode === '直接成立正式訂單');
+  var t = window._lastTot || { pay: 0 };
+  return '<div class="done"><div class="ic"><i class="bi bi-check-circle-fill"></i></div>' +
+    '<h2>訂單已送出</h2><p>訂單處理中，5 分鐘後可以到系統查詢。</p></div>' +
+    (official
+      ? '<div class="step"><div class="sums"><div style="font-weight:700;color:#795238">' +
+        '若尚未匯款，匯款資訊可以至系統內查詢</div>' +
+        '<div class="tt"><span>應匯金額</span><span>NT$' + t.pay.toLocaleString() + '</span></div>' +
+        '</div></div>'
+      : '') +
+    '<div class="bar"><div class="t">　<b></b></div>' +
+    '<button onclick="location.href=\'/c\'">回到開團列表</button></div>';
+}
+
+ 
+function pick(pi, ci) { colorSel[pi] = ci; saveCart(); draw(); }
+function ch(k, d, pi) {
+  if (d > 0 && pi != null) {
+    var p = C.products[pi];
+    if (p.limit > 0 && pQty(pi) >= p.limit) {
+      alert('「' + p.name + '」每人限購 ' + p.limit + ' 件。');
+      return;
+    }
+  }
+  cart[k] = Math.max(0, (cart[k] || 0) + d);
+  if (!cart[k]) delete cart[k];
+  saveCart();
+  draw();
+}
+function setAgree(v) { agreed = v; draw(); }
+function go(s) { step = s; draw(); }
+
+function doLogin() {
+  if (typeof liff === 'undefined') { alert('LINE 環境載入失敗，請重新整理。'); return; }
+  saveCart();
+  
+  liff.login({ redirectUri: location.href });
+}
+
+function submitOrder() {
+  var name = (document.getElementById('fName') || {}).value || '';
+  var phone = (document.getElementById('fPhone') || {}).value || '';
+  var mail = (document.getElementById('fMail') || {}).value || '';
+  var last5 = (document.getElementById('fLast5') || {}).value || '';
+
+  name = name.trim(); phone = phone.trim(); mail = mail.trim(); last5 = last5.trim();
+
+  if (!name) { alert('請填社群暱稱。'); return; }
+  if (!/^09\d{8}$/.test(phone)) { alert('手機號碼要 09 開頭共 10 碼。'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { alert('請填正確的電子信箱。'); return; }
+  if (!/^\d{4,5}$/.test(last5)) { alert('請填匯款帳號後五碼。'); return; }
+  if (C.notice && !agreed) { alert('請先勾選同意注意事項。'); return; }
+
+  var items = [];
+  Object.keys(cart).forEach(function (k) {
+    var q = cart[k];
+    if (!q) return;
+    var a = k.split('|'), p = C.products[Number(a[0])];
+    var c = (p.colors || [])[Number(a[1])];
+    items.push({
+      product: p.name,
+      color: c ? c.n : '',
+      size: (a[2] === '-') ? '' : a[2],
+      qty: q,
+      price: p.price
+    });
+  });
+
+  var t = tot();
+  window._lastTot = t;
+
+  var payload = {
+    campaign: C.id,
+    lineUid: me.uid,
+    name: name, phone: phone, email: mail, last5: last5,
+    agreedAt: new Date().toISOString(),
+    items: items,
+    subtotal: t.sum,
+    deposit: t.dep
+  };
+
+  var btns = document.querySelectorAll('.bar button');
+  btns.forEach(function (b) { b.disabled = true; });
+  btns[btns.length - 1].textContent = '送出中…';
+
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.status === 'SUCCESS') {
+        clearCart();
+        try {
+          var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+          if (arr.indexOf(C.id) < 0) arr.push(C.id);
+          sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+        } catch (e) {}
+        step = 3;
+        draw();
+      } else {
+        alert('送出失敗：' + ((d && d.message) || '未知錯誤'));
+        draw();
+      }
+    })
+    .catch(function (e) {
+      alert('網路異常，訂單尚未送出。請確認後重試。');
+      draw();
+    });
+}
+
+ 
+var lbList = [], lbI = 0;
+function lb(pi, gi) {
+  var p = C.products[pi];
+  var c = (p.colors || [])[colorSel[pi]];
+  var base = (c && c.img && c.img.length) ? c.img.concat(p.images || []) : (p.images || []);
+  lbList = base.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+  lbI = Math.max(0, Math.min(gi || 0, lbList.length - 1));
+  lbShow();
+  document.getElementById('lb').className = 'lb on';
+}
+function lbShow() {
+  document.getElementById('lbimg').src = lbList[lbI] || '';
+  document.getElementById('lbix').textContent = (lbI + 1) + ' / ' + lbList.length;
+}
+function lbGo(d) {
+  if (!lbList.length) return;
+  lbI = (lbI + d + lbList.length) % lbList.length;
+  lbShow();
+}
+function lbClose() { document.getElementById('lb').className = 'lb'; }
+
+(function () {
+  var el = document.getElementById('lb'), x0 = null;
+  el.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; });
+  el.addEventListener('touchend', function (e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    x0 = null;
+    if (Math.abs(dx) > 40) lbGo(dx < 0 ? 1 : -1);
+  });
+  el.addEventListener('click', function (e) {
+    if (e.target.id === 'lb' || e.target.className === 'stage') lbClose();
+  });
+})();
+</script>
+</body>
+</html>
