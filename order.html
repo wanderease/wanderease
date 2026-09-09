@@ -141,6 +141,11 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .lb .bt .ix{flex:1;font-size:13px;text-align:center}
 .lb .bt button{background:none;border:0;color:#e7e0d6;font-size:24px}
 
+.ld{display:inline-block;width:11px;height:11px;border:2px solid var(--line);
+    border-top-color:var(--brown);border-radius:50%;animation:sp .7s linear infinite;
+    vertical-align:-1px;margin-right:4px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.fld input:disabled{background:#f3efe9;color:#a0907a}
 .empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 </style>
 </head>
@@ -175,6 +180,7 @@ var cart = {};
 var agreed = false;
 var me = null;
 var ordered = null;   
+var meLoading = false;  
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -253,6 +259,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 
   
   if (me && me.uid && me.bound) return;
+  if (me && me.uid) meLoading = true;
 
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
@@ -263,11 +270,18 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       me.lineName = p.displayName;
       if (!me.name) me.name = p.displayName;
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
-      if (step === 2) draw();
+      
+      
+      
+      meLoading = true;
       loadMember(me.uid);
       checkOrdered(me.uid);
+      if (step === 2) draw();
     });
-  }).catch(function () {});
+  }).catch(function () {
+    meLoading = false;
+    if (step === 2) draw();
+  });
 
   
 
@@ -289,9 +303,11 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
     fetch(GAS_URL + '?action=getMemberData&lineUid=' + encodeURIComponent(uid))
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d) return;
-        if (d.status === 'MAINTENANCE') return;
-        if (d.status !== 'BOUND') return;
+        meLoading = false;
+        if (!d || d.status === 'MAINTENANCE' || d.status !== 'BOUND') {
+          if (step === 2) draw();
+          return;
+        }
 
         var u = d.userData || d.user || {};
         var pick = function (keys) {
@@ -314,16 +330,25 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
         
         if (step === 2) fillIfEmpty();
       })
-      .catch(function () {});
+      .catch(function () {
+        meLoading = false;
+        if (step === 2) draw();
+      });
   }
 
+  
+
   function fillIfEmpty() {
-    [['fName', me.name], ['fPhone', me.phone], ['fMail', me.email]].forEach(function (x) {
-      var el = document.getElementById(x[0]);
-      if (el && !el.value && x[1]) el.value = x[1];
+    var keep = {};
+    ['fName', 'fPhone', 'fMail', 'fLast5'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.value) keep[id] = el.value;
     });
-    var lead = document.querySelector('.idbox .lead');
-    if (lead && me.bound) lead.textContent = '已帶入你的會員資料，如有變更請直接修改。';
+    draw();
+    Object.keys(keep).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = keep[id];
+    });
   }
 })();
 
@@ -520,22 +545,25 @@ function view2() {
     return h;
   }
 
+  
+  
+  
+  var dis = meLoading ? ' disabled' : '';
   h += '<div class="idbox"><h4>你的資料</h4>' +
-    (me.bound
-      ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
-      : '<div class="lead">第一次下單？填完就會自動記住你，下次進來會自動帶入。</div>') +
+    (meLoading
+      ? '<div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div>'
+      : (me.bound
+        ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
+        : '<div class="lead">第一次下單？填完就會自動記住你，下次進來會自動帶入。</div>')) +
     '<div class="fld"><label>社群暱稱 <b>*</b></label>' +
-    '<input id="fName" value="' + esc(me.name || me.lineName || '') + '" placeholder="社群裡使用的名字"></div>' +
+    '<input id="fName"' + dis + ' value="' + esc(me.name || me.lineName || '') + '" placeholder="社群裡使用的名字"></div>' +
     '<div class="fld"><label>手機號碼 <b>*</b></label>' +
-    '<input id="fPhone" inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
+    '<input id="fPhone"' + dis + ' inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
     '<div class="hint">用來對應你過去的訂單，請填常用號碼。</div></div>' +
     '<div class="fld"><label>電子信箱 <b>*</b></label>' +
-    '<input id="fMail" value="' + esc(me.email || '') + '" placeholder="必填"></div>' +
-    (official
-      ? '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
-        '<input id="fLast5" inputmode="numeric" maxlength="5"></div>'
-      : '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
-        '<input id="fLast5" inputmode="numeric" maxlength="5"></div>') +
+    '<input id="fMail"' + dis + ' value="' + esc(me.email || '') + '" placeholder="必填"></div>' +
+    '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
+    '<input id="fLast5"' + dis + ' inputmode="numeric" maxlength="5"></div>' +
     '</div>';
 
   if (C.notice) {
@@ -545,11 +573,12 @@ function view2() {
   }
   h += '</div>';
 
-  var ok = (!C.notice || agreed);
+  var ok = (!C.notice || agreed) && !meLoading;
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
     '<div class="t">' + (official ? '應匯' : '總金額') +
     '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
-    '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">送出訂單</button></div>';
+    '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">' +
+    (meLoading ? '讀取中…' : '送出訂單') + '</button></div>';
   return h;
 }
 
