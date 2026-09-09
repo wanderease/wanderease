@@ -174,6 +174,7 @@ var colorSel = {};
 var cart = {};
 var agreed = false;
 var me = null;
+var ordered = null;   
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -264,8 +265,23 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
       if (step === 2) draw();
       loadMember(me.uid);
+      checkOrdered(me.uid);
     });
   }).catch(function () {});
+
+  
+
+  function checkOrdered(uid) {
+    fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' + encodeURIComponent(uid) +
+          '&campaign=' + encodeURIComponent(CODE))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ordered) return;
+        ordered = d;
+        if (step === 1) draw(true);
+      })
+      .catch(function () {});
+  }
 
   
 
@@ -317,9 +333,52 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 function draw(toTop) {
   var y = window.scrollY;
   document.getElementById('root').innerHTML =
-    (step === 1 ? view1() : (step === 2 ? view2() : view3()));
+    (ordered && step !== 3) ? viewOrdered()
+      : (step === 1 ? view1() : (step === 2 ? view2() : view3()));
   if (toTop) window.scrollTo(0, 0);
   else window.scrollTo(0, y);
+}
+
+
+
+function viewOrdered() {
+  var official = (C.mode === '直接成立正式訂單');
+  var when = '';
+  if (ordered.at) {
+    var dt = new Date(ordered.at);
+    if (!isNaN(dt)) {
+      var p = function (n) { return (n < 10 ? '0' : '') + n; };
+      when = (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' +
+             p(dt.getHours()) + ':' + p(dt.getMinutes());
+    }
+  }
+
+  var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
+  if (C.cover) h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
+  h += '<div class="hd"><div class="bd">' + esc(C.brand) + '</div>' +
+       '<h1>' + esc(C.name) + '</h1></div>';
+
+  h += '<div class="gate" style="text-align:left">' +
+    '<div class="ic" style="text-align:center"><i class="bi bi-check-circle-fill"></i></div>' +
+    '<h4 style="text-align:center">您已填過單</h4>' +
+    '<p style="text-align:center">' +
+    (official
+      ? '正式訂單已進入採購流程，如需修改請聯繫客服。'
+      : '若要新增或修改品項，請至會員中心，或聯繫客服。') +
+    '</p>' +
+    '<div class="sums" style="margin:0 0 14px">' +
+    (when ? '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' : '') +
+    (ordered.orderNo ? '<div><span>訂單編號</span><span style="font-size:12px">' +
+       esc(ordered.orderNo) + '</span></div>' : '') +
+    '<div><span>處理狀態</span><span>' +
+    (ordered.state === '已寫入' ? '已成立' : '處理中，約 5 分鐘') + '</span></div>' +
+    '</div>' +
+    '<a class="btn" href="/m">前往會員中心</a>' +
+    '</div>';
+
+  h += '<div class="bar"><div class="t">　<b></b></div>' +
+       '<button onclick="location.href=\'/c\'">回開團列表</button></div>';
+  return h;
 }
 
 function view1() {
