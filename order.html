@@ -204,6 +204,10 @@ var me = null;
 var ordered = null;   
 var meLoading = false;  
 
+
+
+var touched = {};
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -402,9 +406,11 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 
   
 
+  
+
   function fillIfEmpty() {
     var keep = {};
-    ['fName', 'fPhone', 'fMail', 'fLast5'].forEach(function (id) {
+    Object.keys(touched).forEach(function (id) {
       var el = document.getElementById(id);
       if (el && el.value) keep[id] = el.value;
     });
@@ -673,6 +679,14 @@ function view2() {
       ' onchange="setAgree(this.checked)"><span>我已閱讀並同意本團注意事項</span></label>';
   }
   h += '</div>';
+
+  
+  setTimeout(function () {
+    ['fName', 'fPhone', 'fMail', 'fLast5'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.oninput = function () { touched[id] = 1; };
+    });
+  }, 0);
 
   var ok = (!C.notice || agreed) && !meLoading;
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
