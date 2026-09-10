@@ -371,10 +371,6 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 (function () {
   try { me = JSON.parse(sessionStorage.getItem('we_me') || 'null'); } catch (e) {}
 
-  
-  if (me && me.uid && me.bound) return;
-  if (me && me.uid) meLoading = true;
-
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
     if (!liff.isLoggedIn()) return;
@@ -386,93 +382,43 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       
       if (!me.name && !me.bound) me.name = p.displayName;
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
-      
-      
-      
+
       meLoading = true;
-      loadMember(me.uid);
-      checkOrdered(me.uid);
-      loadPayInfo(me.uid);
       if (step === 2) draw();
+      prep(me.uid);
     });
   }).catch(function () {
     meLoading = false;
     if (step === 2) draw();
   });
 
-  
-
-  function loadPayInfo(uid) {
-    if (C.mode !== '直接成立正式訂單') return;
-    fetch(GAS_URL + '?action=campaignPayInfo&lineUid=' + encodeURIComponent(uid) +
+  function prep(uid) {
+    fetch(GAS_URL + '?action=campaignPrep&lineUid=' + encodeURIComponent(uid) +
           '&campaign=' + encodeURIComponent(CODE))
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || d.status !== 'SUCCESS' || !d.data || !d.data.needPay) return;
-        payInfo = d.data;
-        if (step === 2) draw();
-      })
-      .catch(function () {});
-  }
-
-  
-
-  function checkOrdered(uid) {
-    fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' + encodeURIComponent(uid) +
-          '&campaign=' + encodeURIComponent(CODE))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || !d.ordered) return;
-        ordered = d;
-        if (step === 1) draw(true);
-      })
-      .catch(function () {});
-  }
-
-  
-
-  function loadMember(uid) {
-    fetch(GAS_URL + '?action=getMemberData&lineUid=' + encodeURIComponent(uid))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
+      .then(function (res) {
         meLoading = false;
-        if (!d || d.status === 'MAINTENANCE' || d.status !== 'BOUND') {
-          if (step === 2) draw();
-          return;
+        var d = (res && res.data) || {};
+
+        if (d.me && d.me.bound) {
+          me.bound = true;
+          if (d.me.name) me.name = d.me.name;
+          me.phone = d.me.phone || '';
+          me.email = d.me.email || '';
+          try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
         }
-
-        var u = d.userData || d.user || {};
-        var pick = function (keys) {
-          for (var i = 0; i < keys.length; i++) {
-            var v = u[keys[i]];
-            if (v != null && String(v).trim() !== '') return String(v).trim();
-          }
-          return '';
-        };
-
-        me.bound = true;
-        
-        
-        var zh = pick(['最新社群名稱', '社群名稱', '姓名']);
-        if (zh) me.name = zh;
-        else if (!me.name) me.name = me.lineName || '';
-        me.phone = pick(['手機號碼', '手機']);
-        me.email = pick(['最新 Email', '常用 Email', 'EMAIL', 'Email']);
-
-        try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
-        try { sessionStorage.setItem('we_member', JSON.stringify(d)); } catch (e) {}
+        if (d.pay && d.pay.needPay) payInfo = d.pay;
+        if (d.ordered) ordered = d.ordered;
 
         
-        
-        if (step === 2) fillIfEmpty();
+        if (ordered) draw(true);
+        else if (step === 2) fillIfEmpty();
       })
       .catch(function () {
         meLoading = false;
         if (step === 2) draw();
       });
   }
-
-  
 
   
 
