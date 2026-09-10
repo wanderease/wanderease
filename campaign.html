@@ -108,6 +108,14 @@ function fmtDue(iso) {
   return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
 
+ 
+function fmtDay(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d)) return '';
+  return (d.getMonth() + 1) + '/' + d.getDate();
+}
+
 function render() {
   var list = document.getElementById('list');
   document.getElementById('sk').style.display = 'none';
@@ -134,9 +142,9 @@ function render() {
       '<s>' + esc(c.brand) + ' · ' + n + ' 個商品</s>' +
       '<div class="tags">' +
         (closed
-          ? '<span class="tag close">已於 ' + esc(fmtDue(c.due)) + ' 截止</span>'
+          ? '<span class="tag close">' + esc(fmtDay(c.due)) + ' 已截止</span>'
           : '<span class="tag open">收單至 ' + esc(fmtDue(c.due)) + '</span>') +
-        (MINE[c.id] ? '<span class="tag mine">你已填過單</span>' : '') +
+        (MINE[c.id] ? '<span class="tag mine">已填單</span>' : '') +
       '</div></div></a>';
   }).join('');
 }
