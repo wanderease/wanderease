@@ -139,6 +139,11 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
     flex-direction:column;align-items:center;justify-content:center}
 .lb.on{display:flex}
 .lb .stage{width:100%;flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+.lbtrack{width:100%;height:100%;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+         -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.lbtrack::-webkit-scrollbar{height:0}
+.lbtrack .cell{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;
+               scroll-snap-align:center}
 .lb img{max-width:92%;max-height:100%;object-fit:contain;border-radius:6px}
 .lb .nv{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;
         border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:0;font-size:22px}
@@ -163,7 +168,7 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 <div class="lb" id="lb">
   <div class="stage">
     <button class="nv p" onclick="lbGo(-1)">‹</button>
-    <img id="lbimg" alt="">
+    <div class="lbtrack" id="lbtrack" onscroll="lbOnScroll()"></div>
     <button class="nv n" onclick="lbGo(1)">›</button>
   </div>
   <div class="bt"><span class="ix" id="lbix"></span><button onclick="lbClose()">✕</button></div>
@@ -668,6 +673,26 @@ function view3() {
 }
 
  
+
+ 
+function onTrack(pi) {
+  var tk = document.getElementById('tk' + pi);
+  var dt = document.getElementById('dt' + pi);
+  if (!tk || !dt) return;
+  var i = Math.round(tk.scrollLeft / Math.max(1, tk.clientWidth));
+  Array.prototype.forEach.call(dt.children, function (el, j) {
+    el.className = (j === i) ? 'on' : '';
+  });
+}
+
+ 
+function goSlide(pi, gi) {
+  var tk = document.getElementById('tk' + pi);
+  if (!tk) return;
+  tk.scrollTo({ left: gi * tk.clientWidth, behavior: 'smooth' });
+}
+
+ 
 function pick(pi, ci) {
   colorSel[pi] = ci;
   saveCart();
@@ -771,37 +796,62 @@ function submitOrder() {
 
  
 var lbList = [], lbI = 0;
+
+
+
 function lb(pi, gi) {
   var p = C.products[pi];
   var c = (p.colors || [])[colorSel[pi]];
   var base = (c && c.img && c.img.length) ? c.img.concat(p.images || []) : (p.images || []);
   lbList = base.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
+  if (!lbList.length) return;
   lbI = Math.max(0, Math.min(gi || 0, lbList.length - 1));
-  lbShow();
+
+  var tk = document.getElementById('lbtrack');
+  tk.innerHTML = lbList.map(function (u) {
+    return '<div class="cell"><img src="' + esc(u) + '" alt=""></div>';
+  }).join('');
+
   document.getElementById('lb').className = 'lb on';
+  
+  requestAnimationFrame(function () {
+    tk.scrollLeft = lbI * tk.clientWidth;
+    lbLabel();
+  });
 }
-function lbShow() {
-  document.getElementById('lbimg').src = lbList[lbI] || '';
+
+function lbLabel() {
   document.getElementById('lbix').textContent = (lbI + 1) + ' / ' + lbList.length;
 }
+
+function lbOnScroll() {
+  var tk = document.getElementById('lbtrack');
+  var i = Math.round(tk.scrollLeft / Math.max(1, tk.clientWidth));
+  if (i !== lbI) { lbI = i; lbLabel(); }
+}
+
 function lbGo(d) {
   if (!lbList.length) return;
-  lbI = (lbI + d + lbList.length) % lbList.length;
-  lbShow();
+  var tk = document.getElementById('lbtrack');
+  var i = (lbI + d + lbList.length) % lbList.length;
+  tk.scrollTo({ left: i * tk.clientWidth, behavior: 'smooth' });
 }
+
 function lbClose() { document.getElementById('lb').className = 'lb'; }
 
 (function () {
-  var el = document.getElementById('lb'), x0 = null;
-  el.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; });
-  el.addEventListener('touchend', function (e) {
-    if (x0 === null) return;
-    var dx = e.changedTouches[0].clientX - x0;
-    x0 = null;
-    if (Math.abs(dx) > 40) lbGo(dx < 0 ? 1 : -1);
-  });
+  var el = document.getElementById('lb');
   el.addEventListener('click', function (e) {
-    if (e.target.id === 'lb' || e.target.className === 'stage') lbClose();
+    
+    var t = e.target;
+    if (t.id === 'lb' || t.id === 'lbtrack' ||
+        t.className === 'stage' || t.className === 'cell') lbClose();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (el.className.indexOf('on') < 0) return;
+    if (e.key === 'ArrowLeft') lbGo(-1);
+    if (e.key === 'ArrowRight') lbGo(1);
+    if (e.key === 'Escape') lbClose();
   });
 })();
 </script>
