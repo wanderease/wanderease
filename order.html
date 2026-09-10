@@ -168,6 +168,11 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
     vertical-align:-1px;margin-right:4px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .fld input:disabled{background:#f3efe9;color:#a0907a}
+.pay{background:#f4f7f3;border:1px solid #cfdbcb;border-radius:14px;padding:15px 16px;margin-bottom:14px}
+.pay h4{font-size:13px;font-weight:800;color:#4a6132;margin-bottom:9px}
+.pay .r{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:14px}
+.pay .acc{font-size:20px;font-weight:800;letter-spacing:.04em;color:#2b3d27;
+          font-variant-numeric:tabular-nums}
  
 .resume{margin:0 18px 14px;background:#fdf6ec;border:1px solid #f0dcc0;border-radius:12px;
         padding:12px 14px;display:flex;align-items:center;gap:10px}
@@ -210,6 +215,7 @@ var cart = {};
 var agreed = false;
 var me = null;
 var ordered = null;   
+var payInfo = null;   
 var meLoading = false;  
 
 
@@ -386,12 +392,28 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       meLoading = true;
       loadMember(me.uid);
       checkOrdered(me.uid);
+      loadPayInfo(me.uid);
       if (step === 2) draw();
     });
   }).catch(function () {
     meLoading = false;
     if (step === 2) draw();
   });
+
+  
+
+  function loadPayInfo(uid) {
+    if (C.mode !== '直接成立正式訂單') return;
+    fetch(GAS_URL + '?action=campaignPayInfo&lineUid=' + encodeURIComponent(uid) +
+          '&campaign=' + encodeURIComponent(CODE))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || d.status !== 'SUCCESS' || !d.data || !d.data.needPay) return;
+        payInfo = d.data;
+        if (step === 2) draw();
+      })
+      .catch(function () {});
+  }
 
   
 
@@ -629,8 +651,8 @@ function view1() {
     h += '</div></div>';
   });
 
-  if (C.notice) h += '<div class="note">' + esc(C.notice) + '</div>';
-
+  
+  
   var t = tot();
   h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件') : '尚未選購') +
        '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
@@ -681,6 +703,18 @@ function view2() {
          '<span>−NT$' + t.dep.toLocaleString() + '</span></div>' +
          '<div style="color:#a0907a;font-size:12.5px">尾款將於日後出貨時支付</div>' +
          '<div class="tt"><span>應匯金額</span><span>NT$' + t.pay.toLocaleString() + '</span></div></div>';
+
+    
+    
+    h += '<div class="pay">' +
+      (payInfo
+        ? '<h4>請匯款至以下帳戶</h4>' +
+          '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
+          '<div class="r" style="margin-top:6px"><span></span>' +
+          '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>'
+        : '<h4>請匯款至以下帳戶</h4>' +
+          '<div class="r"><span class="ld"></span><span>讀取收款資訊中…</span></div>') +
+      '</div>';
   } else {
     h += '<div class="tt"><span>總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div></div>' +
          '<div class="note" style="margin:0 0 14px">本次填單不代表確定有貨，' +
