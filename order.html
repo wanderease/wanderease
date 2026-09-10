@@ -392,13 +392,25 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
     if (step === 2) draw();
   });
 
-  function prep(uid) {
+  
+
+  function prep(uid, tries) {
+    tries = tries || 0;
+
     fetch(GAS_URL + '?action=campaignPrep&lineUid=' + encodeURIComponent(uid) +
           '&campaign=' + encodeURIComponent(CODE))
       .then(function (r) { return r.json(); })
       .then(function (res) {
-        meLoading = false;
         var d = (res && res.data) || {};
+
+        
+        
+        if (d.me && d.me.failed && tries < 2) {
+          setTimeout(function () { prep(uid, tries + 1); }, 1200 * (tries + 1));
+          return;
+        }
+
+        meLoading = false;
 
         if (d.me && d.me.bound) {
           me.bound = true;
@@ -415,6 +427,10 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
         else if (step === 2) fillIfEmpty();
       })
       .catch(function () {
+        if (tries < 2) {
+          setTimeout(function () { prep(uid, tries + 1); }, 1200 * (tries + 1));
+          return;
+        }
         meLoading = false;
         if (step === 2) draw();
       });
