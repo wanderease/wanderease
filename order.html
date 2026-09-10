@@ -24,7 +24,8 @@ body{
 
 .crumb{padding:12px 18px 0}
 .crumb a{font-size:13px;color:var(--mute);text-decoration:none}
-.cover{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:#e6ded5;margin-top:10px}
+ 
+.cover{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e6ded5;margin-top:10px}
 .hd{padding:16px 18px 8px}
 .hd .bd{font-size:11.5px;color:var(--mute);letter-spacing:.1em}
 .hd h1{font-size:22px;font-weight:800;margin:3px 0 8px;line-height:1.35}
@@ -41,8 +42,13 @@ body{
             background:#e6ded5;cursor:zoom-in;border:2px solid transparent}
 .thumbs img.on{border-color:var(--brown)}
 .pinfo{padding:12px 15px 0}
-.pinfo h2{font-size:18px;font-weight:800;line-height:1.35}
-.pinfo .px{font-size:20px;font-weight:800;margin-top:4px}
+ 
+.pinfo .row1{display:flex;align-items:flex-start;gap:12px}
+.pinfo h2{font-size:18px;font-weight:800;line-height:1.35;flex:1;min-width:0}
+.pinfo .px{font-size:20px;font-weight:800;flex:0 0 auto;text-align:right;white-space:nowrap;
+           font-variant-numeric:tabular-nums}
+.pinfo .px em{font-size:12.5px;font-weight:400;color:var(--mute);font-style:normal;
+              margin-left:2px}
 .pinfo .lim{display:inline-block;font-size:11.5px;background:#fdf1e2;color:#96560a;
             border:1px solid #f0d7b6;padding:1px 9px;border-radius:99px;margin-top:7px}
 .pbody{padding:0 15px}
@@ -213,16 +219,52 @@ function loadCart() {
 function clearCart() { try { localStorage.removeItem(CART_KEY); } catch (e) {} }
 
  
+
+
+
+function priceOf(pi, ci, size) {
+  var p = C.products[pi] || {};
+  var base = p.price || 0;
+  if (!p.px) return base;
+  var c = (p.colors || [])[ci];
+  var key = (c ? c.n : '') + '|' + (size === '-' ? '' : size);
+  return (p.px[key] != null) ? p.px[key] : base;
+}
+
 function tot() {
   var n = 0, s = 0;
   Object.keys(cart).forEach(function (k) {
     var q = cart[k];
     if (!q) return;
     n += q;
-    var pi = Number(k.split('|')[0]);
-    s += q * ((C.products[pi] || {}).price || 0);
+    var a = k.split('|');
+    s += q * priceOf(Number(a[0]), Number(a[1]), a[2]);
   });
   return { n: n, sum: s, dep: n * DEPOSIT, pay: s - n * DEPOSIT };
+}
+
+
+
+function selPrice(pi) {
+  var p = C.products[pi] || {};
+  var ci = colorSel[pi] || 0;
+  var sizes = (p.sizes || []).filter(Boolean);
+
+  if (!sizes.length) return priceOf(pi, ci, '-');
+
+  var vals = sizes.map(function (s) { return priceOf(pi, ci, s); });
+  var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  return (min === max) ? min : null;
+}
+
+ 
+function priceRange(pi) {
+  var p = C.products[pi] || {};
+  var base = p.price || 0;
+  if (!p.px || !Object.keys(p.px).length) return { min: base, max: base };
+  var vals = [base];
+  Object.keys(p.px).forEach(function (k) { vals.push(p.px[k]); });
+  return { min: Math.min.apply(null, vals), max: Math.max.apply(null, vals) };
 }
 function pQty(pi) {
   var n = 0;
@@ -268,7 +310,9 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       me = me || {};
       me.uid = p.userId;
       me.lineName = p.displayName;
-      if (!me.name) me.name = p.displayName;
+      
+      
+      if (!me.name && !me.bound) me.name = p.displayName;
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
       
       
@@ -319,7 +363,11 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
         };
 
         me.bound = true;
-        me.name = pick(['最新社群名稱', '社群名稱', '姓名']) || me.name;
+        
+        
+        var zh = pick(['最新社群名稱', '社群名稱', '姓名']);
+        if (zh) me.name = zh;
+        else if (!me.name) me.name = me.lineName || '';
         me.phone = pick(['手機號碼', '手機']);
         me.email = pick(['最新 Email', '常用 Email', 'EMAIL', 'Email']);
 
@@ -434,8 +482,18 @@ function view1() {
       });
       h += '</div>';
     }
-    h += '<div class="pinfo"><h2>' + esc(p.name) + '</h2>' +
-         '<div class="px">NT$' + (p.price || 0).toLocaleString() + '</div>' +
+    
+    
+    
+    var rg = priceRange(pi);
+    var sel = selPrice(pi);
+    var shown = (sel != null) ? sel : rg.min;
+    var showFrom = (sel == null && rg.max > rg.min);
+    h += '<div class="pinfo"><div class="row1">' +
+         '<h2>' + esc(p.name) + '</h2>' +
+         '<div class="px">NT$' + shown.toLocaleString() +
+         (showFrom ? '<em>起</em>' : '') +
+         '</div></div>' +
          (p.limit ? '<span class="lim">每人限購 ' + p.limit + ' 件，已選 ' + pQty(pi) + ' 件</span>' : '') +
          '</div><div class="pbody">';
 
@@ -449,8 +507,11 @@ function view1() {
       h += '</div>';
     }
 
+    var lb = String(p.optLabel || '').split('|');
+    var ow = (lb[0] || '').trim() || '顏色';
+    var sw = (lb[1] || '').trim() || '尺寸';
     if ((p.colors || []).length) {
-      h += '<h3>顏色</h3><div class="chips">';
+      h += '<h3>' + esc(ow) + '</h3><div class="chips">';
       p.colors.forEach(function (cc, ci) {
         h += '<span class="chip' + (ci === colorSel[pi] ? ' on' : '') +
              '" onclick="pick(' + pi + ',' + ci + ')">' + esc(cc.n) + '</span>';
@@ -460,14 +521,18 @@ function view1() {
 
     var full = (p.limit > 0 && pQty(pi) >= p.limit);
     if ((p.sizes || []).length) {
-      h += '<h3>尺寸' + (c ? ' · ' + esc(c.n) : '') + '</h3>';
+      
+      var vals = p.sizes.map(function (s) { return priceOf(pi, colorSel[pi], s); });
+      var varies = Math.min.apply(null, vals) !== Math.max.apply(null, vals);
+      h += '<h3>' + esc(sw) + (c ? ' · ' + esc(c.n) : '') + '</h3>';
       p.sizes.forEach(function (s) {
         var k = pi + '|' + colorSel[pi] + '|' + s, q = cart[k] || 0;
-        h += stepRow(k, esc(s), p.price, q, full, closed, pi);
+        h += stepRow(k, esc(s), priceOf(pi, colorSel[pi], s), q, full, closed, pi, varies);
       });
     } else {
       var k0 = pi + '|' + colorSel[pi] + '|-', q0 = cart[k0] || 0;
-      h += '<h3>數量</h3>' + stepRow(k0, '數量', p.price, q0, full, closed, pi);
+      h += '<h3>數量</h3>' +
+           stepRow(k0, '數量', 0, q0, full, closed, pi, false);
     }
 
     if (p.note) h += '<div class="note" style="margin:14px 0 0">' + esc(p.note) + '</div>';
@@ -486,10 +551,13 @@ function view1() {
   return h;
 }
 
-function stepRow(k, label, price, q, full, closed, pi) {
+
+
+function stepRow(k, label, price, q, full, closed, pi, showPrice) {
   return '<div class="srow' + (q ? ' has' : '') + '">' +
     '<span class="sl">' + label +
-    '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span></span>' +
+    (showPrice ? '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span>' : '') +
+    '</span>' +
     '<span class="stp">' +
     '<button' + (q ? '' : ' disabled') + ' onclick="ch(\'' + k + '\',-1)">−</button>' +
     '<span>' + q + '</span>' +
@@ -507,11 +575,13 @@ function view2() {
     if (!q) return;
     var a = k.split('|'), p = C.products[Number(a[0])];
     var c = (p.colors || [])[Number(a[1])];
+    var up = priceOf(Number(a[0]), Number(a[1]), a[2]);
     h += '<div class="ln"><div class="n"><b>' + esc(p.name) +
          (c ? '－' + esc(c.n) : '') + '</b>' +
-         (a[2] !== '-' ? '<s>尺寸 ' + esc(a[2]) + '</s>' : '') +
+         '<s>' + (a[2] !== '-' ? '尺寸 ' + esc(a[2]) + ' · ' : '') +
+         'NT$' + up.toLocaleString() + '</s>' +
          '</div><span class="q">×' + q + '</span>' +
-         '<span class="a">' + (p.price * q).toLocaleString() + '</span></div>';
+         '<span class="a">' + (up * q).toLocaleString() + '</span></div>';
   });
   h += '</div><div class="sums">';
 
@@ -651,7 +721,7 @@ function submitOrder() {
       color: c ? c.n : '',
       size: (a[2] === '-') ? '' : a[2],
       qty: q,
-      price: p.price
+      price: priceOf(Number(a[0]), Number(a[1]), a[2])
     });
   });
 
