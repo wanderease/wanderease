@@ -168,6 +168,14 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
     vertical-align:-1px;margin-right:4px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .fld input:disabled{background:#f3efe9;color:#a0907a}
+ 
+.resume{margin:0 18px 14px;background:#fdf6ec;border:1px solid #f0dcc0;border-radius:12px;
+        padding:12px 14px;display:flex;align-items:center;gap:10px}
+.resume .t{flex:1;font-size:13px;color:#7a5a2e;min-width:0}
+.resume button{font-family:inherit;font-size:13px;font-weight:700;border-radius:9px;
+               padding:8px 14px;border:0;white-space:nowrap}
+.resume .yes{background:var(--brown);color:#fff}
+.resume .no{background:transparent;color:#96825f}
 .empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 </style>
 </head>
@@ -223,19 +231,57 @@ function fmtDue(iso) {
 
  
 var CART_KEY = 'we_cart_' + CODE;
+var RESUME_KEY = 'we_resume_' + CODE;   
+var pending = null;                      
+
 function saveCart() {
-  try { localStorage.setItem(CART_KEY, JSON.stringify({ cart: cart, sel: colorSel, at: Date.now() })); } catch (e) {}
+  try {
+    localStorage.setItem(CART_KEY,
+      JSON.stringify({ cart: cart, sel: colorSel, at: Date.now() }));
+  } catch (e) {}
 }
+
+
+
 function loadCart() {
   try {
     var o = JSON.parse(localStorage.getItem(CART_KEY) || 'null');
     if (!o) return;
     
     if (Date.now() - (o.at || 0) > 3 * 864e5) { localStorage.removeItem(CART_KEY); return; }
-    cart = o.cart || {};
-    colorSel = o.sel || {};
+
+    var n = Object.keys(o.cart || {}).reduce(function (s, k) {
+      return s + (o.cart[k] || 0);
+    }, 0);
+    if (!n) return;
+
+    var backFromLogin = !!localStorage.getItem(RESUME_KEY);
+    if (backFromLogin) {
+      localStorage.removeItem(RESUME_KEY);
+      cart = o.cart || {};
+      colorSel = o.sel || {};
+      return;
+    }
+    pending = { cart: o.cart || {}, sel: o.sel || {}, n: n };
   } catch (e) {}
 }
+
+ 
+function resumeCart() {
+  if (!pending) return;
+  cart = pending.cart;
+  colorSel = pending.sel;
+  pending = null;
+  draw(true);
+}
+
+ 
+function dropCart() {
+  pending = null;
+  clearCart();
+  draw();
+}
+
 function clearCart() { try { localStorage.removeItem(CART_KEY); } catch (e) {} }
 
  
@@ -486,6 +532,13 @@ function view1() {
        (closed ? '已於 ' + fmtDue(C.due) + ' 截止' : '收單至 ' + fmtDue(C.due)) +
        '</span></div>';
   if (C.about) h += '<div class="about">' + esc(C.about) + '</div>';
+
+  if (pending) {
+    h += '<div class="resume"><div class="t">' +
+      '<b>上次選了 ' + pending.n + ' 件</b>，要繼續嗎？</div>' +
+      '<button class="no" onclick="dropCart()">重新選</button>' +
+      '<button class="yes" onclick="resumeCart()">繼續</button></div>';
+  }
 
   (C.products || []).forEach(function (p, pi) {
     if (colorSel[pi] == null) colorSel[pi] = 0;
@@ -758,6 +811,7 @@ function doLogin() {
   if (typeof liff === 'undefined') { alert('LINE 環境載入失敗，請重新整理。'); return; }
   saveCart();
   
+  try { localStorage.setItem(RESUME_KEY, '1'); } catch (e) {}
   liff.login({ redirectUri: location.href });
 }
 
