@@ -861,13 +861,29 @@ function submitOrder() {
   btns.forEach(function (b) { b.disabled = true; });
   btns[btns.length - 1].textContent = '送出中…';
 
-  fetch(GAS_URL, {
+  
+  
+  
+  
+  
+  fetch(GAS_URL + '?action=campaignSubmit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) })
   })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
+    .then(function (r) { return r.text(); })
+    .then(function (raw) {
+      var d;
+      try {
+        d = JSON.parse(raw);
+      } catch (e) {
+        
+        
+        console.error('非 JSON 回應：', raw.substring(0, 200));
+        alert('送出失敗：伺服器回應格式不正確，請聯繫客服。');
+        draw();
+        return;
+      }
       if (d && d.status === 'SUCCESS') {
         clearCart();
         try {
