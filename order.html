@@ -35,7 +35,18 @@ body{
 
 .prod{margin:0 18px 16px;background:var(--white);border:1px solid var(--line);
       border-radius:16px;overflow:hidden;padding-bottom:15px}
-.big{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e6ded5;cursor:zoom-in}
+ 
+.swipe{position:relative}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+       -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.track::-webkit-scrollbar{height:0}
+.big{width:100%;flex:0 0 100%;aspect-ratio:1;object-fit:cover;display:block;
+     background:#e6ded5;cursor:zoom-in;scroll-snap-align:center}
+.dots{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:5px;
+      pointer-events:none}
+.dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55);
+        box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.dots i.on{background:#fff;width:16px;border-radius:3px}
 .thumbs{display:flex;gap:6px;overflow-x:auto;padding:8px 13px 0;-webkit-overflow-scrolling:touch}
 .thumbs::-webkit-scrollbar{height:0}
 .thumbs img{width:54px;height:54px;object-fit:cover;border-radius:7px;flex:0 0 auto;
@@ -478,12 +489,27 @@ function view1() {
     var main = gal[0] || '';
 
     h += '<div class="prod">';
-    h += main ? '<img class="big" src="' + esc(main) + '" alt="" onclick="lb(' + pi + ',0)">'
-              : '<div class="big"></div>';
+    if (gal.length) {
+      h += '<div class="swipe"><div class="track" id="tk' + pi + '" ' +
+           'onscroll="onTrack(' + pi + ')">';
+      gal.forEach(function (u, gi) {
+        h += '<img class="big" src="' + esc(u) + '" alt="" ' +
+             (gi ? 'loading="lazy" ' : '') + 'onclick="lb(' + pi + ',' + gi + ')">';
+      });
+      h += '</div>';
+      if (gal.length > 1) {
+        h += '<div class="dots" id="dt' + pi + '">';
+        gal.forEach(function (u, gi) { h += '<i' + (gi ? '' : ' class="on"') + '></i>'; });
+        h += '</div>';
+      }
+      h += '</div>';
+    } else {
+      h += '<div class="big"></div>';
+    }
     if (gal.length > 1) {
       h += '<div class="thumbs">';
       gal.forEach(function (u, gi) {
-        h += '<img src="' + esc(u) + '" alt="" loading="lazy" onclick="lb(' + pi + ',' + gi + ')">';
+        h += '<img src="' + esc(u) + '" alt="" loading="lazy" onclick="goSlide(' + pi + ',' + gi + ')">';
       });
       h += '</div>';
     }
