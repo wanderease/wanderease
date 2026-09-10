@@ -423,27 +423,47 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
   
 
   function fillIfEmpty() {
-    var keep = {};
-    Object.keys(touched).forEach(function (id) {
+    FORM_IDS.forEach(function (id) {
+      if (touched[id]) return;
       var el = document.getElementById(id);
-      if (el && el.value) keep[id] = el.value;
+      if (el) el.value = '';
     });
     draw();
-    Object.keys(keep).forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.value = keep[id];
-    });
   }
 })();
 
  
 
 
+
+
+var FORM_IDS = ['fName', 'fPhone', 'fMail', 'fLast5'];
+
+function snapForm() {
+  var o = {};
+  FORM_IDS.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el && el.value) o[id] = el.value;
+  });
+  return o;
+}
+
+function restoreForm(o) {
+  Object.keys(o || {}).forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el && !el.value) el.value = o[id];
+  });
+}
+
 function draw(toTop) {
   var y = window.scrollY;
+  var form = snapForm();
+
   document.getElementById('root').innerHTML =
     (ordered && step !== 3) ? viewOrdered()
       : (step === 1 ? view1() : (step === 2 ? view2() : view3()));
+
+  restoreForm(form);
   if (toTop) window.scrollTo(0, 0);
   else window.scrollTo(0, y);
 }
