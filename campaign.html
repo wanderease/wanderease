@@ -90,6 +90,29 @@ body{
 
 
 
+
+
+(function () {
+  var LIFF_ID = "2009208139-8lZaYbbd";
+
+  
+  
+  if (location.search.indexOf('liff.state') >= 0) return;
+  if (location.hostname.indexOf('liff.line.me') >= 0) return;
+
+  
+  if (!/\bLine\//i.test(navigator.userAgent)) return;
+
+  
+  try {
+    if (sessionStorage.getItem('we_liff_tried')) return;
+    sessionStorage.setItem('we_liff_tried', '1');
+  } catch (e) { return; }
+
+  var path = location.pathname + location.search;
+  location.replace('https://liff.line.me/' + LIFF_ID + path);
+})();
+
 var LIFF_ID = "2009208139-8lZaYbbd";
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
 var CAMPS = [];
