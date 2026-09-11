@@ -112,39 +112,28 @@ body{
 
 
 
+var LIFF_ID = "2009208139-8lZaYbbd";
 
 
-(function () {
-  var LIFF_ID = "2009208139-8lZaYbbd";
 
-  
-  
-  if (location.search.indexOf('liff.state') >= 0) return;
-  if (location.hostname.indexOf('liff.line.me') >= 0) return;
+function liffRedirectIfNeeded() {
+  var s = location.search;
+  if (s.indexOf('we_liff=1') >= 0) return false;      
+  if (s.indexOf('liff.state') >= 0) return false;     
+  if (typeof liff === 'undefined') return false;
+  try { if (liff.isInClient()) return false; } catch (e) { return false; }
+  if (!/\bLine\//i.test(navigator.userAgent)) return false;
 
-  
-  if (!/\bLine\//i.test(navigator.userAgent)) return;
-
-  
-  try {
-    if (sessionStorage.getItem('we_liff_tried')) return;
-    sessionStorage.setItem('we_liff_tried', '1');
-  } catch (e) { return; }
-
-  
-  
-  
   
   try {
     document.documentElement.style.background = '#efe8df';
     if (document.body) document.body.style.visibility = 'hidden';
   } catch (e) {}
 
-  var path = location.pathname + location.search;
-  location.replace('https://liff.line.me/' + LIFF_ID + path);
-})();
-
-var LIFF_ID = "2009208139-8lZaYbbd";
+  var q = s ? s + '&we_liff=1' : '?we_liff=1';
+  location.replace('https://liff.line.me/' + LIFF_ID + location.pathname + q);
+  return true;
+}
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
 
 
@@ -208,6 +197,7 @@ WE.loadCampaigns().then(function (d) {
   if (typeof liff === 'undefined') { who.textContent = ''; return; }
 
   liff.init({ liffId: LIFF_ID }).then(function () {
+    if (liffRedirectIfNeeded()) return;
     
     if (!liff.isLoggedIn()) {
       if (!cached) who.textContent = '';
