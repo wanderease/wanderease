@@ -181,6 +181,12 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
                padding:8px 14px;border:0;white-space:nowrap}
 .resume .yes{background:var(--brown);color:#fff}
 .resume .no{background:transparent;color:#96825f}
+ 
+.maint{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;padding:40px 28px;text-align:center}
+.maint .ic{font-size:44px;color:var(--brown);margin-bottom:14px}
+.maint h2{font-size:20px;font-weight:800;margin-bottom:10px}
+.maint p{font-size:14px;color:#5b4d40;line-height:1.8;white-space:pre-wrap;max-width:340px}
 .empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 </style>
 </head>
@@ -203,30 +209,28 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 
 
 
+var LIFF_ID = "2009208139-8lZaYbbd";
 
 
-(function () {
-  var LIFF_ID = "2009208139-8lZaYbbd";
 
-  
-  
-  if (location.search.indexOf('liff.state') >= 0) return;
-  if (location.hostname.indexOf('liff.line.me') >= 0) return;
-
-  
-  if (!/\bLine\//i.test(navigator.userAgent)) return;
+function liffRedirectIfNeeded() {
+  var s = location.search;
+  if (s.indexOf('we_liff=1') >= 0) return false;      
+  if (s.indexOf('liff.state') >= 0) return false;     
+  if (typeof liff === 'undefined') return false;
+  try { if (liff.isInClient()) return false; } catch (e) { return false; }
+  if (!/\bLine\//i.test(navigator.userAgent)) return false;
 
   
   try {
-    if (sessionStorage.getItem('we_liff_tried')) return;
-    sessionStorage.setItem('we_liff_tried', '1');
-  } catch (e) { return; }
+    document.documentElement.style.background = '#efe8df';
+    if (document.body) document.body.style.visibility = 'hidden';
+  } catch (e) {}
 
-  var path = location.pathname + location.search;
-  location.replace('https://liff.line.me/' + LIFF_ID + path);
-})();
-
-var LIFF_ID = "2009208139-8lZaYbbd";
+  var q = s ? s + '&we_liff=1' : '?we_liff=1';
+  location.replace('https://liff.line.me/' + LIFF_ID + location.pathname + q);
+  return true;
+}
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
 var DEPOSIT = 20;   
 
@@ -244,6 +248,19 @@ var meLoading = false;
 
 
 var touched = {};
+
+
+
+function showMaintenance(m) {
+  document.body.innerHTML =
+    '<div class="maint">' +
+    '<div class="ic"><i class="bi bi-tools"></i></div>' +
+    '<h2>系統維護中</h2>' +
+    '<p>' + String(m && m.message || '系統升級維護中，暫停服務。')
+      .replace(/[&<>]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+      }) + '</p></div>';
+}
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
@@ -373,6 +390,7 @@ function pQty(pi) {
 fetch('/data/campaigns.json', { cache: 'no-cache' })
   .then(function (r) { return r.ok ? r.json() : null; })
   .then(function (d) {
+    if (d && d.maintenance && d.maintenance.on) { showMaintenance(d.maintenance); return; }
     var list = (d && d.campaigns) || [];
     C = list.filter(function (x) { return x.id === CODE; })[0] || null;
     if (!C) {
@@ -396,6 +414,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
+    if (liffRedirectIfNeeded()) return;
     if (!liff.isLoggedIn()) return;
     return liff.getProfile().then(function (p) {
       me = me || {};
