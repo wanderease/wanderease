@@ -213,22 +213,24 @@ var LIFF_ID = "2009208139-8lZaYbbd";
 
 
 
-function liffRedirectIfNeeded() {
-  var s = location.search;
-  if (s.indexOf('we_liff=1') >= 0) return false;      
-  if (s.indexOf('liff.state') >= 0) return false;     
+function autoLoginIfNeeded() {
   if (typeof liff === 'undefined') return false;
-  try { if (liff.isInClient()) return false; } catch (e) { return false; }
-  if (!/\bLine\//i.test(navigator.userAgent)) return false;
+  try { if (liff.isLoggedIn()) return false; } catch (e) { return false; }
 
   
+  if (location.search.indexOf('we_login=1') >= 0) return false;
+
+  
+  
+  if (!/\bLine\//i.test(navigator.userAgent)) return false;
+
   try {
     document.documentElement.style.background = '#efe8df';
     if (document.body) document.body.style.visibility = 'hidden';
   } catch (e) {}
 
-  var q = s ? s + '&we_liff=1' : '?we_liff=1';
-  location.replace('https://liff.line.me/' + LIFF_ID + location.pathname + q);
+  var q = location.search ? location.search + '&we_login=1' : '?we_login=1';
+  liff.login({ redirectUri: location.origin + location.pathname + q });
   return true;
 }
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
@@ -250,6 +252,20 @@ var meLoading = false;
 var touched = {};
 
 
+
+
+
+function maintenanceBlocked(m) {
+  if (!m || !m.on) return false;
+  try {
+    if (location.search.indexOf('preview=1') >= 0) {
+      sessionStorage.setItem('we_preview', '1');
+      return false;
+    }
+    if (sessionStorage.getItem('we_preview')) return false;
+  } catch (e) {}
+  return true;
+}
 
 function showMaintenance(m) {
   document.body.innerHTML =
@@ -390,7 +406,7 @@ function pQty(pi) {
 fetch('/data/campaigns.json', { cache: 'no-cache' })
   .then(function (r) { return r.ok ? r.json() : null; })
   .then(function (d) {
-    if (d && d.maintenance && d.maintenance.on) { showMaintenance(d.maintenance); return; }
+    if (d && maintenanceBlocked(d.maintenance)) { showMaintenance(d.maintenance); return; }
     var list = (d && d.campaigns) || [];
     C = list.filter(function (x) { return x.id === CODE; })[0] || null;
     if (!C) {
@@ -414,7 +430,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
-    if (liffRedirectIfNeeded()) return;
+    if (autoLoginIfNeeded()) return;
     if (!liff.isLoggedIn()) return;
     return liff.getProfile().then(function (p) {
       me = me || {};
