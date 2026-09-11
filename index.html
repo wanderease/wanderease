@@ -60,6 +60,12 @@ body{
 .sec h3{font-size:12px;color:var(--mute);font-weight:700;letter-spacing:.06em;margin-bottom:9px}
 .panel{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:15px 17px;
        font-size:13.5px;color:#4a4038;white-space:pre-wrap}
+ 
+.maint{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+       justify-content:center;padding:40px 28px;text-align:center}
+.maint .ic{font-size:44px;color:var(--brown);margin-bottom:14px}
+.maint h2{font-size:20px;font-weight:800;margin-bottom:10px}
+.maint p{font-size:14px;color:#5b4d40;line-height:1.8;white-space:pre-wrap;max-width:340px}
 .foot{text-align:center;font-size:11.5px;color:var(--mute);padding:26px 0 10px}
 </style>
 </head>
@@ -125,12 +131,34 @@ body{
     sessionStorage.setItem('we_liff_tried', '1');
   } catch (e) { return; }
 
+  
+  
+  
+  
+  try {
+    document.documentElement.style.background = '#efe8df';
+    if (document.body) document.body.style.visibility = 'hidden';
+  } catch (e) {}
+
   var path = location.pathname + location.search;
   location.replace('https://liff.line.me/' + LIFF_ID + path);
 })();
 
 var LIFF_ID = "2009208139-8lZaYbbd";
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+
+
+
+function showMaintenance(m) {
+  document.body.innerHTML =
+    '<div class="maint">' +
+    '<div class="ic"><i class="bi bi-tools"></i></div>' +
+    '<h2>系統維護中</h2>' +
+    '<p>' + String(m && m.message || '系統升級維護中，暫停服務。')
+      .replace(/[&<>]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c];
+      }) + '</p></div>';
+}
 
 var WE = {
    
@@ -151,7 +179,10 @@ var WE = {
 
  
 WE.loadCampaigns().then(function (d) {
-  if (!d || !d.campaigns) return;
+  if (!d) return;
+  
+  if (d.maintenance && d.maintenance.on) { showMaintenance(d.maintenance); return; }
+  if (!d.campaigns) return;
   var open = d.campaigns.filter(function (c) { return c.state === '開放收單'; });
   if (!open.length) {
     document.getElementById('cSub').textContent = '目前沒有開放中的團';
