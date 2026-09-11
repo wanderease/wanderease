@@ -397,10 +397,26 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
   function prep(uid, tries) {
     tries = tries || 0;
 
+    
+    
+    
+    var over = false;
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var t = setTimeout(function () {
+      over = true;
+      if (ctrl) ctrl.abort();
+      if (tries < 2) { prep(uid, tries + 1); return; }
+      meLoading = false;
+      if (step === 2) draw();
+    }, 8000);
+
     fetch(GAS_URL + '?action=campaignPrep&lineUid=' + encodeURIComponent(uid) +
-          '&campaign=' + encodeURIComponent(CODE))
+          '&campaign=' + encodeURIComponent(CODE),
+          { signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.json(); })
       .then(function (res) {
+        if (over) return;
+        clearTimeout(t);
         var d = (res && res.data) || {};
 
         
@@ -427,6 +443,8 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
         else if (step === 2) fillIfEmpty();
       })
       .catch(function () {
+        if (over) return;   
+        clearTimeout(t);
         if (tries < 2) {
           setTimeout(function () { prep(uid, tries + 1); }, 1200 * (tries + 1));
           return;
@@ -875,7 +893,26 @@ function submitOrder() {
 
   var btns = document.querySelectorAll('.bar button');
   btns.forEach(function (b) { b.disabled = true; });
-  btns[btns.length - 1].textContent = '送出中…';
+  var sendBtn = btns[btns.length - 1];
+  sendBtn.textContent = '送出中…';
+
+  
+  
+  
+  
+  
+  
+  
+  var aborted = false;
+  var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timer = setTimeout(function () {
+    aborted = true;
+    if (ctrl) ctrl.abort();
+    alert('伺服器回應太慢，訂單可能已經成立。\n\n' +
+          '請先到會員中心確認，若沒有看到訂單再重新送出。');
+    draw();
+  }, 25000);
+  var done = function () { clearTimeout(timer); };
 
   
   
@@ -887,10 +924,13 @@ function submitOrder() {
   fetch(GAS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) })
+    body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) }),
+    signal: ctrl ? ctrl.signal : undefined
   })
     .then(function (r) { return r.text(); })
     .then(function (raw) {
+      if (aborted) return;
+      done();
       var d;
       try {
         d = JSON.parse(raw);
@@ -900,6 +940,14 @@ function submitOrder() {
         console.error('非 JSON 回應：', raw.substring(0, 200));
         alert('送出失敗：伺服器回應格式不正確，請聯繫客服。');
         draw();
+        return;
+      }
+      if (d && d.status === 'DUPLICATE') {
+        
+        alert(d.message || '你已經填過這一團了。');
+        ordered = { at: '', orderNo: '', state: '已成立' };
+        clearCart();
+        draw(true);
         return;
       }
       if (d && d.status === 'SUCCESS') {
@@ -917,7 +965,9 @@ function submitOrder() {
       }
     })
     .catch(function (e) {
-      alert('網路異常，訂單尚未送出。請確認後重試。');
+      if (aborted) return;   
+      done();
+      alert('網路異常，訂單尚未送出。請確認網路後重試。');
       draw();
     });
 }
