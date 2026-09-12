@@ -223,6 +223,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 
  
 .qty-off{opacity:.45;pointer-events:none}
+.pick-first{font-size:12.5px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;
+            border-radius:9px;padding:8px 11px;margin-top:8px;text-align:center}
 .qty-off .srow{background:#f6f3f0}
 .srow .mine{font-size:11.5px;background:#eef3e9;color:var(--ok);border:1px solid #cfdcc2;
             padding:1px 8px;border-radius:99px;margin-left:6px;font-weight:700}
@@ -528,6 +530,25 @@ function boot(d) {
 (function () {
   try { me = JSON.parse(sessionStorage.getItem('we_me') || 'null'); } catch (e) {}
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  var early = null;
+  try { early = localStorage.getItem('we_uid'); } catch (e) {}
+  if (early) {
+    meLoading = true;
+    prep(early);
+  }
+
+
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
     if (autoLoginIfNeeded()) return;
@@ -540,13 +561,18 @@ function boot(d) {
       
       if (!me.name && !me.bound) me.name = p.displayName;
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
+      
+      try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
+
+      
+      if (early === p.userId) return;
 
       meLoading = true;
       if (step === 2) draw();
       prep(me.uid);
     });
   }).catch(function () {
-    meLoading = false;
+    if (!early) meLoading = false;
     if (step === 2) draw();
   });
 
@@ -577,6 +603,8 @@ function boot(d) {
         if (over) return;
         clearTimeout(t);
         var d = (res && res.data) || {};
+        
+        me = me || { uid: uid };
 
         
         
@@ -793,8 +821,16 @@ function view1() {
   }
 
   (C.products || []).forEach(function (p, pi) {
-    if (colorSel[pi] == null) colorSel[pi] = 0;
-    var c = (p.colors || [])[colorSel[pi]];
+    
+    
+    
+    
+    
+    var hasOpts = (p.colors || []).length > 0;
+    var sel = colorSel[pi];
+    var picked = !hasOpts || (sel != null);
+    var c = picked && hasOpts ? (p.colors || [])[sel] : null;
+    
     var gal = (c && c.img && c.img.length) ? c.img.concat(p.images || []) : (p.images || []);
     gal = gal.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
     var main = gal[0] || '';
@@ -855,7 +891,7 @@ function view1() {
     if ((p.colors || []).length) {
       h += '<h3>' + esc(ow) + '</h3><div class="chips">';
       p.colors.forEach(function (cc, ci) {
-        h += '<span class="chip' + (ci === colorSel[pi] ? ' on' : '') +
+        h += '<span class="chip' + (sel != null && ci === sel ? ' on' : '') +
              '" onclick="pick(' + pi + ',' + ci + ')">' + esc(cc.n) + '</span>';
       });
       h += '</div>';
@@ -865,30 +901,38 @@ function view1() {
     var om = orderedMap();
     
     
-    var lockQty = !!ordered || orderFailed;
+    
+    var lockQty = !!ordered || orderFailed || !picked;
     var cname = c ? c.n : '';
+    var si = (sel != null) ? sel : 0;
 
     if ((p.sizes || []).length) {
       
-      var vals = p.sizes.map(function (s) { return priceOf(pi, colorSel[pi], s); });
+      var vals = p.sizes.map(function (s) { return priceOf(pi, si, s); });
       var varies = Math.min.apply(null, vals) !== Math.max.apply(null, vals);
       h += '<h3>' + esc(sw) + (c ? ' · ' + esc(c.n) : '') + '</h3>';
       if (lockQty) h += '<div class="qty-off">';
       p.sizes.forEach(function (s) {
-        var k = pi + '|' + colorSel[pi] + '|' + s;
+        var k = pi + '|' + si + '|' + s;
         var mine = om[cname + '|' + s] || 0;
         var q = mine || cart[k] || 0;
-        h += stepRow(k, esc(s), priceOf(pi, colorSel[pi], s), q, full, closed, pi, varies, mine);
+        h += stepRow(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
     } else {
-      var k0 = pi + '|' + colorSel[pi] + '|-';
+      var k0 = pi + '|' + si + '|-';
       var mine0 = om[cname + '|'] || 0;
       var q0 = mine0 || cart[k0] || 0;
       h += '<h3>數量</h3>';
       if (lockQty) h += '<div class="qty-off">';
       h += stepRow(k0, cname || '數量', 0, q0, full, closed, pi, false, mine0);
       if (lockQty) h += '</div>';
+    }
+
+    
+    if (!picked && !ordered && !orderFailed) {
+      h += '<div class="pick-first"><i class="bi bi-arrow-up"></i> 請先選擇' +
+           esc(ow) + '</div>';
     }
 
     if (p.note) h += '<div class="note" style="margin:14px 0 0">' + esc(p.note) + '</div>';
@@ -1365,6 +1409,8 @@ var lbList = [], lbI = 0;
 
 function lb(pi, gi) {
   var p = C.products[pi];
+  
+  
   var c = (p.colors || [])[colorSel[pi]];
   var base = (c && c.img && c.img.length) ? c.img.concat(p.images || []) : (p.images || []);
   lbList = base.filter(function (v, i, a) { return v && a.indexOf(v) === i; });
