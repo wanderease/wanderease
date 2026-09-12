@@ -255,16 +255,41 @@ var touched = {};
 
 
 
-function maintenanceBlocked(m) {
-  if (!m || !m.on) return false;
+function isAdmin(hashes) {
+  if (!hashes || !hashes.length) return Promise.resolve(false);
   try {
-    if (location.search.indexOf('preview=1') >= 0) {
-      sessionStorage.setItem('we_preview', '1');
-      return false;
-    }
-    if (sessionStorage.getItem('we_preview')) return false;
+    if (sessionStorage.getItem('we_admin') === '1') return Promise.resolve(true);
   } catch (e) {}
-  return true;
+
+  return new Promise(function (resolve) {
+    if (typeof liff === 'undefined' || !window.crypto || !crypto.subtle) {
+      resolve(false); return;
+    }
+    liff.init({ liffId: LIFF_ID }).then(function () {
+      if (!liff.isLoggedIn()) { resolve(false); return; }
+      return liff.getProfile().then(function (p) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(p.userId))
+          .then(function (buf) {
+            var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+              return ('0' + b.toString(16)).slice(-2);
+            }).join('');
+            var ok = hashes.indexOf(hex) >= 0;
+            if (ok) { try { sessionStorage.setItem('we_admin', '1'); } catch (e) {} }
+            resolve(ok);
+          });
+      });
+    }).catch(function () { resolve(false); });
+  });
+}
+
+
+
+function guardMaintenance(m, onPass) {
+  if (!m || !m.on) { onPass(); return; }
+  isAdmin(m.admins).then(function (admin) {
+    if (admin) onPass();
+    else showMaintenance(m);
+  });
 }
 
 function showMaintenance(m) {
@@ -406,7 +431,14 @@ function pQty(pi) {
 fetch('/data/campaigns.json', { cache: 'no-cache' })
   .then(function (r) { return r.ok ? r.json() : null; })
   .then(function (d) {
-    if (d && maintenanceBlocked(d.maintenance)) { showMaintenance(d.maintenance); return; }
+    guardMaintenance(d && d.maintenance, function () { boot(d); });
+  })
+  .catch(function () {
+    document.getElementById('root').innerHTML = '<div class="empty">載入失敗，請重新整理。</div>';
+  });
+
+ 
+function boot(d) {
     var list = (d && d.campaigns) || [];
     C = list.filter(function (x) { return x.id === CODE; })[0] || null;
     if (!C) {
@@ -418,10 +450,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
     }
     loadCart();
     draw();
-  })
-  .catch(function () {
-    document.getElementById('root').innerHTML = '<div class="empty">載入失敗，請重新整理。</div>';
-  });
+}
 
 
 
@@ -966,11 +995,40 @@ function submitOrder() {
   var timer = setTimeout(function () {
     aborted = true;
     if (ctrl) ctrl.abort();
-    alert('伺服器回應太慢，訂單可能已經成立。\n\n' +
-          '請先到會員中心確認，若沒有看到訂單再重新送出。');
-    draw();
-  }, 25000);
+    verifyAfterTimeout();
+  }, 20000);
   var done = function () { clearTimeout(timer); };
+
+  
+
+  function verifyAfterTimeout() {
+    var btn = document.querySelectorAll('.bar button');
+    if (btn.length) btn[btn.length - 1].textContent = '確認中…';
+
+    fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' +
+          encodeURIComponent(me.uid) + '&campaign=' + encodeURIComponent(CODE))
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (res && res.ordered) {
+          
+          clearCart();
+          try {
+            var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+            if (arr.indexOf(C.id) < 0) arr.push(C.id);
+            sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+          } catch (e) {}
+          step = 3;
+          draw(true);
+          return;
+        }
+        alert('網路不穩，訂單沒有送出。請再按一次送出訂單。');
+        draw();
+      })
+      .catch(function () {
+        alert('網路不穩，訂單沒有送出。請再按一次送出訂單。');
+        draw();
+      });
+  }
 
   
   
