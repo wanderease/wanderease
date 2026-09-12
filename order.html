@@ -116,6 +116,18 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .fld .hint{font-size:11.5px;color:var(--mute);margin-top:4px}
 .agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin-bottom:16px;cursor:pointer}
 .agree input{width:20px;height:20px;margin-top:1px;flex:0 0 auto;accent-color:var(--brown)}
+ 
+.confirms{background:var(--white);border:1px solid var(--line);border-radius:14px;
+          padding:14px 15px;margin-bottom:14px}
+.confirms h4{font-size:13.5px;font-weight:800;margin-bottom:4px}
+.confirms .lead{font-size:12px;color:var(--mute);margin-bottom:11px}
+.cf{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.6;
+    padding:9px 0;border-top:1px solid #f0eae3;cursor:pointer}
+.cf:first-of-type{border-top:0}
+.cf input{width:21px;height:21px;margin-top:1px;flex:0 0 auto;accent-color:var(--brown)}
+.cf.on{color:#2b3d27}
+.confirms .left{font-size:12px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;
+                border-radius:8px;padding:7px 10px;margin-top:10px}
 
  
 .gate{margin:0 18px 16px;background:var(--white);border:1px solid var(--line);
@@ -272,6 +284,9 @@ var step = 1;
 var colorSel = {};
 var cart = {};
 var agreed = false;
+
+
+var confirmAt = {};
 var me = null;
 var ordered = null;      
 var lastOrder = null;    
@@ -1004,10 +1019,31 @@ function view2() {
     '<input id="fLast5"' + dis + ' inputmode="numeric" maxlength="5"></div>' +
     '</div>';
 
+  
+  
+  var cfs = (C.confirms || []).filter(Boolean);
+  if (cfs.length) {
+    var left = cfs.filter(function (x) { return !confirmAt[x]; }).length;
+    h += '<div class="confirms"><h4>請逐項確認</h4>' +
+      '<div class="lead">每一項都要勾選才能送出訂單</div>';
+    cfs.forEach(function (x, i) {
+      var on = !!confirmAt[x];
+      h += '<label class="cf' + (on ? ' on' : '') + '">' +
+        '<input type="checkbox"' + (on ? ' checked' : '') +
+        ' onchange="setConfirm(' + i + ',this.checked)">' +
+        '<span>' + esc(x) + '</span></label>';
+    });
+    if (left) {
+      h += '<div class="left"><i class="bi bi-exclamation-circle"></i> 還有 ' +
+        left + ' 項未確認</div>';
+    }
+    h += '</div>';
+  }
+
   if (C.notice) {
     h += '<div class="note" style="margin:0 0 12px">' + esc(C.notice) + '</div>' +
       '<label class="agree"><input type="checkbox" id="fAgree"' + (agreed ? ' checked' : '') +
-      ' onchange="setAgree(this.checked)"><span>我已閱讀並同意本團注意事項</span></label>';
+      ' onchange="setAgree(this.checked)"><span>我已閱讀並同意代購規則&須知</span></label>';
   }
   h += '</div>';
 
@@ -1019,7 +1055,9 @@ function view2() {
     });
   }, 0);
 
-  var ok = (!C.notice || agreed) && !meLoading;
+  
+  var allConfirmed = cfs.every(function (x) { return !!confirmAt[x]; });
+  var ok = allConfirmed && (!C.notice || agreed) && !meLoading;
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
     '<div class="t">' + (official ? '應匯' : '總金額') +
     '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
@@ -1119,6 +1157,17 @@ function ch(k, d, pi) {
   draw();
 }
 function setAgree(v) { agreed = v; draw(); }
+
+
+
+function setConfirm(i, v) {
+  var cfs = (C.confirms || []).filter(Boolean);
+  var key = cfs[i];
+  if (!key) return;
+  if (v) confirmAt[key] = new Date().toISOString();
+  else delete confirmAt[key];
+  draw();
+}
 function go(s) { step = s; draw(true); }
 
 function doLogin() {
@@ -1141,7 +1190,13 @@ function submitOrder() {
   if (!/^09\d{8}$/.test(phone)) { alert('手機號碼要 09 開頭共 10 碼。'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { alert('請填正確的電子信箱。'); return; }
   if (!/^\d{4,5}$/.test(last5)) { alert('請填匯款帳號後五碼。'); return; }
-  if (C.notice && !agreed) { alert('請先勾選同意注意事項。'); return; }
+  var cfs = (C.confirms || []).filter(Boolean);
+  var missing = cfs.filter(function (x) { return !confirmAt[x]; });
+  if (missing.length) {
+    alert('還有 ' + missing.length + ' 項確認事項未勾選。');
+    return;
+  }
+  if (C.notice && !agreed) { alert('請先勾選同意代購規則。'); return; }
 
   var items = [];
   Object.keys(cart).forEach(function (k) {
@@ -1174,6 +1229,8 @@ function submitOrder() {
     lineUid: me.uid,
     name: name, phone: phone, email: mail, last5: last5,
     agreedAt: new Date().toISOString(),
+    
+    confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
     items: items,
     subtotal: t.sum,
     deposit: t.dep
