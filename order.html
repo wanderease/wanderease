@@ -206,6 +206,9 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .done-bar .t1 i{font-size:19px;color:var(--ok)}
 .done-bar .t1 b{font-size:15.5px;font-weight:800;color:#2b3d27}
  
+ 
+.infobox{background:var(--white);border:1px solid var(--line);border-radius:14px;
+         padding:13px 15px;margin-bottom:14px}
 .rows2{font-size:12.5px;color:#42513a;display:block}
 .rows2 > div{display:flex !important;justify-content:space-between;
              align-items:flex-start;gap:14px;padding:4px 0}
@@ -1059,9 +1062,15 @@ function view2() {
     '<div class="hint">用來對應你過去的訂單，請填常用號碼。</div></div>' +
     '<div class="fld"><label>電子信箱 <b>*</b></label>' +
     '<input id="fMail"' + dis + ' value="' + esc(me.email || '') + '" placeholder="必填"></div>' +
-    '<div class="fld"><label>匯款帳號後五碼 <b>*</b></label>' +
-    '<input id="fLast5"' + dis + ' inputmode="numeric" maxlength="5"></div>' +
-    '</div>';
+    
+    
+    '<div class="fld"><label>' +
+      (official ? '匯款帳號後五碼' : '預計匯款帳戶後五碼') + ' <b>*</b></label>' +
+    '<input id="fLast5"' + dis + ' inputmode="numeric" maxlength="5" ' +
+      'placeholder="' + (official ? '' : '請先提供預計匯款的帳戶') + '">' +
+    (official ? ''
+      : '<div class="hint">之後實際匯款時若換了帳戶，到會員中心修改即可。</div>') +
+    '</div></div>';
 
   
   
@@ -1069,7 +1078,7 @@ function view2() {
   if (cfs.length) {
     var left = cfs.filter(function (x) { return !confirmAt[x]; }).length;
     h += '<div class="confirms"><h4>請逐項確認</h4>' +
-      '<div class="lead">每一項都要勾選才能送出訂單</div>';
+      '<div class="lead">請再次確認重要事項</div>';
     cfs.forEach(function (x, i) {
       var on = !!confirmAt[x];
       h += '<label class="cf' + (on ? ' on' : '') + '">' +
@@ -1121,7 +1130,9 @@ function view3() {
 
   
   
-  h += '<div class="step"><div class="sums">' +
+  
+  
+  h += '<div class="step"><div class="infobox">' +
     '<div class="rows2">' +
       (r.orderNo ? '<div><span>訂單編號</span><span class="no">' +
                    esc(r.orderNo) + '</span></div>' : '') +
@@ -1157,7 +1168,7 @@ function view3() {
   h += '</div>';
 
   h += '<div class="bar"><div class="t">　<b></b></div>' +
-    '<button onclick="location.href=\'/m\'">前往會員中心</button></div>';
+    '<button onclick="location.href=\'/\'">回首頁</button></div>';
   return h;
 }
 
