@@ -268,6 +268,11 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       .forEach(function (x) { MINE[x] = 1; });
   } catch (e) {}
 
+  
+  var early = null;
+  try { early = localStorage.getItem('we_uid'); } catch (e) {}
+  if (early) loadMine(early);
+
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
     if (autoLoginIfNeeded()) return;
@@ -280,6 +285,9 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       
       if (!me.name && !me.bound) me.name = p.displayName;
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
+      
+      try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
+      if (early === p.userId) return;   
       loadMine(me.uid);
     });
   }).catch(function () {});
