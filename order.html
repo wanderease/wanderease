@@ -193,11 +193,13 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .done-bar .t1{display:flex;align-items:center;gap:9px;margin-bottom:10px}
 .done-bar .t1 i{font-size:19px;color:var(--ok)}
 .done-bar .t1 b{font-size:15.5px;font-weight:800;color:#2b3d27}
-.rows2{font-size:12.5px;color:#42513a}
-.rows2 div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
-.rows2 span:first-child{color:var(--mute);flex:0 0 auto}
-.rows2 span:last-child{text-align:right;min-width:0}
-.rows2 .no{font-weight:800;letter-spacing:.03em}
+ 
+.rows2{font-size:12.5px;color:#42513a;display:block}
+.rows2 > div{display:flex !important;justify-content:space-between;
+             align-items:flex-start;gap:14px;padding:4px 0}
+.rows2 > div > span:first-child{color:var(--mute);flex:0 0 auto;white-space:nowrap}
+.rows2 > div > span:last-child{text-align:right;flex:1;min-width:0;word-break:break-word}
+.rows2 .no{font-weight:800;letter-spacing:.03em;white-space:nowrap}
 .done-bar .act{display:flex;gap:8px;margin-top:12px}
 .done-bar .act a{flex:1;text-align:center;text-decoration:none;font-size:13.5px;
                  font-weight:700;padding:10px;border-radius:10px}
@@ -492,6 +494,16 @@ function boot(d) {
         '<a href="/c" style="color:#795238">看看其他開放中的團</a></div>';
       return;
     }
+    
+    
+    
+    
+    
+    try {
+      var mine = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+      if (mine.indexOf(CODE) >= 0) ordered = { partial: true, items: [] };
+    } catch (e) {}
+
     loadCart();
     draw();
 }
@@ -573,13 +585,31 @@ function boot(d) {
           payDone = !!d.pay.resolved;
           if (d.pay.needPay) payInfo = d.pay;
         }
+        
+        
+        
         if (d.ordered) ordered = d.ordered;
+        else if (!d.orderFailed) ordered = null;
         orderFailed = !!d.orderFailed;
 
         
         
-        if (ordered || orderFailed) { step = 1; draw(true); }
+        
+        if (!d.orderFailed) {
+          try {
+            var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+            var i = arr.indexOf(CODE);
+            if (ordered && i < 0) arr.push(CODE);
+            if (!ordered && i >= 0) arr.splice(i, 1);
+            sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+          } catch (e) {}
+        }
+
+        
+        
+        if (ordered || orderFailed) { step = 1; draw(step !== 1); }
         else if (step === 2) fillIfEmpty();
+        else draw();
       })
       .catch(function () {
         if (over) return;   
@@ -651,16 +681,22 @@ function orderedBar() {
   var official = (C.mode === '直接成立正式訂單');
   var when = fmtWhen(ordered.at);
   var sum = itemsSummary(ordered.items);
+  var rows = '';
+
+  if (ordered.orderNo) rows += '<div><span>訂單編號</span><span class="no">' +
+                               esc(ordered.orderNo) + '</span></div>';
+  if (when) rows += '<div><span>填單時間</span><span>' + esc(when) + '</span></div>';
+  if (sum) rows += '<div><span>訂購內容</span><span>' + esc(sum) + '</span></div>';
+
+  
+  
+  if (!rows && ordered.partial) {
+    rows = '<div><span></span><span><span class="ld"></span> 讀取訂單內容…</span></div>';
+  }
 
   return '<div class="done-bar">' +
     '<div class="t1"><i class="bi bi-check-circle-fill"></i><b>您已填過單</b></div>' +
-    '<div class="rows2">' +
-      (ordered.orderNo
-        ? '<div><span>訂單編號</span><span class="no">' + esc(ordered.orderNo) + '</span></div>'
-        : '') +
-      (when ? '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' : '') +
-      (sum ? '<div><span>訂購內容</span><span>' + esc(sum) + '</span></div>' : '') +
-    '</div>' +
+    '<div class="rows2">' + rows + '</div>' +
     '<div class="act">' +
       (official
         ? '<a class="main" href="' + esc(SERVICE_URL) + '">聯繫客服</a>'
