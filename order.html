@@ -187,6 +187,32 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .maint .ic{font-size:44px;color:var(--brown);margin-bottom:14px}
 .maint h2{font-size:20px;font-weight:800;margin-bottom:10px}
 .maint p{font-size:14px;color:#5b4d40;line-height:1.8;white-space:pre-wrap;max-width:340px}
+ 
+.done-bar{margin:0 18px 14px;background:#f4f7f3;border:1px solid #cfdbcb;
+          border-radius:14px;padding:15px 16px}
+.done-bar .t1{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.done-bar .t1 i{font-size:19px;color:var(--ok)}
+.done-bar .t1 b{font-size:15.5px;font-weight:800;color:#2b3d27}
+.rows2{font-size:12.5px;color:#42513a}
+.rows2 div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.rows2 span:first-child{color:var(--mute);flex:0 0 auto}
+.rows2 span:last-child{text-align:right;min-width:0}
+.rows2 .no{font-weight:800;letter-spacing:.03em}
+.done-bar .act{display:flex;gap:8px;margin-top:12px}
+.done-bar .act a{flex:1;text-align:center;text-decoration:none;font-size:13.5px;
+                 font-weight:700;padding:10px;border-radius:10px}
+.done-bar .act .main{background:var(--brown);color:#fff}
+.done-bar .act .sub{background:#fff;color:var(--ok);border:1px solid #cfdbcb}
+.done-bar .hint{font-size:12px;color:#6d7a64;margin-top:9px;text-align:center}
+.done-bar.warn{background:#fdf6ec;border-color:#f0dcc0}
+.done-bar.warn .t1 i,.done-bar.warn .t1 b{color:#8a5a1e}
+
+ 
+.qty-off{opacity:.45;pointer-events:none}
+.qty-off .srow{background:#f6f3f0}
+.srow .mine{font-size:11.5px;background:#eef3e9;color:var(--ok);border:1px solid #cfdcc2;
+            padding:1px 8px;border-radius:99px;margin-left:6px;font-weight:700}
+
 .empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 </style>
 </head>
@@ -236,6 +262,7 @@ function autoLoginIfNeeded() {
 }
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
 var DEPOSIT = 20;   
+var SERVICE_URL = 'https://lin.ee/mty4uxj';   
 
 var CODE = decodeURIComponent((location.pathname.match(/\/o\/([^/?#]+)/) || [])[1] || '');
 var C = null;        
@@ -244,7 +271,10 @@ var colorSel = {};
 var cart = {};
 var agreed = false;
 var me = null;
-var ordered = null;   
+var ordered = null;      
+var lastOrder = null;    
+var orderFailed = false; 
+                         
 var payInfo = null;   
 var payDone = false;  
 var meLoading = false;  
@@ -544,9 +574,11 @@ function boot(d) {
           if (d.pay.needPay) payInfo = d.pay;
         }
         if (d.ordered) ordered = d.ordered;
+        orderFailed = !!d.orderFailed;
 
         
-        if (ordered) draw(true);
+        
+        if (ordered || orderFailed) { step = 1; draw(true); }
         else if (step === 2) fillIfEmpty();
       })
       .catch(function () {
@@ -601,8 +633,11 @@ function draw(toTop) {
   var y = window.scrollY;
   var form = snapForm();
 
+  
+  
+  
   document.getElementById('root').innerHTML =
-    (ordered && step !== 3) ? viewOrdered()
+    (ordered && step === 2) ? view1()
       : (step === 1 ? view1() : (step === 2 ? view2() : view3()));
 
   restoreForm(form);
@@ -612,44 +647,76 @@ function draw(toTop) {
 
 
 
-function viewOrdered() {
+function orderedBar() {
   var official = (C.mode === '直接成立正式訂單');
-  var when = '';
-  if (ordered.at) {
-    var dt = new Date(ordered.at);
-    if (!isNaN(dt)) {
-      var p = function (n) { return (n < 10 ? '0' : '') + n; };
-      when = (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' +
-             p(dt.getHours()) + ':' + p(dt.getMinutes());
-    }
-  }
+  var when = fmtWhen(ordered.at);
+  var sum = itemsSummary(ordered.items);
 
-  var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
-  if (C.cover) h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
-  h += '<div class="hd"><div class="bd">' + esc(C.brand) + '</div>' +
-       '<h1>' + esc(C.name) + '</h1></div>';
-
-  h += '<div class="gate" style="text-align:left">' +
-    '<div class="ic" style="text-align:center"><i class="bi bi-check-circle-fill"></i></div>' +
-    '<h4 style="text-align:center">您已填過單</h4>' +
-    '<p style="text-align:center">' +
-    (official
-      ? '正式訂單已進入採購流程，如需修改請聯繫客服。'
-      : '若要新增或修改品項，請至會員中心，或聯繫客服。') +
-    '</p>' +
-    '<div class="sums" style="margin:0 0 14px">' +
-    (when ? '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' : '') +
-    (ordered.orderNo ? '<div><span>訂單編號</span><span style="font-size:12px">' +
-       esc(ordered.orderNo) + '</span></div>' : '') +
-    '<div><span>處理狀態</span><span>' +
-    (ordered.state === '已寫入' ? '已成立' : '處理中，約 5 分鐘') + '</span></div>' +
+  return '<div class="done-bar">' +
+    '<div class="t1"><i class="bi bi-check-circle-fill"></i><b>您已填過單</b></div>' +
+    '<div class="rows2">' +
+      (ordered.orderNo
+        ? '<div><span>訂單編號</span><span class="no">' + esc(ordered.orderNo) + '</span></div>'
+        : '') +
+      (when ? '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' : '') +
+      (sum ? '<div><span>訂購內容</span><span>' + esc(sum) + '</span></div>' : '') +
     '</div>' +
-    '<a class="btn" href="/m">前往會員中心</a>' +
-    '</div>';
+    '<div class="act">' +
+      (official
+        ? '<a class="main" href="' + esc(SERVICE_URL) + '">聯繫客服</a>'
+        : '<a class="sub" href="' + esc(SERVICE_URL) + '">聯繫客服</a>' +
+          '<a class="main" href="/m">前往會員中心修改</a>') +
+    '</div>' +
+    '<div class="hint">' +
+      (official
+        ? '正式訂單已進入採購流程，如需修改請聯繫客服'
+        : '收單截止前都可以到會員中心調整數量或加購') +
+    '</div></div>';
+}
 
-  h += '<div class="bar"><div class="t">　<b></b></div>' +
-       '<button onclick="location.href=\'/c\'">回開團列表</button></div>';
-  return h;
+
+
+function failedBar() {
+  return '<div class="done-bar warn">' +
+    '<div class="t1"><i class="bi bi-exclamation-triangle-fill"></i>' +
+    '<b>無法確認訂單狀態</b></div>' +
+    '<div class="rows2"><div><span></span><span>' +
+    '請先到會員中心查看是否已有訂單，避免重複下單。</span></div></div>' +
+    '<div class="act"><a class="main" href="/m">前往會員中心</a></div>' +
+    '</div>';
+}
+
+ 
+function fmtWhen(iso) {
+  if (!iso) return '';
+  var d = new Date(iso);
+  if (isNaN(d)) return '';
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+         p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+ 
+function itemsSummary(items) {
+  if (!items || !items.length) return '';
+  if (items.length <= 2) {
+    return items.map(function (it) {
+      var n = [it.color, it.size ? '[' + it.size + ']' : ''].filter(Boolean).join(' ');
+      return (n || it.product) + ' ×' + it.qty;
+    }).join('、');
+  }
+  var q = items.reduce(function (s, it) { return s + (Number(it.qty) || 0); }, 0);
+  return items.length + ' 個品項，共 ' + q + ' 件';
+}
+
+ 
+function orderedMap() {
+  var m = {};
+  if (!ordered || !ordered.items) return m;
+  ordered.items.forEach(function (it) {
+    m[(it.color || '') + '|' + (it.size || '')] = Number(it.qty) || 0;
+  });
+  return m;
 }
 
 function view1() {
@@ -663,7 +730,11 @@ function view1() {
        '</span></div>';
   if (C.about) h += '<div class="about">' + esc(C.about) + '</div>';
 
-  if (pending) {
+  
+  if (ordered) h += orderedBar();
+  else if (orderFailed) h += failedBar();
+
+  if (pending && !ordered) {
     h += '<div class="resume"><div class="t">' +
       '<b>上次選了 ' + pending.n + ' 件</b>，要繼續嗎？</div>' +
       '<button class="no" onclick="dropCart()">重新選</button>' +
@@ -740,19 +811,33 @@ function view1() {
     }
 
     var full = (p.limit > 0 && pQty(pi) >= p.limit);
+    var om = orderedMap();
+    
+    
+    var lockQty = !!ordered || orderFailed;
+    var cname = c ? c.n : '';
+
     if ((p.sizes || []).length) {
       
       var vals = p.sizes.map(function (s) { return priceOf(pi, colorSel[pi], s); });
       var varies = Math.min.apply(null, vals) !== Math.max.apply(null, vals);
       h += '<h3>' + esc(sw) + (c ? ' · ' + esc(c.n) : '') + '</h3>';
+      if (lockQty) h += '<div class="qty-off">';
       p.sizes.forEach(function (s) {
-        var k = pi + '|' + colorSel[pi] + '|' + s, q = cart[k] || 0;
-        h += stepRow(k, esc(s), priceOf(pi, colorSel[pi], s), q, full, closed, pi, varies);
+        var k = pi + '|' + colorSel[pi] + '|' + s;
+        var mine = om[cname + '|' + s] || 0;
+        var q = mine || cart[k] || 0;
+        h += stepRow(k, esc(s), priceOf(pi, colorSel[pi], s), q, full, closed, pi, varies, mine);
       });
+      if (lockQty) h += '</div>';
     } else {
-      var k0 = pi + '|' + colorSel[pi] + '|-', q0 = cart[k0] || 0;
-      h += '<h3>數量</h3>' +
-           stepRow(k0, '數量', 0, q0, full, closed, pi, false);
+      var k0 = pi + '|' + colorSel[pi] + '|-';
+      var mine0 = om[cname + '|'] || 0;
+      var q0 = mine0 || cart[k0] || 0;
+      h += '<h3>數量</h3>';
+      if (lockQty) h += '<div class="qty-off">';
+      h += stepRow(k0, cname || '數量', 0, q0, full, closed, pi, false, mine0);
+      if (lockQty) h += '</div>';
     }
 
     if (p.note) h += '<div class="note" style="margin:14px 0 0">' + esc(p.note) + '</div>';
@@ -762,20 +847,30 @@ function view1() {
   
   
   var t = tot();
-  h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件') : '尚未選購') +
-       '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
-       (closed
-         ? '<button disabled>已截止</button>'
-         : '<button' + (t.n ? '' : ' disabled') + ' onclick="go(2)">下一步</button>') +
-       '</div>';
+  if (ordered) {
+    h += '<div class="bar"><div class="t">已送出訂單<b>NT$' +
+         (ordered.amount || 0).toLocaleString() + '</b></div>' +
+         '<button disabled>無法重複下單</button></div>';
+  } else if (orderFailed) {
+    h += '<div class="bar"><div class="t">訂單狀態未知<b>—</b></div>' +
+         '<button disabled>請先確認</button></div>';
+  } else {
+    h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件') : '尚未選購') +
+         '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
+         (closed
+           ? '<button disabled>已截止</button>'
+           : '<button' + (t.n ? '' : ' disabled') + ' onclick="go(2)">下一步</button>') +
+         '</div>';
+  }
   return h;
 }
 
 
 
-function stepRow(k, label, price, q, full, closed, pi, showPrice) {
+function stepRow(k, label, price, q, full, closed, pi, showPrice, mine) {
   return '<div class="srow' + (q ? ' has' : '') + '">' +
     '<span class="sl">' + label +
+    (mine ? '<span class="mine">已訂 ' + mine + '</span>' : '') +
     (showPrice ? '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span>' : '') +
     '</span>' +
     '<span class="stp">' +
@@ -899,17 +994,53 @@ function view2() {
 
 function view3() {
   var official = (C.mode === '直接成立正式訂單');
-  var t = window._lastTot || { pay: 0 };
-  return '<div class="done"><div class="ic"><i class="bi bi-check-circle-fill"></i></div>' +
-    '<h2>訂單已送出</h2><p>訂單處理中，5 分鐘後可以到系統查詢。</p></div>' +
-    (official
-      ? '<div class="step"><div class="sums"><div style="font-weight:700;color:#795238">' +
-        '若尚未匯款，匯款資訊可以至系統內查詢</div>' +
-        '<div class="tt"><span>應匯金額</span><span>NT$' + t.pay.toLocaleString() + '</span></div>' +
-        '</div></div>'
-      : '') +
-    '<div class="bar"><div class="t">　<b></b></div>' +
-    '<button onclick="location.href=\'/c\'">回到開團列表</button></div>';
+  var r = lastOrder || {};
+  var when = fmtWhen(r.at) || fmtWhen(new Date().toISOString());
+
+  var h = '<div class="done"><div class="ic"><i class="bi bi-check-circle-fill"></i></div>' +
+    '<h2>訂單已送出</h2>' +
+    '<p>訂單處理中，5 分鐘後可以到會員中心查詢。</p></div>';
+
+  
+  
+  h += '<div class="step"><div class="sums">' +
+    '<div class="rows2">' +
+      (r.orderNo ? '<div><span>訂單編號</span><span class="no">' +
+                   esc(r.orderNo) + '</span></div>' : '') +
+      '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' +
+      (r.summary ? '<div><span>訂購內容</span><span>' + esc(r.summary) + '</span></div>' : '') +
+      '<div><span>訂單金額</span><span>NT$' +
+        (r.sum || 0).toLocaleString() + '</span></div>' +
+    '</div></div>';
+
+  
+  if (r.items && r.items.length) {
+    h += '<div class="lines">';
+    r.items.forEach(function (it) {
+      var nm = it.product + (it.color ? '－' + it.color : '');
+      h += '<div class="ln"><div class="n"><b>' + esc(nm) + '</b>' +
+        '<s>' + (it.size ? '尺寸 ' + esc(it.size) + ' · ' : '') +
+        'NT$' + (it.price || 0).toLocaleString() + '</s></div>' +
+        '<span class="q">×' + it.qty + '</span>' +
+        '<span class="a">' + ((it.price || 0) * it.qty).toLocaleString() + '</span></div>';
+    });
+    h += '</div>';
+  }
+
+  if (official && payInfo) {
+    h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
+      '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
+      '<div class="r" style="margin-top:6px"><span></span>' +
+      '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>' +
+      '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;padding-top:10px;' +
+      'font-weight:800"><span>應匯金額</span><span>NT$' +
+      (r.pay || 0).toLocaleString() + '</span></div></div>';
+  }
+  h += '</div>';
+
+  h += '<div class="bar"><div class="t">　<b></b></div>' +
+    '<button onclick="location.href=\'/m\'">前往會員中心</button></div>';
+  return h;
 }
 
  
@@ -993,6 +1124,14 @@ function submitOrder() {
 
   var t = tot();
   window._lastTot = t;
+  
+  lastOrder = {
+    at: new Date().toISOString(),
+    items: items,
+    sum: t.sum,
+    pay: t.pay,
+    summary: itemsSummary(items)
+  };
 
   var payload = {
     campaign: C.id,
@@ -1037,6 +1176,7 @@ function submitOrder() {
       .then(function (res) {
         if (res && res.ordered) {
           
+          if (lastOrder) lastOrder.orderNo = res.orderNo || '';
           clearCart();
           try {
             var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
@@ -1047,12 +1187,22 @@ function submitOrder() {
           draw(true);
           return;
         }
-        alert('網路不穩，訂單沒有送出。請再按一次送出訂單。');
-        draw();
+        
+        
+        if (res && res.failed) {
+          alert('無法確認訂單狀態。\n\n請到會員中心查看是否已有訂單，避免重複下單。');
+          orderFailed = true;
+        } else {
+          alert('網路不穩，訂單沒有送出。請再按一次送出訂單。');
+        }
+        step = 1;
+        draw(true);
       })
       .catch(function () {
-        alert('網路不穩，訂單沒有送出。請再按一次送出訂單。');
-        draw();
+        alert('無法確認訂單狀態。\n\n請到會員中心查看是否已有訂單，避免重複下單。');
+        orderFailed = true;
+        step = 1;
+        draw(true);
       });
   }
 
@@ -1086,13 +1236,14 @@ function submitOrder() {
       }
       if (d && d.status === 'DUPLICATE') {
         
-        alert(d.message || '你已經填過這一團了。');
-        ordered = { at: '', orderNo: '', state: '已成立' };
+        ordered = { at: '', orderNo: d.orderNo || '', items: [], amount: 0 };
         clearCart();
+        step = 1;
         draw(true);
         return;
       }
       if (d && d.status === 'SUCCESS') {
+        if (lastOrder) lastOrder.orderNo = d.orderNo || '';
         clearCart();
         try {
           var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
