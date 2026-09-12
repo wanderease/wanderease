@@ -142,16 +142,41 @@ var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj
 
 
 
-function maintenanceBlocked(m) {
-  if (!m || !m.on) return false;
+function isAdmin(hashes) {
+  if (!hashes || !hashes.length) return Promise.resolve(false);
   try {
-    if (location.search.indexOf('preview=1') >= 0) {
-      sessionStorage.setItem('we_preview', '1');
-      return false;
-    }
-    if (sessionStorage.getItem('we_preview')) return false;
+    if (sessionStorage.getItem('we_admin') === '1') return Promise.resolve(true);
   } catch (e) {}
-  return true;
+
+  return new Promise(function (resolve) {
+    if (typeof liff === 'undefined' || !window.crypto || !crypto.subtle) {
+      resolve(false); return;
+    }
+    liff.init({ liffId: LIFF_ID }).then(function () {
+      if (!liff.isLoggedIn()) { resolve(false); return; }
+      return liff.getProfile().then(function (p) {
+        return crypto.subtle.digest('SHA-256', new TextEncoder().encode(p.userId))
+          .then(function (buf) {
+            var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+              return ('0' + b.toString(16)).slice(-2);
+            }).join('');
+            var ok = hashes.indexOf(hex) >= 0;
+            if (ok) { try { sessionStorage.setItem('we_admin', '1'); } catch (e) {} }
+            resolve(ok);
+          });
+      });
+    }).catch(function () { resolve(false); });
+  });
+}
+
+
+
+function guardMaintenance(m, onPass) {
+  if (!m || !m.on) { onPass(); return; }
+  isAdmin(m.admins).then(function (admin) {
+    if (admin) onPass();
+    else showMaintenance(m);
+  });
 }
 
 function showMaintenance(m) {
@@ -186,17 +211,18 @@ var WE = {
 WE.loadCampaigns().then(function (d) {
   if (!d) return;
   
-  if (maintenanceBlocked(d.maintenance)) { showMaintenance(d.maintenance); return; }
-  if (!d.campaigns) return;
-  var open = d.campaigns.filter(function (c) { return c.state === '開放收單'; });
-  if (!open.length) {
-    document.getElementById('cSub').textContent = '目前沒有開放中的團';
-    return;
-  }
-  var el = document.getElementById('cCnt');
-  el.textContent = open.length;
-  el.className = 'cnt on';
-  document.getElementById('cSub').textContent = open.length + ' 團開放中';
+  guardMaintenance(d.maintenance, function () {
+    if (!d.campaigns) return;
+    var open = d.campaigns.filter(function (c) { return c.state === '開放收單'; });
+    if (!open.length) {
+      document.getElementById('cSub').textContent = '目前沒有開放中的團';
+      return;
+    }
+    var el = document.getElementById('cCnt');
+    el.textContent = open.length;
+    el.className = 'cnt on';
+    document.getElementById('cSub').textContent = open.length + ' 團開放中';
+  });
 });
 
  
