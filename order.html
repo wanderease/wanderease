@@ -245,6 +245,7 @@ var agreed = false;
 var me = null;
 var ordered = null;   
 var payInfo = null;   
+var payDone = false;  
 var meLoading = false;  
 
 
@@ -494,6 +495,7 @@ function boot(d) {
       if (ctrl) ctrl.abort();
       if (tries < 2) { prep(uid, tries + 1); return; }
       meLoading = false;
+      payDone = true;
       if (step === 2) draw();
     }, 8000);
 
@@ -522,7 +524,12 @@ function boot(d) {
           me.email = d.me.email || '';
           try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
         }
-        if (d.pay && d.pay.needPay) payInfo = d.pay;
+        
+        
+        if (d.pay) {
+          payDone = !!d.pay.resolved;
+          if (d.pay.needPay) payInfo = d.pay;
+        }
         if (d.ordered) ordered = d.ordered;
 
         
@@ -537,6 +544,7 @@ function boot(d) {
           return;
         }
         meLoading = false;
+        payDone = true;     
         if (step === 2) draw();
       });
   }
@@ -793,15 +801,20 @@ function view2() {
 
     
     
-    h += '<div class="pay">' +
-      (payInfo
-        ? '<h4>請匯款至以下帳戶</h4>' +
-          '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
-          '<div class="r" style="margin-top:6px"><span></span>' +
-          '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>'
-        : '<h4>請匯款至以下帳戶</h4>' +
-          '<div class="r"><span class="ld"></span><span>讀取收款資訊中…</span></div>') +
-      '</div>';
+    if (payInfo) {
+      h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
+        '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
+        '<div class="r" style="margin-top:6px"><span></span>' +
+        '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div></div>';
+    } else if (!payDone) {
+      h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
+        '<div class="r"><span class="ld"></span><span>讀取收款資訊中…</span></div></div>';
+    } else {
+      
+      
+      h += '<div class="pay"><h4>匯款資訊</h4>' +
+        '<div class="r"><span>訂單送出後會另行通知匯款帳號</span></div></div>';
+    }
   } else {
     h += '<div class="tt"><span>總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div></div>' +
          '<div class="note" style="margin:0 0 14px">本次填單不代表確定有貨，' +
