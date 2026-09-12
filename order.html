@@ -190,7 +190,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .empty{padding:70px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
+
 <div class="wrap" id="root">
   <div class="empty">載入中…</div>
 </div>
@@ -286,14 +287,26 @@ function isAdmin(hashes) {
 
 
 function guardMaintenance(m, onPass) {
-  if (!m || !m.on) { onPass(); return; }
+  if (!m || !m.on) { reveal(); onPass(); return; }
   isAdmin(m.admins).then(function (admin) {
+    reveal();
     if (admin) onPass();
     else showMaintenance(m);
   });
 }
 
+
+
+function reveal() {
+  try { document.body.style.visibility = 'visible'; } catch (e) {}
+}
+
+
+
+setTimeout(reveal, 3000);
+
 function showMaintenance(m) {
+  reveal();
   document.body.innerHTML =
     '<div class="maint">' +
     '<div class="ic"><i class="bi bi-tools"></i></div>' +
