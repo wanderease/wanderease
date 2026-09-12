@@ -69,7 +69,8 @@ body{
 .foot{text-align:center;font-size:11.5px;color:var(--mute);padding:26px 0 10px}
 </style>
 </head>
-<body>
+<body style="visibility:hidden">
+
 <div class="wrap">
 
   <div class="hero">
@@ -172,14 +173,26 @@ function isAdmin(hashes) {
 
 
 function guardMaintenance(m, onPass) {
-  if (!m || !m.on) { onPass(); return; }
+  if (!m || !m.on) { reveal(); onPass(); return; }
   isAdmin(m.admins).then(function (admin) {
+    reveal();
     if (admin) onPass();
     else showMaintenance(m);
   });
 }
 
+
+
+function reveal() {
+  try { document.body.style.visibility = 'visible'; } catch (e) {}
+}
+
+
+
+setTimeout(reveal, 3000);
+
 function showMaintenance(m) {
+  reveal();
   document.body.innerHTML =
     '<div class="maint">' +
     '<div class="ic"><i class="bi bi-tools"></i></div>' +
