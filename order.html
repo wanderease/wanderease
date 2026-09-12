@@ -1303,6 +1303,10 @@ function submitOrder() {
   
   
   
+  
+  
+  var sentAt = Date.now();
+
   var aborted = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timer = setTimeout(function () {
@@ -1391,7 +1395,16 @@ function submitOrder() {
         return;
       }
       if (d && d.status === 'SUCCESS') {
-        if (lastOrder) lastOrder.orderNo = d.orderNo || '';
+        
+        
+        var ms = Date.now() - sentAt;
+        console.log('送出耗時 ' + ms + ' ms（客人實際等待）',
+                    d.lap ? JSON.stringify(d.lap) : '');
+        if (lastOrder) {
+          lastOrder.orderNo = d.orderNo || '';
+          lastOrder.ms = ms;
+          lastOrder.lap = d.lap || null;
+        }
         clearCart();
         try {
           var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
