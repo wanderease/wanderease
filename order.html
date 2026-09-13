@@ -25,7 +25,9 @@ body{
 .crumb{padding:12px 18px 0}
 .crumb a{font-size:13px;color:var(--mute);text-decoration:none}
  
-.cover{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#e6ded5;margin-top:10px}
+ 
+.cover{width:100%;height:auto;max-height:60vh;object-fit:contain;display:block;
+       background:#e6ded5;margin-top:10px}
 .hd{padding:16px 18px 8px}
 .hd .bd{font-size:11.5px;color:var(--mute);letter-spacing:.1em}
 .hd h1{font-size:22px;font-weight:800;margin:3px 0 8px;line-height:1.35}
@@ -37,10 +39,13 @@ body{
       border-radius:16px;overflow:hidden;padding-bottom:15px}
  
 .swipe{position:relative}
-.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
+ 
+.track{display:flex;align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;
        -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .track::-webkit-scrollbar{height:0}
-.big{width:100%;flex:0 0 100%;aspect-ratio:1;object-fit:cover;display:block;
+ 
+.big{width:100%;flex:0 0 100%;height:auto;max-height:78vh;min-height:200px;
+     object-fit:contain;display:block;
      background:#e6ded5;cursor:zoom-in;scroll-snap-align:center}
 .dots{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:5px;
       pointer-events:none}
@@ -218,6 +223,10 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .rows2 > div > span:first-child{color:var(--mute);flex:0 0 auto;white-space:nowrap}
 .rows2 > div > span:last-child{text-align:right;flex:1;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em;white-space:nowrap}
+ 
+.rows2 .lines{line-height:1.7}
+.rows2 .lines i{display:block;font-style:normal}
+.rows2 .amt{font-weight:800;color:#42513a}
 .done-bar .act{display:flex;gap:8px;margin-top:12px}
 .done-bar .act a{flex:1;text-align:center;text-decoration:none;font-size:13.5px;
                  font-weight:700;padding:10px;border-radius:10px}
@@ -745,7 +754,27 @@ function orderedBar() {
   if (ordered.orderNo) rows += '<div><span>訂單編號</span><span class="no">' +
                                esc(ordered.orderNo) + '</span></div>';
   if (when) rows += '<div><span>填單時間</span><span>' + esc(when) + '</span></div>';
-  if (sum) rows += '<div><span>訂購內容</span><span>' + esc(sum) + '</span></div>';
+
+  
+  
+  
+  
+  var its = ordered.items || [];
+  if (its.length) {
+    rows += '<div><span>訂購內容</span><span class="lines">' +
+      its.map(function (it) {
+        var nm = it.product + (it.color ? ' ' + it.color : '') +
+                 (it.size ? ' ' + it.size : '');
+        return '<i>' + esc(nm + ' ×' + it.qty) + '</i>';
+      }).join('') + '</span></div>';
+  } else if (sum) {
+    rows += '<div><span>訂購內容</span><span>' + esc(sum) + '</span></div>';
+  }
+
+  if (ordered.amount > 0) {
+    rows += '<div><span>訂單金額</span><span class="amt">NT$' +
+            ordered.amount.toLocaleString() + '</span></div>';
+  }
 
   
   
@@ -1309,6 +1338,20 @@ function submitOrder() {
   if (!/^09\d{8}$/.test(phone)) { alert('手機號碼要 09 開頭共 10 碼。'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { alert('請填正確的電子信箱。'); return; }
   if (!/^\d{4,5}$/.test(last5)) { alert('請填匯款帳號後五碼。'); return; }
+
+  
+  
+  
+  
+  
+  var uid = (me && me.uid) || null;
+  try { uid = uid || localStorage.getItem('we_uid'); } catch (e) {}
+  if (!uid) {
+    alert('請先登入 LINE 再送出訂單。');
+    draw();
+    return;
+  }
+
   var cfs = (C.confirms || []).filter(Boolean);
   var missing = cfs.filter(function (x) { return !confirmAt[x]; });
   if (missing.length) {
@@ -1332,6 +1375,19 @@ function submitOrder() {
     });
   });
 
+  
+  
+  
+  
+  
+  
+  
+  if (!items.length) {
+    alert('購物車是空的，請先選擇商品。');
+    draw();
+    return;
+  }
+
   var t = tot();
   window._lastTot = t;
   
@@ -1345,7 +1401,7 @@ function submitOrder() {
 
   var payload = {
     campaign: C.id,
-    lineUid: me.uid,
+    lineUid: uid,
     name: name, phone: phone, email: mail, last5: last5,
     agreedAt: new Date().toISOString(),
     
@@ -1355,10 +1411,17 @@ function submitOrder() {
     deposit: t.dep
   };
 
+  
+  
+  
+  
+  
   var btns = document.querySelectorAll('.bar button');
-  btns.forEach(function (b) { b.disabled = true; });
-  var sendBtn = btns[btns.length - 1];
-  sendBtn.textContent = '送出中…';
+  try {
+    btns.forEach(function (b) { b.disabled = true; });
+  } catch (e) {}
+  var sendBtn = (btns && btns.length) ? btns[btns.length - 1] : null;
+  if (sendBtn) sendBtn.textContent = '送出中…';
 
   
   
@@ -1387,7 +1450,8 @@ function submitOrder() {
     if (btn.length) btn[btn.length - 1].textContent = '確認中…';
 
     fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' +
-          encodeURIComponent(me.uid) + '&campaign=' + encodeURIComponent(CODE))
+          encodeURIComponent((me && me.uid) || '') +
+          '&campaign=' + encodeURIComponent(CODE))
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res && res.ordered) {
