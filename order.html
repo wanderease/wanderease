@@ -26,7 +26,7 @@ body{
 .crumb a{font-size:13px;color:var(--mute);text-decoration:none}
  
  
-.cover{width:100%;height:auto;max-height:60vh;object-fit:contain;display:block;
+.cover{width:100%;aspect-ratio:4/3;object-fit:contain;display:block;
        background:#e6ded5;margin-top:10px}
 .hd{padding:16px 18px 8px}
 .hd .bd{font-size:11.5px;color:var(--mute);letter-spacing:.1em}
@@ -44,7 +44,8 @@ body{
        -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .track::-webkit-scrollbar{height:0}
  
-.big{width:100%;flex:0 0 100%;height:auto;max-height:78vh;min-height:200px;
+ 
+.big{width:100%;flex:0 0 100%;aspect-ratio:4/5;
      object-fit:contain;display:block;
      background:#e6ded5;cursor:zoom-in;scroll-snap-align:center}
 .dots{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:5px;
