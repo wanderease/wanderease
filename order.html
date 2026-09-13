@@ -1284,6 +1284,20 @@ function doLogin() {
 }
 
 function submitOrder() {
+  
+  
+  
+  
+  
+  
+  
+  if (meLoading) {
+    var btns = document.querySelectorAll('.bar button');
+    if (btns.length) btns[btns.length - 1].textContent = '準備中…';
+    setTimeout(submitOrder, 400);
+    return;
+  }
+
   var name = (document.getElementById('fName') || {}).value || '';
   var phone = (document.getElementById('fPhone') || {}).value || '';
   var mail = (document.getElementById('fMail') || {}).value || '';
