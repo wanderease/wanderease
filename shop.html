@@ -25,8 +25,8 @@ button{font-family:inherit}
 .ico .bdg{position:absolute;top:-5px;right:-8px;background:var(--brown);color:#fff;
           font-size:10px;font-weight:800;min-width:17px;height:17px;border-radius:99px;
           display:flex;align-items:center;justify-content:center;padding:0 4px}
-.tabs{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
+ 
+.tabs{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 10px}
 .tab{flex:0 0 auto;font-size:12.5px;padding:5px 13px;border-radius:99px;
      border:1px solid var(--line);background:#fff;color:#6b5d4f;white-space:nowrap}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
@@ -239,6 +239,7 @@ var brands = [];
 var lastOrder = null;        
 var payInfo = null;          
 var loadErr = '';
+var submitting = false;      
 
  
 (function () {
@@ -421,7 +422,10 @@ function draw(toTop) {
   else window.scrollTo(0, y);
 }
 
-function go(v) { view = v; draw(true); }
+function go(v) {
+  if (submitting && v !== 'done' && v !== 'orders') return;
+  view = v; draw(true);
+}
 
 function viewList() {
   var h = hdr('現貨賣場', true);
@@ -676,8 +680,8 @@ function viewCart() {
   var dis = meLoading ? ' disabled' : '';
   h += '<div class="box">' +
     '<div class="bt">你的資料</div>' +
-    '<div class="bs">' + (meLoading ? '讀取會員資料中…' : '訂單會用這些資料建立') + '</div>' +
-    '<div class="fld"><label>社群暱稱</label>' +
+    '<div class="bs">' + (meLoading ? '讀取會員資料中…' : '已自動帶入您的會員資料') + '</div>' +
+    '<div class="fld"><label>社群名稱</label>' +
     '<input value="' + esc((me && me.name) || '') + '" disabled></div>' +
     '<div class="fld"><label>手機號碼</label>' +
     '<input value="' + esc((me && me.phone) || '') + '" disabled></div>' +
@@ -686,9 +690,6 @@ function viewCart() {
     ' value="' + esc((me && me.last5) || '') + '" placeholder="必填">' +
     '<div class="hint">先填預計匯款的帳戶，之後有變更到會員中心修改即可。</div>' +
     '</div>' +
-    (me && me.bound
-      ? '<div class="bs" style="margin:8px 0 0">暱稱與手機請至會員中心修改</div>'
-      : '') +
     '</div>';
 
   h += '</div>';
@@ -707,6 +708,7 @@ function hdrBack(title) {
 }
 
 function chCart(i, d) {
+  if (submitting) return;
   var k = unq(i);
   var it = cart[k];
   if (!it) return;
@@ -717,7 +719,10 @@ function chCart(i, d) {
   saveCart();
   draw();
 }
-function rmCart(i) { delete cart[unq(i)]; saveCart(); draw(); }
+function rmCart(i) {
+  if (submitting) return;
+  delete cart[unq(i)]; saveCart(); draw();
+}
 
  
 
@@ -735,6 +740,11 @@ function submitOrder() {
   });
   if (!items.length) return;
 
+  
+  
+  
+  
+  submitting = true;
   var btns = document.querySelectorAll('.bar button');
   btns.forEach(function (b) { b.disabled = true; });
   btns[btns.length - 1].textContent = '送出中…';
@@ -743,15 +753,17 @@ function submitOrder() {
   
   
   
+  
+  
+  
+  var before = myOrders ? (myOrders.orders || []).length : 0;
   var over = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var timer = setTimeout(function () {
     over = true;
     if (ctrl) ctrl.abort();
-    alert('無法確認訂單狀態。\n\n請到「我的訂單」查看是否已經成立，避免重複下單。');
-    go('orders');
-    loadOrders(uid);
-  }, 25000);
+    verifyAfterTimeout(uid, before, last5);
+  }, 20000);
 
   fetch(GAS_URL, {
     method: 'POST',
@@ -770,15 +782,25 @@ function submitOrder() {
       var d;
       try { d = JSON.parse(raw); }
       catch (e) {
+        submitting = false;
         alert('伺服器回應格式不正確，訂單可能沒有成立。\n請到「我的訂單」確認。');
         go('orders'); loadOrders(uid); return;
       }
 
       if (d.status === 'STOCK_INSUFFICIENT') {
+        submitting = false;
         showGone(d.failedItems || []);
         return;
       }
+      if (d.status === 'BUSY') {
+        
+        submitting = false;
+        alert(d.message || '結帳人潮眾多，請稍候幾秒再送出一次。');
+        draw();
+        return;
+      }
       if (d.status !== 'SUCCESS') {
+        submitting = false;
         alert(d.message || '送出失敗，請稍後再試。');
         draw();
         return;
@@ -794,6 +816,7 @@ function submitOrder() {
         due: d.dueAmount || 0,
         last5: last5
       };
+      submitting = false;
       cart = {};
       saveCart();
       loadPayInfo();
@@ -803,8 +826,56 @@ function submitOrder() {
     .catch(function () {
       if (over) return;
       clearTimeout(timer);
+      submitting = false;
       alert('網路異常，訂單沒有送出。請確認網路後重試。');
       draw();
+    });
+}
+
+
+
+function verifyAfterTimeout(uid, before, last5) {
+  var btns = document.querySelectorAll('.bar button');
+  if (btns.length) btns[btns.length - 1].textContent = '確認中…';
+
+  fetchJson(GAS_URL + '?action=getMyInstockOrders&lineUid=' + encodeURIComponent(uid),
+    function (res) {
+      var list = (res && res.data && res.data.orders) || [];
+      if (res && res.status === 'SUCCESS' && list.length > before) {
+        
+        myOrders = res.data;
+        var o = list[0];   
+        lastOrder = {
+          orderNo: o.orderNo || '',
+          at: o.createdAt || new Date().toISOString(),
+          items: (o.items || []).map(function (it) {
+            return { name: it.name, size: it.size, qty: it.qty, price: it.price };
+          }),
+          qty: o.itemCount || 0,
+          subtotal: o.subtotal || 0,
+          deposit: o.deposit || 0,
+          due: o.dueAmount || 0,
+          last5: last5
+        };
+        submitting = false;
+        cart = {};
+        saveCart();
+        loadPayInfo();
+        go('done');
+        return;
+      }
+
+      submitting = false;
+      alert('網路不穩，訂單沒有送出。\n購物車保留著，請再按一次送出訂單。');
+      draw();
+    },
+    function () {
+      
+      
+      submitting = false;
+      alert('無法確認訂單狀態。\n\n請到「我的訂單」查看是否已經成立，避免重複下單。');
+      go('orders');
+      loadOrders(uid);
     });
 }
 
