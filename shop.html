@@ -274,6 +274,7 @@ var payInfo = null;
 var payDone = false;         
 var payDays = 5;             
 var loadErr = '';
+var loadDetail = '';         
 var submitting = false;      
 
  
@@ -324,6 +325,17 @@ function autoLoginIfNeeded() {
  
 
  
+function retryLoad() {
+  loadErr = '';
+  loadDetail = '';
+  groups = [];
+  draw();
+  var uid = null;
+  try { uid = (me && me.uid) || localStorage.getItem('we_uid'); } catch (e) {}
+  loadProducts(uid);
+}
+
+ 
 function loadAll(uid) {
   loadProducts(uid);
   loadOrders(uid);
@@ -343,8 +355,17 @@ function loadProducts(uid) {
     announcement = (res.data && res.data.announcement) || '';
     loadErr = '';
     draw();
-  }, function () {
-    loadErr = '網路不穩，請重新整理';
+    
+    
+    if (res.data && res.data.paymentDays > 0) payDays = res.data.paymentDays;
+  }, function (why) {
+    
+    
+    loadErr = (why === 'timeout') ? '伺服器回應太慢'
+            : (why === 'badjson') ? '伺服器回應格式不正確'
+            : (why && why.indexOf('render:') === 0) ? '畫面顯示發生問題'
+            : '連線失敗';
+    loadDetail = String(why || '');
     draw();
   });
 }
@@ -371,15 +392,45 @@ function loadOrders(uid) {
     }, function () { meLoading = false; draw(); });
 }
 
- 
+
+
 function fetchJson(url, ok, fail) {
   var over = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  var t = setTimeout(function () { over = true; if (ctrl) ctrl.abort(); fail && fail(); }, 12000);
+  var t = setTimeout(function () {
+    over = true;
+    if (ctrl) ctrl.abort();
+    fail && fail('timeout');
+  }, 12000);
+
   fetch(url, { signal: ctrl ? ctrl.signal : undefined })
-    .then(function (r) { return r.json(); })
-    .then(function (d) { if (over) return; clearTimeout(t); ok(d); })
-    .catch(function () { if (over) return; clearTimeout(t); fail && fail(); });
+    .then(function (r) { return r.text(); })
+    .then(function (raw) {
+      if (over) return;
+      clearTimeout(t);
+
+      var data;
+      try { data = JSON.parse(raw); }
+      catch (e) {
+        
+        
+        console.error('回應不是 JSON：', raw.substring(0, 200));
+        fail && fail('badjson');
+        return;
+      }
+
+      try { ok(data); }
+      catch (e) {
+        console.error('處理回應時發生錯誤：', e);
+        fail && fail('render:' + e.message);
+      }
+    })
+    .catch(function (e) {
+      if (over) return;
+      clearTimeout(t);
+      console.error('請求失敗：', e);
+      fail && fail('network');
+    });
 }
 
  
@@ -487,7 +538,12 @@ function viewList() {
   }
 
   if (loadErr) {
-    h += '<div class="empty"><i class="bi bi-wifi-off"></i>' + esc(loadErr) + '</div>';
+    h += '<div class="empty"><i class="bi bi-wifi-off"></i>' + esc(loadErr) +
+      '<div style="margin-top:16px">' +
+      '<button class="tab" onclick="retryLoad()">重新載入</button></div>' +
+      (loadDetail ? '<div style="margin-top:14px;font-size:11px;color:#c3b8ac;' +
+        'word-break:break-all;padding:0 10px">' + esc(loadDetail) + '</div>' : '') +
+      '</div>';
     return h + barList();
   }
 
