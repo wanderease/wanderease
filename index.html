@@ -41,6 +41,8 @@ body{
   -webkit-tap-highlight-color:transparent;
 }
 .tile:active{transform:scale(.985);box-shadow:0 2px 8px rgba(44,44,47,.06)}
+ 
+.tile.off{opacity:.5;pointer-events:none}
 .tile .ic{
   width:46px;height:46px;border-radius:14px;flex:0 0 auto;
   display:flex;align-items:center;justify-content:center;font-size:21px;
@@ -82,14 +84,15 @@ body{
   <div class="tiles">
     <a class="tile" href="/c">
       <div class="ic" style="background:#efe4d8;color:#795238"><i class="bi bi-megaphone-fill"></i></div>
-      <div class="tx"><b>開團預購</b><s id="cSub">泰國選物，跟團下單</s></div>
+      
+      <div class="tx"><b>預購填單</b><s id="cSub">&nbsp;</s></div>
       <span class="cnt" id="cCnt">0</span>
       <i class="bi bi-chevron-right ar"></i>
     </a>
 
     <a class="tile" href="/s">
       <div class="ic" style="background:#e6e9e0;color:#5a6b46"><i class="bi bi-bag-fill"></i></div>
-      <div class="tx"><b>現貨賣場</b><s>現貨即買，付款後安排出貨</s></div>
+      <div class="tx"><b>現貨賣場</b><s id="sSub"></s></div>
       <i class="bi bi-chevron-right ar"></i>
     </a>
 
@@ -225,6 +228,8 @@ WE.loadCampaigns().then(function (d) {
   if (!d) return;
   
   guardMaintenance(d.maintenance, function () {
+    applyShopState(d.shop);
+
     if (!d.campaigns) return;
     var open = d.campaigns.filter(function (c) { return c.state === '開放收單'; });
     if (!open.length) {
@@ -237,6 +242,27 @@ WE.loadCampaigns().then(function (d) {
     document.getElementById('cSub').textContent = open.length + ' 團開放中';
   });
 });
+
+
+
+function applyShopState(shop) {
+  var tile = document.querySelector('a.tile[href="/s"]');
+  if (!tile) return;
+
+  var sub = document.getElementById('sSub');
+  if (shop && shop.open) {
+    
+    if (sub) sub.textContent = '';
+    return;
+  }
+
+  tile.classList.add('off');
+  tile.removeAttribute('href');
+  if (sub) sub.textContent = (shop && shop.note) || '即將開放';
+
+  var ar = tile.querySelector('.ar');
+  if (ar) ar.className = 'bi bi-clock ar';
+}
 
  
 (function initIdentity() {
