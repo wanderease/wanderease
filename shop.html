@@ -1177,11 +1177,20 @@ function submitOrder() {
   var before = myOrders ? (myOrders.orders || []).length : 0;
   var over = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  
+  
+  
+  
+  
   var timer = setTimeout(function () {
     over = true;
     if (ctrl) ctrl.abort();
-    verifyAfterTimeout(uid, before, last5);
-  }, 20000);
+    
+    
+    
+    
+    setTimeout(function () { verifyAfterTimeout(uid, before, last5, 0); }, 3000);
+  }, 35000);
 
   var opt = {
     method: 'POST',
@@ -1265,12 +1274,26 @@ function submitOrder() {
 
 
 
-function verifyAfterTimeout(uid, before, last5) {
-  setSubmitLabel('確認中…');
+function verifyAfterTimeout(uid, before, last5, tries) {
+  tries = tries || 0;
+  setSubmitLabel(tries ? '確認中…(' + (tries + 1) + '/3)' : '確認中…');
 
   fetchJson(GAS_URL + '?action=getMyInstockOrders&lineUid=' + encodeURIComponent(uid),
     function (res) {
       var list = (res && res.data && res.data.orders) || [];
+
+      
+      
+      
+      
+      
+      if (res && res.status === 'SUCCESS' && list.length <= before && tries < 2) {
+        setTimeout(function () {
+          verifyAfterTimeout(uid, before, last5, tries + 1);
+        }, 4000);
+        return;
+      }
+
       if (res && res.status === 'SUCCESS' && list.length > before) {
         
         myOrders = res.data;
@@ -1299,7 +1322,15 @@ function verifyAfterTimeout(uid, before, last5) {
       alert('網路不穩，訂單沒有送出。\n購物車保留著，請再按一次送出訂單。');
       draw();
     },
-    function () {
+    function (why) {
+      
+      
+      if (tries < 2) {
+        setTimeout(function () {
+          verifyAfterTimeout(uid, before, last5, tries + 1);
+        }, 4000);
+        return;
+      }
       
       
       submitting = false;

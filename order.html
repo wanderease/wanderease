@@ -1444,15 +1444,31 @@ function submitOrder() {
   var timer = setTimeout(function () {
     aborted = true;
     if (ctrl) ctrl.abort();
-    verifyAfterTimeout();
-  }, 20000);
+    
+    
+    setTimeout(function () { verifyAfterTimeout(0); }, 3000);
+  }, 35000);
   var done = function () { clearTimeout(timer); };
 
   
 
-  function verifyAfterTimeout() {
+  
+
+  function verifyAfterTimeout(tries) {
+    tries = tries || 0;
     var btn = document.querySelectorAll('.bar button');
-    if (btn.length) btn[btn.length - 1].textContent = '確認中…';
+    if (btn.length) {
+      btn[btn.length - 1].textContent =
+        tries ? '確認中…(' + (tries + 1) + '/3)' : '確認中…';
+    }
+
+    var retry = function () {
+      if (tries < 2) {
+        setTimeout(function () { verifyAfterTimeout(tries + 1); }, 4000);
+        return true;
+      }
+      return false;
+    };
 
     fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' +
           encodeURIComponent((me && me.uid) || '') +
@@ -1473,6 +1489,9 @@ function submitOrder() {
           return;
         }
         
+        if (retry()) return;
+
+        
         
         if (res && res.failed) {
           alert('無法確認訂單狀態。\n\n請到會員中心查看是否已有訂單，避免重複下單。');
@@ -1484,6 +1503,7 @@ function submitOrder() {
         draw(true);
       })
       .catch(function () {
+        if (retry()) return;
         alert('無法確認訂單狀態。\n\n請到會員中心查看是否已有訂單，避免重複下單。');
         orderFailed = true;
         step = 1;
