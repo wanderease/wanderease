@@ -231,6 +231,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .qty-off{opacity:.45;pointer-events:none}
 .pick-first{font-size:12.5px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;
             border-radius:9px;padding:8px 11px;margin-top:8px;text-align:center}
+ 
+.nosz-note{font-size:11.5px;color:var(--mute);margin-top:8px;text-align:center}
 .qty-off .srow{background:#f6f3f0}
 .srow .mine{font-size:11.5px;background:#eef3e9;color:var(--ok);border:1px solid #cfdcc2;
             padding:1px 8px;border-radius:99px;margin-left:6px;font-weight:700}
@@ -443,6 +445,14 @@ function clearCart() { try { localStorage.removeItem(CART_KEY); } catch (e) {} }
  
 
 
+
+
+
+function sizeOK(c, size) {
+  if (!c || !c.sz || !c.sz.length) return true;
+  if (!size || size === '-') return true;
+  return c.sz.indexOf(String(size)) >= 0;
+}
 
 function priceOf(pi, ci, size) {
   var p = C.products[pi] || {};
@@ -931,17 +941,34 @@ function view1() {
 
     if ((p.sizes || []).length) {
       
-      var vals = p.sizes.map(function (s) { return priceOf(pi, si, s); });
-      var varies = Math.min.apply(null, vals) !== Math.max.apply(null, vals);
+      
+      
+      
+      
+      
+      var avail = p.sizes.filter(function (s) { return sizeOK(c, s); });
+
+      var vals = avail.map(function (s) { return priceOf(pi, si, s); });
+      var varies = vals.length > 1 &&
+                   Math.min.apply(null, vals) !== Math.max.apply(null, vals);
+
       h += '<h3>' + esc(sw) + (c ? ' · ' + esc(c.n) : '') + '</h3>';
       if (lockQty) h += '<div class="qty-off">';
-      p.sizes.forEach(function (s) {
+      avail.forEach(function (s) {
         var k = pi + '|' + si + '|' + s;
         var mine = om[cname + '|' + s] || 0;
         var q = mine || cart[k] || 0;
         h += stepRow(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
+
+      
+      
+      if (c && avail.length < p.sizes.length) {
+        var miss = p.sizes.filter(function (s) { return !sizeOK(c, s); });
+        h += '<div class="nosz-note">' + esc(c.n) + ' 沒有 ' +
+             esc(miss.join('、')) + '</div>';
+      }
     } else {
       var k0 = pi + '|' + si + '|-';
       var mine0 = om[cname + '|'] || 0;
