@@ -276,6 +276,7 @@ var payDays = 5;
 var loadErr = '';
 var loadDetail = '';         
 var submitting = false;      
+var productsLoading = false; 
 
  
 (function () {
@@ -329,21 +330,40 @@ function retryLoad() {
   loadErr = '';
   loadDetail = '';
   groups = [];
+  productsLoading = false;   
   draw();
   var uid = null;
   try { uid = (me && me.uid) || localStorage.getItem('we_uid'); } catch (e) {}
-  loadProducts(uid);
+  loadProducts(uid, 0);
 }
 
- 
+
+
 function loadAll(uid) {
-  loadProducts(uid);
-  loadOrders(uid);
+  loadProducts(uid, 0, function () { loadOrders(uid); });
 }
 
-function loadProducts(uid) {
+
+
+function loadProducts(uid, tries, done) {
+  
+  
+  
+  
+  
+  if (tries === 0 && productsLoading) {
+    if (done) done();
+    return;
+  }
+  productsLoading = true;
+
+  tries = tries || 0;
+  var startedAt = Date.now();
   var u = GAS_URL + '?action=getInstockProducts' +
           (uid ? '&lineUid=' + encodeURIComponent(uid) : '');
+
+  
+  
   fetchJson(u, function (res) {
     if (!res || res.status !== 'SUCCESS') {
       loadErr = (res && res.message) || '商品載入失敗';
@@ -354,20 +374,40 @@ function loadProducts(uid) {
     brands = uniqueBrands(groups);
     announcement = (res.data && res.data.announcement) || '';
     loadErr = '';
+    loadDetail = '';
     draw();
     
     
     if (res.data && res.data.paymentDays > 0) payDays = res.data.paymentDays;
+    productsLoading = false;
+    console.log('商品載入 ' + (Date.now() - startedAt) + ' ms');
+    if (done) done();
   }, function (why) {
+    
+    
+    if ((why === 'timeout' || why === 'network') && tries < 2) {
+      loadErr = '';
+      loadDetail = '連線較慢，重試中…（' + (tries + 1) + '/2）';
+      draw();
+      setTimeout(function () { loadProducts(uid, tries + 1, done); }, 700);
+      return;   
+    }
+
     
     
     loadErr = (why === 'timeout') ? '伺服器回應太慢'
             : (why === 'badjson') ? '伺服器回應格式不正確'
             : (why && why.indexOf('render:') === 0) ? '畫面顯示發生問題'
             : '連線失敗';
-    loadDetail = String(why || '');
+    
+    
+    loadDetail = String(why || '') + '　等了 ' +
+      Math.round((Date.now() - startedAt) / 100) / 10 + ' 秒' +
+      (tries ? '（已重試 ' + tries + ' 次）' : '');
+    productsLoading = false;
     draw();
-  });
+    if (done) done();   
+  }, tries === 0 ? 20000 : 12000);
 }
 
 function loadOrders(uid) {
@@ -394,14 +434,14 @@ function loadOrders(uid) {
 
 
 
-function fetchJson(url, ok, fail) {
+function fetchJson(url, ok, fail, ms) {
   var over = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
   var t = setTimeout(function () {
     over = true;
     if (ctrl) ctrl.abort();
     fail && fail('timeout');
-  }, 12000);
+  }, ms || 12000);
 
   fetch(url, { signal: ctrl ? ctrl.signal : undefined })
     .then(function (r) { return r.text(); })
@@ -549,7 +589,8 @@ function viewList() {
 
   if (!groups.length) {
     h += '<div class="empty"><span class="ld"></span><div style="margin-top:10px">' +
-         '載入商品中…</div></div>';
+         (loadDetail && loadDetail.indexOf('重試') >= 0 ? esc(loadDetail) : '載入商品中…') +
+         '</div></div>';
     return h + barList();
   }
 
@@ -1016,7 +1057,8 @@ function showGone(failed) {
     }
   });
   saveCart();
-  loadProducts((me && me.uid) || null);
+  productsLoading = false;
+  loadProducts((me && me.uid) || null, 0);
   draw();
 }
 
