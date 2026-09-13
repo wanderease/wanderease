@@ -67,6 +67,9 @@ body{
 .spec{margin-top:12px;border-top:1px solid #f0eae3;font-size:12.5px}
 .spec div{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f0eae3}
 .spec span:first-child{color:var(--mute);flex:0 0 76px}
+ 
+.spec div.one{display:block}
+.spec div.one span:first-child{color:var(--ink);flex:none;line-height:1.7}
 h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{font-size:13px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);
@@ -879,13 +882,30 @@ function view1() {
          '</div><div class="pbody">';
 
     if (p.copy) h += '<div class="copy">' + esc(p.copy) + '</div>';
+    
+    
+    
+    
+    
+    
+    
     if (p.spec) {
-      h += '<div class="spec">';
-      String(p.spec).split('\n').forEach(function (l) {
-        var i = l.indexOf('：');
-        if (i > 0) h += '<div><span>' + esc(l.slice(0, i)) + '</span><span>' + esc(l.slice(i + 1)) + '</span></div>';
-      });
-      h += '</div>';
+      var rows = String(p.spec).split(/\r?\n/)
+        .map(function (x) { return x.trim(); }).filter(Boolean);
+      if (rows.length) {
+        h += '<div class="spec">';
+        rows.forEach(function (l) {
+          var i = l.indexOf('：');
+          if (i < 0) i = l.indexOf(':');
+          if (i > 0) {
+            h += '<div><span>' + esc(l.slice(0, i)) + '</span>' +
+                 '<span>' + esc(l.slice(i + 1).trim()) + '</span></div>';
+          } else {
+            h += '<div class="one"><span>' + esc(l) + '</span></div>';
+          }
+        });
+        h += '</div>';
+      }
     }
 
     var lb = String(p.optLabel || '').split('|');
