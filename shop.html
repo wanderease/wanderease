@@ -437,7 +437,17 @@ function loadProducts(uid, tries, done) {
     
     var pd = d.products || {};
     if (!res || res.status !== 'SUCCESS' || pd.failed) {
-      loadErr = pd.message || (res && res.message) || '商品載入失敗';
+      
+      
+      
+      
+      if (groups.length) {
+        stale = true;
+        loadErr = '';
+        loadDetail = '';
+      } else {
+        loadErr = pd.message || (res && res.message) || '商品載入失敗';
+      }
       productsLoading = false;
       draw();
       if (done) done();
@@ -1082,6 +1092,13 @@ function rmCart(i) {
  
 
 function submitOrder() {
+  
+  
+  
+  
+  
+  if (submitting) return;
+
   var last5 = (document.getElementById('fLast5') || {}).value || '';
   last5 = last5.trim();
   if (!/^\d{4,5}$/.test(last5)) { alert('請填匯款帳號後五碼。'); return; }
