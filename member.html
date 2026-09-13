@@ -447,8 +447,8 @@
     <div class="home-header-bar">
       <div class="hhb-name" id="welcomeMsg"></div>
       <div class="hhb-nav-row">
-        <button class="hhb-nav-item" onclick="showSubOverlay('promos')"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
-        <button class="hhb-nav-item" onclick="instkOpenCart()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
+        <a class="hhb-nav-item" href="/c"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">預購填單</span></a>
+        <a class="hhb-nav-item" href="/s"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></a>
         <button class="hhb-nav-item" onclick="showSubOverlay('rules')"><span class="hhb-ic"><i class="bi bi-journal-text"></i></span><span class="hhb-l">規則</span></button>
         <button class="hhb-nav-item cs" onclick="openLineContact()"><span class="hhb-ic"><i class="bi bi-chat-dots"></i></span><span class="hhb-l">客服</span></button>
       </div>
@@ -559,8 +559,8 @@
     <nav class="bottom-nav">
       <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this)" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
-      <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos',this)"><span class="nav-icon">🔥</span><span class="nav-text">開團</span></div>
-      <div class="bottom-nav-item" onclick="instkOpenCart()"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
+      <a class="bottom-nav-item" href="/c" style="text-decoration:none"><span class="nav-icon">🔥</span><span class="nav-text">預購填單</span></a>
+      <a class="bottom-nav-item" href="/s" style="text-decoration:none"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></a>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageRules',this)"><span class="nav-icon">📝</span><span class="nav-text">規則</span></div>
     </nav>
   </div>
