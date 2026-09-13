@@ -457,6 +457,11 @@ function draw(toTop) {
   else window.scrollTo(0, y);
 }
 
+ 
+function goCart() { go('cart'); }
+function goList() { go('list'); }
+function goOrders() { go('orders'); }
+
 function go(v) {
   if (submitting && v !== 'done' && v !== 'orders') return;
   view = v; draw(true);
@@ -473,7 +478,7 @@ function viewList() {
   
   
   if (myOrders && myOrders.pendingCount > 0) {
-    h += '<button class="resv" onclick="go(\'orders\')">' +
+    h += '<button class="resv" onclick="goOrders()">' +
       '<span class="ic2"><i class="bi bi-receipt"></i></span>' +
       '<span class="b"><b>你有 ' + myOrders.pendingCount + ' 筆訂單待匯款</b>' +
       '<s>共 ' + myOrders.pendingQty + ' 件 · 合計 NT$' +
@@ -507,7 +512,8 @@ function viewList() {
   
   var n = cartQty();
   if (n) {
-    h += '<button class="fab" onclick="go(' + q('cart') + ')" aria-label="購物車">' +
+    
+    h += '<button class="fab" onclick="goCart()" aria-label="購物車">' +
       '<i class="bi bi-bag-fill"></i><span class="n">' + n + '</span></button>';
   }
 
@@ -519,11 +525,11 @@ function hdr(title, withTabs) {
   var h = '<div class="hdr"><div class="r1">' +
     '<a class="back" href="/"><i class="bi bi-chevron-left"></i> 首頁</a>' +
     '<h1>' + esc(title) + '</h1>' +
-    '<button class="ico" onclick="go(\'orders\')" aria-label="我的訂單">' +
+    '<button class="ico" onclick="goOrders()" aria-label="我的訂單">' +
     '<i class="bi bi-receipt"></i>' +
     (myOrders && myOrders.pendingCount ? '<span class="bdg">' + myOrders.pendingCount + '</span>' : '') +
     '</button>' +
-    '<button class="ico" onclick="go(\'cart\')" aria-label="購物車">' +
+    '<button class="ico" onclick="goCart()" aria-label="購物車">' +
     '<i class="bi bi-bag"></i>' + (n ? '<span class="bdg">' + n + '</span>' : '') +
     '</button></div>';
 
@@ -622,7 +628,8 @@ function chQty(k, d) {
   var c = findCard(id);
   var max = 99;
   if (c) {
-    var s = (c.sizes.length === 1 && !c.sizes[0].size) ? c.sizes[0] : c.sizes[selSize[id]];
+    var s = (c.sizes.length === 1 && isBlankSize(c.sizes[0].size))
+      ? c.sizes[0] : c.sizes[selSize[id]];
     if (s) max = s.remain;
   }
   cardQty[id] = Math.max(1, Math.min(max || 1, n));
@@ -640,7 +647,9 @@ function addCart(k) {
   var id = unq(k);
   var c = findCard(id);
   if (!c) return;
-  var noSize = (c.sizes.length === 1 && !c.sizes[0].size);
+  
+  
+  var noSize = (c.sizes.length === 1 && isBlankSize(c.sizes[0].size));
   var s = noSize ? c.sizes[0] : c.sizes[selSize[id]];
   if (!s || s.remain <= 0) return;
 
@@ -674,7 +683,7 @@ function barList() {
   return '<div class="bar"><div class="t">' +
     (n ? '購物車 ' + n + ' 件' : '尚未選購') +
     '<b>NT$' + cartSum().toLocaleString() + '</b></div>' +
-    '<button onclick="go(\'cart\')"' + (n ? '' : ' disabled') + '>查看購物車</button></div>';
+    '<button onclick="goCart()"' + (n ? '' : ' disabled') + '>查看購物車</button></div>';
 }
 
  
@@ -685,7 +694,7 @@ function viewCart() {
 
   if (!keys.length) {
     return h + '<div class="empty"><i class="bi bi-bag"></i>購物車是空的' +
-      '<div style="margin-top:14px"><button class="tab" onclick="go(\'list\')">' +
+      '<div style="margin-top:14px"><button class="tab" onclick="goList()">' +
       '去逛逛</button></div></div>';
   }
 
@@ -738,7 +747,7 @@ function viewCart() {
 
   h += '</div>';
 
-  h += '<div class="bar"><button class="ghost" onclick="go(\'list\')">繼續購物</button>' +
+  h += '<div class="bar"><button class="ghost" onclick="goList()">繼續購物</button>' +
     '<div class="t">應匯<b>NT$' + due.toLocaleString() + '</b></div>' +
     '<button onclick="submitOrder()"' + (meLoading ? ' disabled' : '') + '>送出訂單</button></div>';
   return h;
@@ -746,7 +755,7 @@ function viewCart() {
 
 function hdrBack(title) {
   return '<div class="hdr"><div class="r1">' +
-    '<button class="back" onclick="go(\'list\')" style="background:none;border:0;padding:0">' +
+    '<button class="back" onclick="goList()" style="background:none;border:0;padding:0">' +
     '<i class="bi bi-chevron-left"></i> 現貨</button>' +
     '<h1>' + esc(title) + '</h1></div></div>';
 }
@@ -800,6 +809,7 @@ function submitOrder() {
   
   
   
+  var sentAt = Date.now();
   var before = myOrders ? (myOrders.orders || []).length : 0;
   var over = false;
   var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -849,6 +859,9 @@ function submitOrder() {
         draw();
         return;
       }
+
+      console.log('現貨結帳 ' + (Date.now() - sentAt) + ' ms（客人實際等待）',
+                  d.lap ? JSON.stringify(d.lap) : '');
 
       lastOrder = {
         orderNo: d.orderNo || '',
@@ -990,10 +1003,10 @@ function viewDone() {
 
   h += '<div style="display:flex;gap:9px;padding:4px 0 18px">' +
     '<button class="tab" style="flex:1;padding:12px;border-radius:11px;font-size:13.5px;' +
-    'font-weight:700" onclick="go(\'list\')">繼續購物</button>' +
+    'font-weight:700" onclick="goList()">繼續購物</button>' +
     '<button class="tab" style="flex:1;padding:12px;border-radius:11px;font-size:13.5px;' +
     'font-weight:800;background:var(--brown);border-color:var(--brown);color:#fff" ' +
-    'onclick="go(\'orders\')">我的訂單</button></div>';
+    'onclick="goOrders()">我的訂單</button></div>';
 
   return h + '</div>';
 }
@@ -1072,7 +1085,7 @@ function viewOrders() {
   var list = myOrders.orders || [];
   if (!list.length) {
     return h + '<div class="empty"><i class="bi bi-receipt"></i>目前沒有訂單' +
-      '<div style="margin-top:14px"><button class="tab" onclick="go(\'list\')">' +
+      '<div style="margin-top:14px"><button class="tab" onclick="goList()">' +
       '去逛逛</button></div></div>';
   }
 
@@ -1110,7 +1123,7 @@ function viewOrders() {
 
   h += '<div style="padding:0 16px 20px"><button class="tab" style="width:100%;' +
     'padding:12px;border-radius:11px;font-size:13.5px;font-weight:700" ' +
-    'onclick="go(\'list\')">繼續購物</button></div>';
+    'onclick="goList()">繼續購物</button></div>';
   return h;
 }
 
