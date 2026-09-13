@@ -879,10 +879,13 @@ function view1() {
     
     
     
+    
+    
+    
     var rg = priceRange(pi);
-    var sel = selPrice(pi);
-    var shown = (sel != null) ? sel : rg.min;
-    var showFrom = (sel == null && rg.max > rg.min);
+    var selPx = selPrice(pi);
+    var shown = (selPx != null) ? selPx : rg.min;
+    var showFrom = (selPx == null && rg.max > rg.min);
     h += '<div class="pinfo"><div class="row1">' +
          '<h2>' + esc(p.name) + '</h2>' +
          '<div class="px">NT$' + shown.toLocaleString() +
