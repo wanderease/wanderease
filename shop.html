@@ -139,6 +139,14 @@ button{font-family:inherit}
 .pay .r{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
 .pay .acc{font-size:19px;font-weight:800;letter-spacing:.03em;text-align:right;
           word-break:break-all}
+ 
+.accbox{margin:4px 0 2px}
+.accline{font-size:16px;font-weight:800;letter-spacing:.02em;line-height:1.7;
+         word-break:break-all}
+.pay .due{border-top:1px solid #cfdbcb;margin-top:10px;padding-top:10px;
+          font-weight:800;align-items:baseline}
+ 
+.pay .amt{color:#c0392b;font-size:19px;font-weight:800}
 .paynote{font-size:12px;color:#4e6146;line-height:1.75;border-top:1px solid #cfdbcb;
          margin-top:9px;padding-top:9px}
 .paynote b{font-weight:800}
@@ -191,6 +199,8 @@ button{font-family:inherit}
 .rows2 .r span:last-child{text-align:right;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em}
  
+.rows2 .red{color:#c0392b;font-weight:800;font-size:15px}
+ 
 .rows2 .lines{line-height:1.65}
 .rows2 .lines i{display:block;font-style:normal}
 
@@ -204,6 +214,17 @@ button{font-family:inherit}
 .skel{background:linear-gradient(90deg,#e8e0d7 25%,#f0eae3 50%,#e8e0d7 75%);
       background-size:200% 100%;animation:sk 1.4s infinite;border-radius:8px}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+ 
+.fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom));
+     width:54px;height:54px;border-radius:50%;background:var(--brown);color:#fff;
+     border:0;font-size:21px;z-index:19;
+     box-shadow:0 4px 14px rgba(60,42,30,.32);display:flex;
+     align-items:center;justify-content:center}
+.fab .n{position:absolute;top:-3px;right:-3px;background:#a8382f;color:#fff;
+        font-size:11px;font-weight:800;min-width:21px;height:21px;border-radius:99px;
+        display:flex;align-items:center;justify-content:center;padding:0 5px;
+        border:2px solid var(--bg)}
 
  
 .lb{position:fixed;inset:0;background:rgba(28,24,21,.94);z-index:60;display:none}
@@ -483,6 +504,13 @@ function viewList() {
 
   if (!total) h += '<div class="empty"><i class="bi bi-bag"></i>這個分類目前沒有商品</div>';
 
+  
+  var n = cartQty();
+  if (n) {
+    h += '<button class="fab" onclick="go(' + q('cart') + ')" aria-label="購物車">' +
+      '<i class="bi bi-bag-fill"></i><span class="n">' + n + '</span></button>';
+  }
+
   return h + barList();
 }
 
@@ -520,7 +548,9 @@ function card(c) {
   var id = c.styleKey;
   var photo = (c.photos && c.photos.length) ? c.photos[0] : '';
   var sizes = c.sizes || [];
-  var noSize = (sizes.length === 1 && !sizes[0].size);
+  
+  
+  var noSize = (sizes.length === 1 && isBlankSize(sizes[0].size));
   var allOut = sizes.every(function (s) { return s.remain <= 0; });
   var sel = selSize[id];
 
@@ -620,7 +650,7 @@ function addCart(k) {
   
   
   if (cur + want > s.remain) {
-    alert('「' + c.name + (s.size ? ' ' + s.size : '') + '」只剩 ' + s.remain +
+    alert('「' + c.name + (isBlankSize(s.size) ? '' : ' ' + s.size) + '」只剩 ' + s.remain +
           ' 件，你的購物車裡已經有 ' + cur + ' 件。');
     return;
   }
@@ -628,7 +658,7 @@ function addCart(k) {
   cart[s.inventoryId] = {
     qty: cur + want,
     name: c.name,
-    size: s.size || '',
+    size: isBlankSize(s.size) ? '' : s.size,
     price: s.effectivePrice,
     max: s.remain,
     photo: (c.photos && c.photos[0]) || ''
@@ -666,7 +696,7 @@ function viewCart() {
       (it.photo ? '<img src="' + esc(it.photo) + '" alt="" loading="lazy">'
                 : '<div style="width:58px;height:58px;border-radius:8px;background:#e6ded5"></div>') +
       '<div class="b"><b>' + esc(it.name) + '</b>' +
-      '<s>' + (it.size ? '尺寸 ' + esc(it.size) : '單一規格') + '</s>' +
+      '<s>' + (isBlankSize(it.size) ? '單一規格' : '尺寸 ' + esc(it.size)) + '</s>' +
       '<div class="rw"><span class="p">NT$' + it.price.toLocaleString() + '</span>' +
       '<span class="qg"><button onclick="chCart(' + q(k) + ',-1)">−</button>' +
       '<span>' + it.qty + '</span>' +
@@ -952,7 +982,7 @@ function viewDone() {
     '<div class="r"><span>下單時間</span><span>' + esc(fmtWhen(r.at)) + '</span></div>' +
     '<div class="r"><span>訂購內容</span><span class="lines">' +
       itemsLines(r.items) + '</span></div>' +
-    '<div class="r"><span>應匯金額</span><span>NT$' +
+    '<div class="r"><span>應匯金額</span><span class="red">NT$' +
       (r.due || 0).toLocaleString() + '</span></div>' +
     '</div></div>';
 
@@ -976,11 +1006,21 @@ function payBlock(due) {
     '現在不方便匯款的話，之後到<b>會員中心</b>也看得到匯款資訊。</div>';
 
   if (payInfo) {
+    
+    
+    
+    
+    
+    
+    var lines = String(payInfo).split(/\r?\n/)
+      .map(function (x) { return x.trim(); }).filter(Boolean);
+
     return '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
-      '<div class="acc">' + esc(String(payInfo).replace(/\n/g, ' ')) + '</div>' +
-      (due ? '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:9px;' +
-             'padding-top:9px;font-weight:800"><span>應匯金額</span>' +
-             '<span>NT$' + due.toLocaleString() + '</span></div>' : '') +
+      '<div class="accbox">' + lines.map(function (x) {
+        return '<div class="accline">' + esc(x) + '</div>';
+      }).join('') + '</div>' +
+      (due ? '<div class="r due"><span>應匯金額</span>' +
+             '<span class="amt">NT$' + due.toLocaleString() + '</span></div>' : '') +
       note + '</div>';
   }
 
@@ -1054,7 +1094,7 @@ function viewOrders() {
 
     (o.items || []).forEach(function (it) {
       h += '<div class="ln"><span class="n">' + esc(it.name) +
-        (it.size ? ' ' + esc(it.size) : '') + '</span>' +
+        (isBlankSize(it.size) ? '' : ' ' + esc(it.size)) + '</span>' +
         '<span class="q">×' + it.qty + '</span>' +
         '<span class="a">' + (it.qty * it.price).toLocaleString() + '</span></div>';
     });
@@ -1103,6 +1143,12 @@ function lbScroll() {
 
  
 
+ 
+function isBlankSize(s) {
+  var v = String(s == null ? '' : s).trim();
+  return v === '' || v === '-' || v === '－';
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -1127,7 +1173,8 @@ function fmtWhen(iso) {
 function itemsLines(items) {
   if (!items || !items.length) return '';
   return items.map(function (it) {
-    return '<i>' + esc(it.name + (it.size ? ' ' + it.size : '') + ' ×' + it.qty) + '</i>';
+    return '<i>' + esc(it.name + (isBlankSize(it.size) ? '' : ' ' + it.size) +
+      ' ×' + it.qty) + '</i>';
   }).join('');
 }
 
@@ -1135,7 +1182,7 @@ function itemsText(items) {
   if (!items || !items.length) return '';
   if (items.length <= 2) {
     return items.map(function (it) {
-      return it.name + (it.size ? ' ' + it.size : '') + ' ×' + it.qty;
+      return it.name + (isBlankSize(it.size) ? '' : ' ' + it.size) + ' ×' + it.qty;
     }).join('、');
   }
   var n = items.reduce(function (s, it) { return s + it.qty; }, 0);
