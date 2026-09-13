@@ -10,9 +10,12 @@
 :root{--bg:#efe8df;--ink:#2c2c2f;--brown:#795238;--white:#fff;--line:#e0d8d0;
       --mute:#a0907a;--ok:#4a6132;--warn:#96560a;--red:#a8382f}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+ 
+html,body{max-width:100%;overflow-x:hidden}
 body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
      "Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-     line-height:1.6;color:var(--ink);padding-bottom:env(safe-area-inset-bottom)}
+     line-height:1.6;color:var(--ink);padding-bottom:env(safe-area-inset-bottom);
+     -webkit-text-size-adjust:100%}
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
 
@@ -134,7 +137,8 @@ button{font-family:inherit}
      padding:12px 14px;margin-bottom:11px}
 .pay h4{font-size:12.5px;font-weight:800;color:var(--ok);margin-bottom:7px}
 .pay .r{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
-.pay .acc{font-size:19px;font-weight:800;letter-spacing:.03em;text-align:right}
+.pay .acc{font-size:19px;font-weight:800;letter-spacing:.03em;text-align:right;
+          word-break:break-all}
 .paynote{font-size:12px;color:#4e6146;line-height:1.75;border-top:1px solid #cfdbcb;
          margin-top:9px;padding-top:9px}
 .paynote b{font-weight:800}
@@ -155,13 +159,14 @@ button{font-family:inherit}
     margin-bottom:10px;overflow:hidden}
 .od .oh{display:flex;align-items:center;gap:9px;padding:11px 13px;
         border-bottom:1px solid #f2ede7}
-.od .oh .no{font-size:13.5px;font-weight:800;letter-spacing:.02em;flex:1}
+.od .oh .no{font-size:13.5px;font-weight:800;letter-spacing:.02em;flex:1;
+            min-width:0;word-break:break-all}
 .tag{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
 .tag.wait{background:#fdf1e2;color:var(--warn);border:1px solid #f0d7b6}
 .tag.done{background:#eef3e9;color:var(--ok);border:1px solid #cfdcc2}
 .od .ob{padding:9px 13px 11px}
 .od .ln{display:flex;gap:8px;font-size:12.5px;padding:3px 0;color:#4a4038}
-.od .ln .n{flex:1;min-width:0}
+.od .ln .n{flex:1;min-width:0;word-break:break-word}
 .od .ln .q{color:var(--mute)}
 .od .ln .a{font-weight:700}
 .od .of{display:flex;align-items:flex-end;gap:9px;border-top:1px solid #f2ede7;
@@ -175,7 +180,8 @@ button{font-family:inherit}
 .tip b{font-weight:800}
 
  
-.okp{padding:42px 24px 14px;text-align:center}
+ 
+.okp{padding:42px 24px 14px;text-align:center;width:100%}
 .okp .ic{font-size:44px;color:var(--ok)}
 .okp h2{font-size:21px;font-weight:800;margin:11px 0 6px}
 .okp p{font-size:13px;color:#5b4d40}
@@ -245,6 +251,7 @@ var brands = [];
 var lastOrder = null;        
 var payInfo = null;          
 var payDone = false;         
+var payDays = 5;             
 var loadErr = '';
 var submitting = false;      
 
@@ -537,11 +544,11 @@ function card(c) {
     '<span class="pn">NT$' + (c.effectivePrice || 0).toLocaleString() + '</span></div>';
 
   if (noSize) {
+    
+    
     var s0 = sizes[0];
-    h += '<div class="nosz">' +
-      (s0.remain <= 0 ? '<b>已售完</b>'
-       : (s0.remain <= LOW_STOCK ? '<b>僅剩 ' + s0.remain + ' 件</b>' : '有現貨')) +
-      '</div>';
+    if (s0.remain <= 0) h += '<div class="nosz"><b>已售完</b></div>';
+    else if (s0.remain <= LOW_STOCK) h += '<div class="nosz"><b>僅剩 ' + s0.remain + ' 件</b></div>';
   } else {
     h += '<div class="szs">' + sizes.map(function (s, i) {
       var out = s.remain <= 0;
@@ -919,7 +926,8 @@ function loadPayInfo() {
     function (res) {
       payDone = true;
       if (res && res.status === 'SUCCESS' && res.data) {
-        payInfo = res.data.paymentInfo || res.data.payInfo || null;
+        payInfo = res.data.paymentInfo || null;
+        if (res.data.paymentDays > 0) payDays = res.data.paymentDays;
       }
       draw();
     },
@@ -937,7 +945,7 @@ function viewDone() {
   var h = '<div class="okp"><div class="ic"><i class="bi bi-check-circle-fill"></i></div>' +
     '<h2>訂單已送出</h2><p>庫存已為你保留</p></div>';
 
-  h += '<div class="sec">';
+  h += '<div class="sec" style="padding-top:0">';
   h += '<div class="box"><div class="rows2">' +
     (r.orderNo ? '<div class="r"><span>訂單編號</span><span class="no">' +
                  esc(r.orderNo) + '</span></div>' : '') +
@@ -999,8 +1007,7 @@ function payBy() {
   
   
   
-  
-  var tw = new Date(base.getTime() + 48 * 3600 * 1000 + 8 * 3600 * 1000);
+  var tw = new Date(base.getTime() + payDays * 86400000 + 8 * 3600 * 1000);
   if (tw.getUTCMinutes() > 0 || tw.getUTCSeconds() > 0) {
     tw.setUTCHours(tw.getUTCHours() + 1);
   }
