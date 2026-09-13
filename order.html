@@ -308,6 +308,10 @@ var agreed = false;
 var confirmAt = {};
 var me = null;
 var ordered = null;      
+
+
+
+var FORM_IDS = ['fName', 'fPhone', 'fMail', 'fLast5'];
 var lastOrder = null;    
 var orderFailed = false; 
                          
@@ -709,7 +713,7 @@ function boot(d) {
 
 
 
-var FORM_IDS = ['fName', 'fPhone', 'fMail', 'fLast5'];
+
 
 function snapForm() {
   var o = {};

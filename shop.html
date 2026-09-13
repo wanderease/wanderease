@@ -319,6 +319,12 @@ var loadErr = '';
 var loadDetail = '';         
 var submitting = false;      
 var productsLoading = false; 
+var selSize = {};            
+var cardQty = {};            
+var _stash = [];             
+
+
+
 var stale = false;           
 
 
@@ -940,9 +946,6 @@ function card(c) {
   return h + '</div></div>';
 }
 
-var selSize = {};    
-var cardQty = {};    
-
 function pickSize(k, i) {
   var id = unq(k);
   selSize[id] = (selSize[id] === i) ? null : i;
@@ -1544,7 +1547,6 @@ function esc(s) {
 }
 
 
-var _stash = [];
 function q(v) {
   _stash.push(v);
   return (_stash.length - 1);
