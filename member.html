@@ -4598,5 +4598,34 @@
 })();
 </script>
 
+<script>
+/* ── 現貨賣場未開放時，導覽的「現貨」灰掉 ──────────────────
+ *
+ * 會員中心不讀 campaigns.json（它是純 API 驅動的頁面），
+ * 所以要自己抓一次。那是 CDN 上的靜態檔，很輕。
+ *
+ * ── 為什麼每個入口都要擋 ──
+ * 後端本來就會擋（回傳「即將開放」），所以不會超賣。
+ * 但客人點進去、等載入、看到一行字、再自己返回 ——
+ * 四個動作換來一個「還沒開」。在入口講清楚比較尊重他的時間。
+ *
+ * 抓失敗就什麼都不做 —— 寧可讓他點進去看到提示，
+ * 也不要因為一個靜態檔讀不到就把功能藏起來。
+ */
+(function () {
+  fetch('/data/campaigns.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || (d.shop && d.shop.open)) return;
+      var note = (d.shop && d.shop.note) || '即將開放';
+      document.querySelectorAll('a[href="/s"]').forEach(function (a) {
+        a.style.opacity = '.4';
+        a.style.pointerEvents = 'none';
+        a.title = note;
+      });
+    })
+    .catch(function () {});
+})();
+</script>
 </body>
 </html>
