@@ -267,7 +267,6 @@ WE.loadCampaigns().then(function (d) {
       WE.saveMe(me);
       who.innerHTML = '';
       who.textContent = p.displayName;
-      prefetchMember(me);
     });
   }).catch(function () {
     who.textContent = '';
@@ -275,21 +274,6 @@ WE.loadCampaigns().then(function (d) {
 
   
 
-  function prefetchMember(me) {
-    fetch(GAS_URL + '?action=getMemberData&lineUid=' + encodeURIComponent(me.uid))
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!d || d.status !== 'BOUND') return;
-        me.bound = true;
-        me.name = (d.userData && d.userData['最新社群名稱']) || me.lineName;
-        me.phone = (d.userData && d.userData['手機號碼']) || '';
-        me.email = (d.userData && d.userData['常用 Email']) || '';
-        WE.saveMe(me);
-        try { sessionStorage.setItem('we_member', JSON.stringify(d)); } catch (e) {}
-        document.getElementById('who').textContent = me.name + ' · 已綁定';
-      })
-      .catch(function () {});
-  }
 })();
 </script>
 </body>
