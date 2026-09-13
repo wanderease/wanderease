@@ -224,6 +224,7 @@ var GAS_URL = 'https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj
 var LIFF_ID = '2009208139-8lZaYbbd';
 var SERVICE_URL = 'https://lin.ee/mty4uxj';
 var DEPOSIT = 20;            
+var LOW_STOCK = 5;           
 var CART_KEY = 'we_shop_cart';
 
 var view = 'list';           
@@ -233,7 +234,8 @@ var groups = [];
 var announcement = '';
 var myOrders = null;         
 var cart = {};               
-var activeCat = '';          
+var activeBrand = '';        
+var brands = [];             
 var lastOrder = null;        
 var payInfo = null;          
 var loadErr = '';
@@ -300,7 +302,8 @@ function loadProducts(uid) {
       draw();
       return;
     }
-    groups = (res.data && res.data.groups) || [];
+    groups = sortGroups((res.data && res.data.groups) || []);
+    brands = uniqueBrands(groups);
     announcement = (res.data && res.data.announcement) || '';
     loadErr = '';
     draw();
@@ -317,10 +320,16 @@ function loadOrders(uid) {
       meLoading = false;
       if (res && res.status === 'SUCCESS') {
         myOrders = res.data;
+        me = me || {};
+        if (res.data.me) {
+          me.name = res.data.me.name;
+          me.phone = res.data.me.phone;
+          me.bound = true;
+        }
         
         
         var o = (myOrders.orders || []).filter(function (x) { return x.last5; })[0];
-        if (o) { me = me || {}; me.last5 = o.last5; }
+        if (o) me.last5 = o.last5;
       }
       draw();
     }, function () { meLoading = false; draw(); });
@@ -352,6 +361,51 @@ function cartSum() {
   return Object.keys(cart).reduce(function (s, k) {
     return s + cart[k].qty * cart[k].price;
   }, 0);
+}
+
+
+
+function sortGroups(gs) {
+  var order = {};   
+  gs.forEach(function (g, i) {
+    var b = brandOf(g.category);
+    if (order[b] == null) order[b] = i;
+  });
+  var out = gs.slice();
+  out.sort(function (a, b) {
+    var ba = brandOf(a.category), bb = brandOf(b.category);
+    if (ba !== bb) return order[ba] - order[bb];
+    return cmpName(a.category, b.category);   
+  });
+  
+  out.forEach(function (g) {
+    (g.items || []).sort(function (x, y) { return cmpName(x.name, y.name); });
+  });
+  return out;
+}
+
+ 
+function brandOf(cat) {
+  var i = String(cat).indexOf(' / ');
+  return i > 0 ? String(cat).substring(0, i) : String(cat);
+}
+
+function uniqueBrands(gs) {
+  var seen = {}, out = [];
+  gs.forEach(function (g) {
+    var b = brandOf(g.category);
+    if (!seen[b]) { seen[b] = true; out.push(b); }
+  });
+  return out;
+}
+
+
+
+function cmpName(a, b) {
+  var ea = /^[A-Za-z0-9]/.test(String(a));
+  var eb = /^[A-Za-z0-9]/.test(String(b));
+  if (ea !== eb) return ea ? -1 : 1;
+  return String(a).localeCompare(String(b), 'zh-Hant');
 }
 
  
@@ -399,10 +453,9 @@ function viewList() {
     return h + barList();
   }
 
-  
-  var cats = groups.map(function (g) { return g.category; });
-  var shown = activeCat ? groups.filter(function (g) { return g.category === activeCat; })
-                        : groups;
+  var shown = activeBrand
+    ? groups.filter(function (g) { return brandOf(g.category) === activeBrand; })
+    : groups;
 
   var total = 0;
   shown.forEach(function (g) {
@@ -428,18 +481,20 @@ function hdr(title, withTabs) {
     '<i class="bi bi-bag"></i>' + (n ? '<span class="bdg">' + n + '</span>' : '') +
     '</button></div>';
 
-  if (withTabs && groups.length > 1) {
+  
+  
+  if (withTabs && brands.length > 1) {
     h += '<div class="tabs">' +
-      '<button class="tab' + (activeCat ? '' : ' on') + '" onclick="pickCat(\'\')">全部</button>' +
-      groups.map(function (g) {
-        return '<button class="tab' + (activeCat === g.category ? ' on' : '') +
-          '" onclick="pickCat(' + q(g.category) + ')">' + esc(g.category) + '</button>';
+      '<button class="tab' + (activeBrand ? '' : ' on') + '" onclick="pickBrand(' + q('') + ')">全部</button>' +
+      brands.map(function (b) {
+        return '<button class="tab' + (activeBrand === b ? ' on' : '') +
+          '" onclick="pickBrand(' + q(b) + ')">' + esc(b) + '</button>';
       }).join('') + '</div>';
   }
   return h + '</div>';
 }
 
-function pickCat(i) { activeCat = unq(i); draw(true); }
+function pickBrand(i) { activeBrand = unq(i); draw(true); }
 
 
 
@@ -474,14 +529,19 @@ function card(c) {
     var s0 = sizes[0];
     h += '<div class="nosz">' +
       (s0.remain <= 0 ? '<b>已售完</b>'
-       : (s0.remain <= 3 ? '<b>僅剩 ' + s0.remain + ' 件</b>' : '剩 ' + s0.remain + ' 件')) +
+       : (s0.remain <= LOW_STOCK ? '<b>僅剩 ' + s0.remain + ' 件</b>' : '有現貨')) +
       '</div>';
   } else {
     h += '<div class="szs">' + sizes.map(function (s, i) {
       var out = s.remain <= 0;
+      
+      
+      
+      
+      var tag = out ? '售完' : (s.remain <= LOW_STOCK ? '剩 ' + s.remain : '');
       return '<button class="szb' + (out ? ' out' : (sel === i ? ' on' : '')) + '"' +
         (out ? ' disabled' : ' onclick="pickSize(' + q(id) + ',' + i + ')"') + '>' +
-        esc(s.size) + '<s>' + (out ? '售完' : '剩 ' + s.remain) + '</s></button>';
+        esc(s.size) + (tag ? '<s>' + tag + '</s>' : '') + '</button>';
     }).join('') + '</div>';
   }
 
@@ -611,15 +671,25 @@ function viewCart() {
   
   
   
+  
+  
   var dis = meLoading ? ' disabled' : '';
   h += '<div class="box">' +
     '<div class="bt">你的資料</div>' +
-    '<div class="bs">' + (meLoading ? '讀取會員資料中…' : '已帶入會員資料，如有變更請直接修改') + '</div>' +
+    '<div class="bs">' + (meLoading ? '讀取會員資料中…' : '訂單會用這些資料建立') + '</div>' +
+    '<div class="fld"><label>社群暱稱</label>' +
+    '<input value="' + esc((me && me.name) || '') + '" disabled></div>' +
+    '<div class="fld"><label>手機號碼</label>' +
+    '<input value="' + esc((me && me.phone) || '') + '" disabled></div>' +
     '<div class="fld"><label>匯款帳號後五碼 *</label>' +
     '<input id="fLast5" inputmode="numeric" maxlength="5"' + dis +
     ' value="' + esc((me && me.last5) || '') + '" placeholder="必填">' +
     '<div class="hint">先填預計匯款的帳戶，之後有變更到會員中心修改即可。</div>' +
-    '</div></div>';
+    '</div>' +
+    (me && me.bound
+      ? '<div class="bs" style="margin:8px 0 0">暱稱與手機請至會員中心修改</div>'
+      : '') +
+    '</div>';
 
   h += '</div>';
 
