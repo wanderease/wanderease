@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/p/:code",
+      "destination": "/p/:code.html"
+    },
+    {
       "source": "/o/:code",
       "destination": "/order.html"
     },
