@@ -364,9 +364,9 @@ function start(uid) {
     meLoading = false;
   }
   draw();
-  loadProducts(uid, 0, function () {
-    if (uid) loadOrders(uid);
-  });
+  
+  
+  loadProducts(uid, 0);
 }
 
 
@@ -403,7 +403,7 @@ function retryLoad() {
 
 
 function loadAll(uid) {
-  loadProducts(uid, 0, function () { loadOrders(uid); });
+  loadProducts(uid, 0);
 }
 
 
@@ -422,30 +422,71 @@ function loadProducts(uid, tries, done) {
 
   tries = tries || 0;
   var startedAt = Date.now();
-  var u = GAS_URL + '?action=getInstockProducts' +
+  
+  
+  
+  
+  var u = GAS_URL + '?action=instockPrep' +
           (uid ? '&lineUid=' + encodeURIComponent(uid) : '');
 
   
   
   fetchJson(u, function (res) {
-    if (!res || res.status !== 'SUCCESS') {
-      loadErr = (res && res.message) || '商品載入失敗';
+    var d = (res && res.data) || {};
+
+    
+    var pd = d.products || {};
+    if (!res || res.status !== 'SUCCESS' || pd.failed) {
+      loadErr = pd.message || (res && res.message) || '商品載入失敗';
+      productsLoading = false;
       draw();
+      if (done) done();
       return;
     }
-    groups = sortGroups((res.data && res.data.groups) || []);
+    groups = sortGroups(pd.groups || []);
     brands = uniqueBrands(groups);
-    announcement = (res.data && res.data.announcement) || '';
+
+    
+    
+    
+    var st = d.settings || {};
+    announcement = st.announcement || pd.announcement || '';
+    if (st.paymentDays > 0) payDays = st.paymentDays;
+    if (st.paymentInfo) { payInfo = st.paymentInfo; payDone = true; }
+    else if (st.failed !== true) { payDone = true; }
+
+    
+    var od = d.orders;
+    if (od) {
+      meLoading = false;
+      me = me || {};
+      if (uid) me.uid = uid;
+      if (od.unbound) {
+        me.bound = false;
+        myOrders = { orders: [], pendingCount: 0, pendingQty: 0, pendingDue: 0 };
+      } else if (od.failed) {
+        me.failed = true;
+      } else {
+        myOrders = od;
+        if (od.me) {
+          me.name = od.me.name || '';
+          me.phone = od.me.phone || '';
+          me.bound = true;
+        }
+        var last = (od.orders || []).filter(function (x) { return x.last5; })[0];
+        if (last) me.last5 = last.last5;
+      }
+    } else if (uid) {
+      meLoading = false;
+    }
+
     loadErr = '';
     loadDetail = '';
     stale = false;
     saveSnapshot();
-    draw();
-    
-    
-    if (res.data && res.data.paymentDays > 0) payDays = res.data.paymentDays;
     productsLoading = false;
-    console.log('商品載入 ' + (Date.now() - startedAt) + ' ms');
+    console.log('賣場載入 ' + (Date.now() - startedAt) + ' ms（一支拿齊）');
+    draw();
     if (done) done();
   }, function (why) {
     
@@ -1242,7 +1283,11 @@ function showGone(failed) {
   draw();
 }
 
+
+
 function loadPayInfo() {
+  if (payInfo) { payDone = true; draw(); return; }
+
   fetchJson(GAS_URL + '?action=getInstockBatchInfo',
     function (res) {
       payDone = true;
