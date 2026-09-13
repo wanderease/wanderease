@@ -269,9 +269,22 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
   } catch (e) {}
 
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   var early = null;
   try { early = localStorage.getItem('we_uid'); } catch (e) {}
-  if (early) loadMine(early);
+  if (early) setTimeout(function () { loadMine(early); }, 1200);
 
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
@@ -288,7 +301,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       
       try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
       if (early === p.userId) return;   
-      loadMine(me.uid);
+      setTimeout(function () { loadMine(me.uid); }, 1200);
     });
   }).catch(function () {});
 
