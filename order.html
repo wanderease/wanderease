@@ -225,8 +225,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .rows2 > div > span:last-child{text-align:right;flex:1;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em;white-space:nowrap}
  
-.rows2 .lines{line-height:1.7}
-.rows2 .lines i{display:block;font-style:normal}
+.itemlines{line-height:1.7}
+.itemlines i{display:block;font-style:normal}
 .rows2 .amt{font-weight:800;color:#42513a}
 .done-bar .act{display:flex;gap:8px;margin-top:12px}
 .done-bar .act a{flex:1;text-align:center;text-decoration:none;font-size:13.5px;
@@ -766,7 +766,7 @@ function orderedBar() {
   
   var its = ordered.items || [];
   if (its.length) {
-    rows += '<div><span>訂購內容</span><span class="lines">' +
+    rows += '<div><span>訂購內容</span><span class="itemlines">' +
       its.map(function (it) {
         var nm = it.product + (it.color ? ' ' + it.color : '') +
                  (it.size ? ' ' + it.size : '');
@@ -1227,18 +1227,8 @@ function view3() {
     '</div></div>';
 
   
-  if (r.items && r.items.length) {
-    h += '<div class="lines">';
-    r.items.forEach(function (it) {
-      var nm = it.product + (it.color ? '－' + it.color : '');
-      h += '<div class="ln"><div class="n"><b>' + esc(nm) + '</b>' +
-        '<s>' + (it.size ? '尺寸 ' + esc(it.size) + ' · ' : '') +
-        'NT$' + (it.price || 0).toLocaleString() + '</s></div>' +
-        '<span class="q">×' + it.qty + '</span>' +
-        '<span class="a">' + ((it.price || 0) * it.qty).toLocaleString() + '</span></div>';
-    });
-    h += '</div>';
-  }
+  
+  
 
   if (official && payInfo) {
     h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +

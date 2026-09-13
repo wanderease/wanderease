@@ -207,8 +207,9 @@ button{font-family:inherit}
  
 .rows2 .red{color:#c0392b;font-weight:800;font-size:15px}
  
-.rows2 .lines{line-height:1.65}
-.rows2 .lines i{display:block;font-style:normal}
+ 
+.itemlines{line-height:1.65}
+.itemlines i{display:block;font-style:normal}
 
  
 .empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
@@ -1402,7 +1403,7 @@ function viewDone() {
     (r.orderNo ? '<div class="r"><span>訂單編號</span><span class="no">' +
                  esc(r.orderNo) + '</span></div>' : '') +
     '<div class="r"><span>下單時間</span><span>' + esc(fmtWhen(r.at)) + '</span></div>' +
-    '<div class="r"><span>訂購內容</span><span class="lines">' +
+    '<div class="r"><span>訂購內容</span><span class="itemlines">' +
       itemsLines(r.items) + '</span></div>' +
     '<div class="r"><span>應匯金額</span><span class="red">NT$' +
       (r.due || 0).toLocaleString() + '</span></div>' +
