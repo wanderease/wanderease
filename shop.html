@@ -54,6 +54,12 @@ button{font-family:inherit}
           border-radius:8px;padding:6px 11px;white-space:nowrap}
 
  
+ 
+.staleb{margin:10px 16px 0;background:#f2eee9;border:1px solid var(--line);
+        border-radius:10px;padding:7px 11px;font-size:11.5px;color:var(--mute);
+        text-align:center}
+.staleb b{color:var(--brown);font-weight:700;text-decoration:underline}
+
 .gt{font-size:12px;font-weight:800;color:var(--mute);letter-spacing:.08em;
     margin:18px 16px 9px;display:flex;align-items:center;gap:9px}
 .gt::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -259,6 +265,7 @@ var SERVICE_URL = 'https://lin.ee/mty4uxj';
 var DEPOSIT = 20;            
 var LOW_STOCK = 5;           
 var CART_KEY = 'we_shop_cart';
+var SNAP_KEY = 'we_shop_snapshot';   
 
 var view = 'list';           
 var me = null;               
@@ -277,6 +284,31 @@ var loadErr = '';
 var loadDetail = '';         
 var submitting = false;      
 var productsLoading = false; 
+var stale = false;           
+
+
+
+function saveSnapshot() {
+  try {
+    localStorage.setItem(SNAP_KEY, JSON.stringify({
+      at: Date.now(), groups: groups, announcement: announcement
+    }));
+  } catch (e) {}
+}
+
+ 
+function loadSnapshot() {
+  try {
+    var s = JSON.parse(localStorage.getItem(SNAP_KEY) || 'null');
+    if (!s || !s.groups || !s.groups.length) return false;
+    if (Date.now() - (s.at || 0) > 6 * 3600 * 1000) return false;   
+    groups = s.groups;
+    brands = uniqueBrands(groups);
+    announcement = s.announcement || '';
+    stale = true;
+    return true;
+  } catch (e) { return false; }
+}
 
  
 
@@ -284,6 +316,9 @@ var productsLoading = false;
 
 (function () {
   loadCart();
+  
+  
+  loadSnapshot();
   draw();
 
   var early = null;
@@ -403,6 +438,8 @@ function loadProducts(uid, tries, done) {
     announcement = (res.data && res.data.announcement) || '';
     loadErr = '';
     loadDetail = '';
+    stale = false;
+    saveSnapshot();
     draw();
     
     
@@ -424,6 +461,19 @@ function loadProducts(uid, tries, done) {
 
     
     
+    
+    
+    
+    if (groups.length) {
+      loadErr = '';
+      loadDetail = '';
+      stale = true;
+      productsLoading = false;
+      draw();
+      if (done) done();
+      return;
+    }
+
     loadErr = (why === 'timeout') ? '伺服器回應太慢'
             : (why === 'badjson') ? '伺服器回應格式不正確'
             : (String(why).indexOf('render:') === 0) ? '畫面顯示發生問題'
@@ -642,6 +692,14 @@ function viewList() {
 
   
   
+  if (stale) {
+    h += '<div class="staleb"><span class="ld"></span>　' +
+      (productsLoading ? '正在更新庫存…' : '庫存可能不是最新的') +
+      (productsLoading ? '' : '　<b onclick="retryLoad()">重新整理</b>') + '</div>';
+  }
+
+  
+  
   if (myOrders && myOrders.pendingCount > 0) {
     h += '<button class="resv" onclick="goOrders()">' +
       '<span class="ic2"><i class="bi bi-receipt"></i></span>' +
@@ -662,9 +720,20 @@ function viewList() {
   }
 
   if (!groups.length) {
-    h += '<div class="empty"><span class="ld"></span><div style="margin-top:10px">' +
-         (loadDetail && loadDetail.indexOf('重試') >= 0 ? esc(loadDetail) : '載入商品中…') +
-         '</div></div>';
+    
+    
+    h += '<div class="gt">　</div>';
+    for (var sk = 0; sk < 3; sk++) {
+      h += '<div class="pc"><div class="th skel"></div><div class="inf">' +
+        '<div class="skel" style="height:15px;width:62%;margin-bottom:8px"></div>' +
+        '<div class="skel" style="height:19px;width:38%;margin-bottom:10px"></div>' +
+        '<div class="skel" style="height:29px;width:100%;margin-top:auto"></div>' +
+        '</div></div>';
+    }
+    h += '<div style="text-align:center;padding:14px;font-size:12.5px;color:var(--mute)">' +
+      '<span class="ld"></span>　' +
+      (loadDetail && loadDetail.indexOf('重試') >= 0 ? esc(loadDetail) : '載入商品中…') +
+      '</div>';
     return h + barList();
   }
 
