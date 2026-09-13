@@ -135,6 +135,9 @@ button{font-family:inherit}
 .pay h4{font-size:12.5px;font-weight:800;color:var(--ok);margin-bottom:7px}
 .pay .r{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
 .pay .acc{font-size:19px;font-weight:800;letter-spacing:.03em;text-align:right}
+.paynote{font-size:12px;color:#4e6146;line-height:1.75;border-top:1px solid #cfdbcb;
+         margin-top:9px;padding-top:9px}
+.paynote b{font-weight:800}
 .box{background:var(--white);border:1px solid var(--line);border-radius:12px;
      padding:12px 14px;margin-bottom:11px}
 .box .bt{font-size:13.5px;font-weight:800;margin-bottom:2px}
@@ -181,6 +184,9 @@ button{font-family:inherit}
 .rows2 .r span:first-child{color:var(--mute);white-space:nowrap;flex:0 0 auto}
 .rows2 .r span:last-child{text-align:right;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em}
+ 
+.rows2 .lines{line-height:1.65}
+.rows2 .lines i{display:block;font-style:normal}
 
  
 .empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
@@ -238,6 +244,7 @@ var activeBrand = '';
 var brands = [];             
 var lastOrder = null;        
 var payInfo = null;          
+var payDone = false;         
 var loadErr = '';
 var submitting = false;      
 
@@ -908,12 +915,19 @@ function showGone(failed) {
 }
 
 function loadPayInfo() {
-  fetchJson(GAS_URL + '?action=getInstockBatchInfo', function (res) {
-    if (res && res.status === 'SUCCESS' && res.data) {
-      payInfo = res.data.paymentInfo || res.data.payInfo || null;
+  fetchJson(GAS_URL + '?action=getInstockBatchInfo',
+    function (res) {
+      payDone = true;
+      if (res && res.status === 'SUCCESS' && res.data) {
+        payInfo = res.data.paymentInfo || res.data.payInfo || null;
+      }
       draw();
-    }
-  });
+    },
+    function () {
+      
+      payDone = true;
+      draw();
+    });
 }
 
  
@@ -928,7 +942,8 @@ function viewDone() {
     (r.orderNo ? '<div class="r"><span>訂單編號</span><span class="no">' +
                  esc(r.orderNo) + '</span></div>' : '') +
     '<div class="r"><span>下單時間</span><span>' + esc(fmtWhen(r.at)) + '</span></div>' +
-    '<div class="r"><span>訂購內容</span><span>' + esc(itemsText(r.items)) + '</span></div>' +
+    '<div class="r"><span>訂購內容</span><span class="lines">' +
+      itemsLines(r.items) + '</span></div>' +
     '<div class="r"><span>應匯金額</span><span>NT$' +
       (r.due || 0).toLocaleString() + '</span></div>' +
     '</div></div>';
@@ -945,18 +960,56 @@ function viewDone() {
   return h + '</div>';
 }
 
+
+
 function payBlock(due) {
-  if (!payInfo) {
-    return '<div class="pay"><h4>匯款資訊</h4>' +
-      '<div class="r"><span class="ld"></span><span>讀取收款資訊中…</span></div></div>';
+  var note = '<div class="paynote">' +
+    '請於 <b>' + esc(payBy()) + '</b> 前完成匯款。<br>' +
+    '現在不方便匯款的話，之後到<b>會員中心</b>也看得到匯款資訊。</div>';
+
+  if (payInfo) {
+    return '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
+      '<div class="acc">' + esc(String(payInfo).replace(/\n/g, ' ')) + '</div>' +
+      (due ? '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:9px;' +
+             'padding-top:9px;font-weight:800"><span>應匯金額</span>' +
+             '<span>NT$' + due.toLocaleString() + '</span></div>' : '') +
+      note + '</div>';
   }
-  return '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
-    '<div class="r"><span>帳戶</span><span></span></div>' +
-    '<div class="acc">' + esc(String(payInfo).replace(/\n/g, ' ')) + '</div>' +
-    (due ? '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:9px;' +
-           'padding-top:9px;font-weight:800"><span>應匯金額</span>' +
-           '<span>NT$' + due.toLocaleString() + '</span></div>' : '') +
-    '</div>';
+
+  if (payDone) {
+    
+    
+    return '<div class="pay"><h4>匯款資訊</h4>' +
+      '<div class="r"><span>請至會員中心查看匯款帳戶</span></div>' +
+      note + '</div>';
+  }
+
+  return '<div class="pay"><h4>匯款資訊</h4>' +
+    '<div class="r"><span class="ld"></span>' +
+    '<span style="flex:1;text-align:right">讀取收款資訊中…</span></div>' + note + '</div>';
+}
+
+
+
+function payBy() {
+  var base = (lastOrder && lastOrder.at) ? new Date(lastOrder.at) : new Date();
+  if (isNaN(base)) base = new Date();
+
+  
+  
+  
+  
+  
+  var tw = new Date(base.getTime() + 48 * 3600 * 1000 + 8 * 3600 * 1000);
+  if (tw.getUTCMinutes() > 0 || tw.getUTCSeconds() > 0) {
+    tw.setUTCHours(tw.getUTCHours() + 1);
+  }
+  tw.setUTCMinutes(0, 0, 0);
+
+  var wk = ['日', '一', '二', '三', '四', '五', '六'][tw.getUTCDay()];
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (tw.getUTCMonth() + 1) + '/' + tw.getUTCDate() +
+         '（' + wk + '）' + p(tw.getUTCHours()) + ':00';
 }
 
  
@@ -989,7 +1042,7 @@ function viewOrders() {
   list.forEach(function (o) {
     h += '<div class="od"' + (o.paid ? ' style="opacity:.75"' : '') + '>' +
       '<div class="oh"><span class="no">' + esc(o.orderNo || '（處理中）') + '</span>' +
-      '<span class="tag ' + (o.paid ? 'done">已回填' : 'wait">待匯款') + '</span></div>' +
+      (o.paid ? '' : '<span class="tag wait">待匯款</span>') + '</div>' +
       '<div class="ob">';
 
     (o.items || []).forEach(function (it) {
@@ -1063,6 +1116,14 @@ function fmtWhen(iso) {
   var p = function (n) { return (n < 10 ? '0' : '') + n; };
   return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
+ 
+function itemsLines(items) {
+  if (!items || !items.length) return '';
+  return items.map(function (it) {
+    return '<i>' + esc(it.name + (it.size ? ' ' + it.size : '') + ' ×' + it.qty) + '</i>';
+  }).join('');
+}
+
 function itemsText(items) {
   if (!items || !items.length) return '';
   if (items.length <= 2) {
