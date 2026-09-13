@@ -279,32 +279,60 @@ var submitting = false;
 var productsLoading = false; 
 
  
+
+
+
 (function () {
   loadCart();
   draw();
 
-  
-  
   var early = null;
   try { early = localStorage.getItem('we_uid'); } catch (e) {}
-  if (early) { meLoading = true; loadAll(early); }
 
-  if (typeof liff === 'undefined') { loadProducts(); return; }
+  
+  
+  if (early) start(early);
+
+  if (typeof liff === 'undefined') {
+    if (!early) start(null);
+    return;
+  }
+
   liff.init({ liffId: LIFF_ID }).then(function () {
     if (autoLoginIfNeeded()) return;
-    if (!liff.isLoggedIn()) { loadProducts(); return; }
+    if (!liff.isLoggedIn()) { if (!early) start(null); return; }
+
     return liff.getProfile().then(function (p) {
       try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
-      if (early === p.userId) return;   
-      meLoading = true;
-      draw();
-      loadAll(p.userId);
+      if (early === p.userId) {
+        
+        me = me || {};
+        me.uid = p.userId;
+        return;
+      }
+      start(p.userId);
     });
-  }).catch(function () {
-    meLoading = false;
-    loadProducts();
+  }).catch(function (e) {
+    console.error('LIFF 初始化失敗：', e);
+    if (!early) start(null);
   });
 })();
+
+
+
+function start(uid) {
+  if (uid) {
+    me = me || {};
+    me.uid = uid;          
+    meLoading = true;
+  } else {
+    meLoading = false;
+  }
+  draw();
+  loadProducts(uid, 0, function () {
+    if (uid) loadOrders(uid);
+  });
+}
 
 
 
@@ -411,26 +439,48 @@ function loadProducts(uid, tries, done) {
   }, tries === 0 ? 20000 : 12000);
 }
 
+
+
 function loadOrders(uid) {
-  if (!uid) return;
+  if (!uid) { meLoading = false; draw(); return; }
+
   fetchJson(GAS_URL + '?action=getMyInstockOrders&lineUid=' + encodeURIComponent(uid),
     function (res) {
       meLoading = false;
+      me = me || {};
+      me.uid = uid;
+
       if (res && res.status === 'SUCCESS') {
         myOrders = res.data;
-        me = me || {};
         if (res.data.me) {
-          me.name = res.data.me.name;
-          me.phone = res.data.me.phone;
+          me.name = res.data.me.name || '';
+          me.phone = res.data.me.phone || '';
           me.bound = true;
         }
         
         
         var o = (myOrders.orders || []).filter(function (x) { return x.last5; })[0];
         if (o) me.last5 = o.last5;
+
+      } else if (res && res.status === 'NO_CUSTOMER') {
+        
+        me.bound = false;
+        myOrders = { orders: [], pendingCount: 0, pendingQty: 0, pendingDue: 0 };
+
+      } else {
+        
+        me.failed = true;
       }
       draw();
-    }, function () { meLoading = false; draw(); });
+    },
+    function (why) {
+      meLoading = false;
+      me = me || {};
+      me.uid = uid;
+      me.failed = true;
+      console.error('會員資料載入失敗：', why);
+      draw();
+    });
 }
 
 
@@ -851,20 +901,41 @@ function viewCart() {
   
   
   
+  
+  
+  var bound = !!(me && me.bound && (me.name || me.phone));
+  var note, tone = '';
+  if (meLoading) {
+    note = '讀取會員資料中…';
+  } else if (me && me.failed) {
+    note = '會員資料讀取失敗，送出前請確認資料正確';
+    tone = 'color:#96560a';
+  } else if (bound) {
+    note = '已自動帶入您的會員資料';
+  } else {
+    note = '尚未綁定會員，送出訂單前請先完成綁定';
+    tone = 'color:#96560a';
+  }
+
   var dis = meLoading ? ' disabled' : '';
   h += '<div class="box">' +
     '<div class="bt">你的資料</div>' +
-    '<div class="bs">' + (meLoading ? '讀取會員資料中…' : '已自動帶入您的會員資料') + '</div>' +
-    '<div class="fld"><label>社群名稱</label>' +
-    '<input value="' + esc((me && me.name) || '') + '" disabled></div>' +
-    '<div class="fld"><label>手機號碼</label>' +
-    '<input value="' + esc((me && me.phone) || '') + '" disabled></div>' +
-    '<div class="fld"><label>匯款帳號後五碼 *</label>' +
+    '<div class="bs"' + (tone ? ' style="' + tone + '"' : '') + '>' + esc(note) + '</div>';
+
+  
+  
+  if (bound) {
+    h += '<div class="fld"><label>社群名稱</label>' +
+      '<input value="' + esc(me.name || '') + '" disabled></div>' +
+      '<div class="fld"><label>手機號碼</label>' +
+      '<input value="' + esc(me.phone || '') + '" disabled></div>';
+  }
+
+  h += '<div class="fld"><label>匯款帳號後五碼 *</label>' +
     '<input id="fLast5" inputmode="numeric" maxlength="5"' + dis +
     ' value="' + esc((me && me.last5) || '') + '" placeholder="必填">' +
     '<div class="hint">先填預計匯款的帳戶，之後有變更到會員中心修改即可。</div>' +
-    '</div>' +
-    '</div>';
+    '</div></div>';
 
   h += '</div>';
 
@@ -907,7 +978,14 @@ function submitOrder() {
 
   var uid = (me && me.uid) || null;
   try { uid = uid || localStorage.getItem('we_uid'); } catch (e) {}
-  if (!uid) { alert('請先登入 LINE 再送出訂單。'); return; }
+  if (!uid) { alert('請先在 LINE 裡開啟賣場，才能送出訂單。'); return; }
+
+  
+  
+  if (me && me.bound === false) {
+    alert('你還沒有完成會員綁定，無法送出訂單。\n\n請先到會員中心完成綁定。');
+    return;
+  }
 
   var items = Object.keys(cart).map(function (k) {
     return { inventoryId: k, qty: cart[k].qty };
