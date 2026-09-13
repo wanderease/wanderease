@@ -385,7 +385,8 @@ function loadProducts(uid, tries, done) {
   }, function (why) {
     
     
-    if ((why === 'timeout' || why === 'network') && tries < 2) {
+    var isNet = (why === 'timeout' || String(why).indexOf('network') === 0);
+    if (isNet && tries < 2) {
       loadErr = '';
       loadDetail = '連線較慢，重試中…（' + (tries + 1) + '/2）';
       draw();
@@ -397,7 +398,7 @@ function loadProducts(uid, tries, done) {
     
     loadErr = (why === 'timeout') ? '伺服器回應太慢'
             : (why === 'badjson') ? '伺服器回應格式不正確'
-            : (why && why.indexOf('render:') === 0) ? '畫面顯示發生問題'
+            : (String(why).indexOf('render:') === 0) ? '畫面顯示發生問題'
             : '連線失敗';
     
     
@@ -443,8 +444,19 @@ function fetchJson(url, ok, fail, ms) {
     fail && fail('timeout');
   }, ms || 12000);
 
-  fetch(url, { signal: ctrl ? ctrl.signal : undefined })
-    .then(function (r) { return r.text(); })
+  
+  
+  
+  var p;
+  try {
+    p = fetch(url, ctrl ? { signal: ctrl.signal } : {});
+  } catch (e) {
+    console.warn('fetch 不支援 signal，改用一般請求：', e.message);
+    ctrl = null;
+    p = fetch(url);
+  }
+
+  p.then(function (r) { return r.text(); })
     .then(function (raw) {
       if (over) return;
       clearTimeout(t);
@@ -469,7 +481,9 @@ function fetchJson(url, ok, fail, ms) {
       if (over) return;
       clearTimeout(t);
       console.error('請求失敗：', e);
-      fail && fail('network');
+      
+      
+      fail && fail('network:' + (e && e.message ? e.message.substring(0, 60) : ''));
     });
 }
 
@@ -546,6 +560,16 @@ function draw(toTop) {
     view === 'orders' ? viewOrders() : viewList();
   if (toTop) window.scrollTo(0, 0);
   else window.scrollTo(0, y);
+}
+
+ 
+function setSubmitLabel(text) {
+  try {
+    var btns = document.querySelectorAll('.bar button');
+    if (!btns || !btns.length) return;
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = true;
+    btns[btns.length - 1].textContent = text;
+  } catch (e) {}
 }
 
  
@@ -895,9 +919,9 @@ function submitOrder() {
   
   
   submitting = true;
-  var btns = document.querySelectorAll('.bar button');
-  btns.forEach(function (b) { b.disabled = true; });
-  btns[btns.length - 1].textContent = '送出中…';
+  
+  
+  setSubmitLabel('送出中…');
 
   
   
@@ -916,16 +940,26 @@ function submitOrder() {
     verifyAfterTimeout(uid, before, last5);
   }, 20000);
 
-  fetch(GAS_URL, {
+  var opt = {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       action: 'instockCheckout',
       payload: JSON.stringify({ lineUid: uid, cartItems: items, last5: last5 })
-    }),
-    signal: ctrl ? ctrl.signal : undefined
-  })
-    .then(function (r) { return r.text(); })
+    })
+  };
+  if (ctrl) opt.signal = ctrl.signal;
+
+  var req;
+  try { req = fetch(GAS_URL, opt); }
+  catch (e) {
+    
+    delete opt.signal;
+    ctrl = null;
+    req = fetch(GAS_URL, opt);
+  }
+
+  req.then(function (r) { return r.text(); })
     .then(function (raw) {
       if (over) return;
       clearTimeout(timer);
@@ -989,8 +1023,7 @@ function submitOrder() {
 
 
 function verifyAfterTimeout(uid, before, last5) {
-  var btns = document.querySelectorAll('.bar button');
-  if (btns.length) btns[btns.length - 1].textContent = '確認中…';
+  setSubmitLabel('確認中…');
 
   fetchJson(GAS_URL + '?action=getMyInstockOrders&lineUid=' + encodeURIComponent(uid),
     function (res) {
