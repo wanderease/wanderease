@@ -293,10 +293,29 @@ function applyShopState(shop) {
       WE.saveMe(me);
       who.innerHTML = '';
       who.textContent = p.displayName;
+      prefetchOrdered(me.uid);
     });
   }).catch(function () {
     who.textContent = '';
   });
+
+  
+
+  function prefetchOrdered(uid) {
+    if (!uid) return;
+    fetch(GAS_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || d.status !== 'SUCCESS') return;
+        try {
+          sessionStorage.setItem('we_ordered_idx', JSON.stringify({
+            at: Date.now(), uid: uid,
+            codes: d.codes || [], failed: !!d.failed
+          }));
+        } catch (e) {}
+      })
+      .catch(function () {});
+  }
 
   
 
