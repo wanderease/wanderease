@@ -1153,11 +1153,24 @@ function view2() {
 
     
     
+    var signedIn = !!(me && me.uid);
+
     if (payInfo) {
       h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
         '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
         '<div class="r" style="margin-top:6px"><span></span>' +
         '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div></div>';
+
+    } else if (!signedIn) {
+      
+      
+      
+      
+      
+      
+      h += '<div class="pay"><h4>匯款資訊</h4>' +
+        '<div class="r"><span>請先登入 LINE，登入後將提供匯款資訊</span></div></div>';
+
     } else if (!payDone) {
       h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
         '<div class="r"><span class="ld"></span><span>讀取收款資訊中…</span></div></div>';
@@ -1302,6 +1315,9 @@ function view3() {
         'font-weight:800"><span>應匯金額</span><span class="red">NT$' +
         (r.pay || 0).toLocaleString() + '</span></div></div>';
     } else {
+      
+      
+      
       
       
       
