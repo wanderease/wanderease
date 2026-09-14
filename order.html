@@ -1069,10 +1069,13 @@ function view1() {
 
       
       
+      
+      
+      
       if (c && avail.length < p.sizes.length) {
         var miss = p.sizes.filter(function (s) { return !sizeOK(c, s); });
-        h += '<div class="nosz-note">' + esc(c.n) + ' 沒有 ' +
-             esc(miss.join('、')) + '</div>';
+        h += '<div class="nosz-note">目前官方 ' + esc(c.n) +
+             esc(miss.join('、')) + ' 缺貨</div>';
       }
     } else {
       var k0 = pi + '|' + si + '|-';
