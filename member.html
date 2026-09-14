@@ -818,10 +818,34 @@
         const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
         const timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 25000);
 
+        /* 用 POST 而不是 GET。
+         *
+         * ── 為什麼 ──────────────────────────────────────────────
+         * GAS 的 GET 回應會被轉址到 googleusercontent.com 再拿一次。
+         * 實測那兩趟：exec 等 5.8 秒回 302，echo 等 15.4 秒回 404 ——
+         * 轉址的鑰匙在中途過期，Google 回傳的是 HTML 錯誤頁。
+         *
+         * 然後 JSON.parse 失敗，客人看到「API 連線異常」。
+         * 那不是網路問題，也不是查詢慢，是 GAS 的轉址機制。
+         *
+         * POST 不走那一層，一趟就結束。實測 1.5～2.5 秒。
+         *
+         * 參數放在 body 而不是網址 —— 放網址的話 GAS 有時候
+         * 還是會走轉址那條路。
+         */
+        const opt = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            action: 'getMemberData',
+            lineUid: currentLineUid
+          })
+        };
+        if (ctrl) opt.signal = ctrl.signal;
+
         let r;
         try{
-          r = await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`,
-            ctrl ? { signal: ctrl.signal } : {});
+          r = await fetch(GAS_URL, opt);
         }catch(netErr){
           clearTimeout(timer);
           if(_try < 2){ return checkMemberStatus(_try + 1); }
