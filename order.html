@@ -645,7 +645,13 @@ function boot(d) {
       me.lineName = p.displayName;
       
       
-      if (!me.name && !me.bound) me.name = p.displayName;
+      
+      
+      
+      
+      
+      
+      
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
       
       try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
@@ -1208,14 +1214,30 @@ function view2() {
   
   
   var dis = meLoading ? ' disabled' : '';
+  
+  var bound = !!(me && me.bound && me.name);
   h += '<div class="idbox"><h4>你的資料</h4>' +
     (meLoading
       ? '<div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div>'
       : (me.bound
         ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
         : '<div class="lead">第一次下單？填完就會自動記住你，下次進來會自動帶入。</div>')) +
-    '<div class="fld"><label>社群暱稱 <b>*</b></label>' +
-    '<input id="fName"' + dis + ' value="' + esc(me.name || me.lineName || '') + '" placeholder="社群裡使用的名字"></div>' +
+    
+    
+    
+    
+    
+    
+    
+    
+    '<div class="fld"><label>社群名稱 <b>*</b></label>' +
+    (bound
+      ? '<input id="fName" value="' + esc(me.name || '') + '" disabled>' +
+        '<div class="hint">要修改請到會員中心</div>'
+      : '<input id="fName"' + dis + ' value="' + esc(me.name || '') + '" ' +
+        'placeholder="例：小謝">' +
+        '<div class="hint">您在泰中毒裡的社群名稱</div>') +
+    '</div>' +
     '<div class="fld"><label>手機號碼 <b>*</b></label>' +
     '<input id="fPhone"' + dis + ' inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
     '<div class="hint">用來對應你過去的訂單，請填常用號碼。</div></div>' +
