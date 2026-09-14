@@ -240,7 +240,18 @@ button{font-family:inherit}
        width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.16);
        color:#fff;border:0;font-size:19px;z-index:2}
 .lb .wrap{flex:1;display:flex;overflow-x:auto;scroll-snap-type:x mandatory}
-.lb .wrap img{min-width:100%;object-fit:contain;scroll-snap-align:center}
+.lb .wrap img{min-width:100%;object-fit:contain;scroll-snap-align:center;
+              transform-origin:center center;transition:transform .18s ease;
+              -webkit-user-select:none;user-select:none}
+ 
+.lb .wrap.zoomed{overflow:auto;scroll-snap-type:none}
+ 
+.lb .zbar{position:absolute;left:50%;bottom:calc(46px + env(safe-area-inset-bottom));
+          transform:translateX(-50%);display:flex;align-items:center;gap:10px;
+          background:rgba(0,0,0,.5);border-radius:99px;padding:6px 10px}
+.lb .zbar button{width:32px;height:32px;border-radius:8px;border:0;font-size:16px;
+                 background:rgba(255,255,255,.16);color:#fff;line-height:1}
+.lb .zbar span{font-size:12px;color:#ddd;min-width:42px;text-align:center}
 .lb .dots{display:flex;gap:6px;justify-content:center;
           padding:14px 0 calc(18px + env(safe-area-inset-bottom))}
 .lb .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.34)}
@@ -288,6 +299,11 @@ button{font-family:inherit}
 <div class="lb" id="lb">
   <button class="x" onclick="closeLb()"><i class="bi bi-x-lg"></i></button>
   <div class="wrap" id="lbWrap" onscroll="lbScroll()"></div>
+  <div class="zbar">
+    <button onclick="shopZoom(-1)" aria-label="縮小">－</button>
+    <span id="lbLvl">100%</span>
+    <button onclick="shopZoom(1)" aria-label="放大">＋</button>
+  </div>
   <div class="dots" id="lbDots"></div>
 </div>
 
@@ -1540,12 +1556,66 @@ function viewOrders() {
  
 
 var lbImgs = [];
+var shopScale = 1;
+
+
+
+function shopZoom(dir) {
+  var steps = [1, 1.5, 2, 3, 4];
+  var i = steps.indexOf(shopScale);
+  if (i < 0) i = 0;
+  i = Math.max(0, Math.min(steps.length - 1, i + dir));
+  shopApplyScale(steps[i]);
+}
+
+function shopApplyScale(s) {
+  shopScale = s;
+  var w = document.getElementById('lbWrap');
+  if (!w) return;
+  Array.prototype.forEach.call(w.querySelectorAll('img'), function (img) {
+    img.style.transform = 'scale(' + s + ')';
+  });
+  
+  w.classList.toggle('zoomed', s > 1);
+  var lvl = document.getElementById('lbLvl');
+  if (lvl) lvl.textContent = Math.round(s * 100) + '%';
+}
+
+function shopToggleZoom() { shopApplyScale(shopScale > 1 ? 1 : 2); }
+
+ 
+(function shopPinch() {
+  var w = document.getElementById('lbWrap');
+  if (!w) return;
+  var d0 = 0, s0 = 1;
+  var dist = function (t) {
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+  w.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 2) return;
+    d0 = dist(e.touches); s0 = shopScale;
+  }, { passive: true });
+  w.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 2 || !d0) return;
+    e.preventDefault();
+    shopApplyScale(Math.max(1, Math.min(5, s0 * (dist(e.touches) / d0))));
+  }, { passive: false });
+  w.addEventListener('touchend', function (e) {
+    if (e.touches.length < 2) d0 = 0;
+    if (shopScale < 1.1 && shopScale !== 1) shopApplyScale(1);
+  }, { passive: true });
+})();
+
 function openLb(k) {
   lbImgs = (unq(k) || []).filter(Boolean);
   if (!lbImgs.length) return;
 
   document.getElementById('lbWrap').innerHTML =
-    lbImgs.map(function (u) { return '<img src="' + esc(u) + '" alt="">'; }).join('');
+    lbImgs.map(function (u) {
+      return '<img src="' + esc(u) + '" alt="" ondblclick="shopToggleZoom()">';
+    }).join('');
+  shopApplyScale(1);   
   document.getElementById('lbDots').innerHTML =
     lbImgs.length > 1 ? lbImgs.map(function (_, i) {
       return '<i class="' + (i === 0 ? 'on' : '') + '"></i>';
@@ -1554,6 +1624,7 @@ function openLb(k) {
   document.body.style.overflow = 'hidden';
 }
 function closeLb() {
+  shopApplyScale(1);   
   document.getElementById('lb').classList.remove('on');
   document.body.style.overflow = '';
 }

@@ -176,10 +176,24 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .lbtrack::-webkit-scrollbar{height:0}
 .lbtrack .cell{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center;
                scroll-snap-align:center}
-.lb img{max-width:92%;max-height:100%;object-fit:contain;border-radius:6px}
+.lb img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;
+        transform-origin:center center;transition:transform .18s ease;
+        -webkit-user-select:none;user-select:none}
+ 
+.lbtrack.zoomed{overflow:auto;scroll-snap-type:none}
+.lbtrack.zoomed .cell{overflow:visible}
+ 
+.lbtip{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);
+       background:rgba(0,0,0,.62);color:#fff;font-size:12px;padding:7px 14px;
+       border-radius:99px;pointer-events:none;white-space:nowrap;
+       animation:lbfade 3.2s forwards}
+@keyframes lbfade{0%,70%{opacity:1}100%{opacity:0}}
 .lb .nv{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;
         border-radius:50%;background:rgba(255,255,255,.16);color:#fff;border:0;font-size:22px}
 .lb .nv.p{left:8px}.lb .nv.n{right:8px}
+.lb .bt .zm{width:34px;height:34px;border-radius:9px;font-size:17px;line-height:1;
+            background:rgba(255,255,255,.14);color:#fff;border:0}
+.lb .bt .lvl{font-size:12px;color:#cfc6bd;min-width:44px;text-align:center}
 .lb .bt{padding:14px 18px;display:flex;align-items:center;gap:14px;width:100%;color:#e7e0d6}
 .lb .bt .ix{flex:1;font-size:13px;text-align:center}
 .lb .bt button{background:none;border:0;color:#e7e0d6;font-size:24px}
@@ -262,7 +276,13 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
     <div class="lbtrack" id="lbtrack" onscroll="lbOnScroll()"></div>
     <button class="nv n" onclick="lbGo(1)">›</button>
   </div>
-  <div class="bt"><span class="ix" id="lbix"></span><button onclick="lbClose()">✕</button></div>
+  <div class="bt">
+    <span class="ix" id="lbix"></span>
+    <button class="zm" onclick="lbZoom(-1)" aria-label="縮小">－</button>
+    <span class="lvl" id="lblvl">100%</span>
+    <button class="zm" onclick="lbZoom(1)" aria-label="放大">＋</button>
+    <button onclick="lbClose()">✕</button>
+  </div>
 </div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -1604,6 +1624,74 @@ function submitOrder() {
 
  
 var lbList = [], lbI = 0;
+var lbScale = 1;          
+var lbSeenTip = false;    
+
+
+
+function lbZoom(dir) {
+  var steps = [1, 1.5, 2, 3, 4];
+  var i = steps.indexOf(lbScale);
+  if (i < 0) i = 0;
+  i = Math.max(0, Math.min(steps.length - 1, i + dir));
+  lbApplyScale(steps[i]);
+}
+
+function lbApplyScale(s) {
+  lbScale = s;
+  var tk = document.getElementById('lbtrack');
+  if (!tk) return;
+
+  Array.prototype.forEach.call(tk.querySelectorAll('img'), function (img) {
+    img.style.transform = 'scale(' + s + ')';
+  });
+
+  
+  
+  tk.classList.toggle('zoomed', s > 1);
+
+  var lvl = document.getElementById('lblvl');
+  if (lvl) lvl.textContent = Math.round(s * 100) + '%';
+}
+
+ 
+function lbToggleZoom() {
+  lbApplyScale(lbScale > 1 ? 1 : 2);
+}
+
+
+
+(function lbPinch() {
+  var tk = document.getElementById('lbtrack');
+  if (!tk) return;
+
+  var startDist = 0, startScale = 1;
+
+  var dist = function (t) {
+    var dx = t[0].clientX - t[1].clientX;
+    var dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  tk.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 2) return;
+    startDist = dist(e.touches);
+    startScale = lbScale;
+  }, { passive: true });
+
+  tk.addEventListener('touchmove', function (e) {
+    if (e.touches.length !== 2 || !startDist) return;
+    e.preventDefault();   
+    var s = startScale * (dist(e.touches) / startDist);
+    lbApplyScale(Math.max(1, Math.min(5, s)));
+  }, { passive: false });
+
+  tk.addEventListener('touchend', function (e) {
+    if (e.touches.length < 2) startDist = 0;
+    
+    if (lbScale < 1.1 && lbScale !== 1) lbApplyScale(1);
+  }, { passive: true });
+})();
 
 
 
@@ -1619,8 +1707,24 @@ function lb(pi, gi) {
 
   var tk = document.getElementById('lbtrack');
   tk.innerHTML = lbList.map(function (u) {
-    return '<div class="cell"><img src="' + esc(u) + '" alt=""></div>';
+    return '<div class="cell"><img src="' + esc(u) + '" alt="" ' +
+      'ondblclick="lbToggleZoom()"></div>';
   }).join('');
+
+  
+  lbApplyScale(1);
+
+  
+  if (!lbSeenTip) {
+    lbSeenTip = true;
+    var tip = document.createElement('div');
+    tip.className = 'lbtip';
+    tip.textContent = '雙指縮放，或雙擊放大';
+    document.getElementById('lb').appendChild(tip);
+    setTimeout(function () {
+      if (tip.parentNode) tip.parentNode.removeChild(tip);
+    }, 3400);
+  }
 
   document.getElementById('lb').className = 'lb on';
   
@@ -1647,7 +1751,11 @@ function lbGo(d) {
   tk.scrollTo({ left: i * tk.clientWidth, behavior: 'smooth' });
 }
 
-function lbClose() { document.getElementById('lb').className = 'lb'; }
+function lbClose() {
+  
+  lbApplyScale(1);
+  document.getElementById('lb').className = 'lb';
+}
 
 (function () {
   var el = document.getElementById('lb');
