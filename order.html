@@ -239,6 +239,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .rows2 > div > span:last-child{text-align:right;flex:1;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em;white-space:nowrap}
  
+.pay .red{color:#c0392b;font-weight:800}
+ 
 .itemlines{line-height:1.7}
 .itemlines i{display:block;font-style:normal}
 .rows2 .amt{font-weight:800;color:#42513a}
@@ -708,10 +710,13 @@ function boot(d) {
         }
         
         
-        if (d.pay) {
-          payDone = !!d.pay.resolved;
-          if (d.pay.needPay) payInfo = d.pay;
-        }
+        
+        
+        
+        
+        
+        payDone = true;
+        if (d.pay && d.pay.needPay) payInfo = d.pay;
         
         
         
@@ -1287,14 +1292,26 @@ function view3() {
   
   
 
-  if (official && payInfo) {
-    h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
-      '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
-      '<div class="r" style="margin-top:6px"><span></span>' +
-      '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>' +
-      '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;padding-top:10px;' +
-      'font-weight:800"><span>應匯金額</span><span>NT$' +
-      (r.pay || 0).toLocaleString() + '</span></div></div>';
+  if (official) {
+    if (payInfo) {
+      h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
+        '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
+        '<div class="r" style="margin-top:6px"><span></span>' +
+        '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>' +
+        '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;padding-top:10px;' +
+        'font-weight:800"><span>應匯金額</span><span class="red">NT$' +
+        (r.pay || 0).toLocaleString() + '</span></div></div>';
+    } else {
+      
+      
+      
+      
+      h += '<div class="pay"><h4>匯款資訊</h4>' +
+        '<div class="r"><span>請至會員中心查看匯款帳戶</span></div>' +
+        '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;' +
+        'padding-top:10px;font-weight:800"><span>應匯金額</span>' +
+        '<span class="red">NT$' + (r.pay || 0).toLocaleString() + '</span></div></div>';
+    }
   }
   h += '</div>';
 
