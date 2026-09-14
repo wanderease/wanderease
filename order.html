@@ -388,6 +388,29 @@ function showMaintenance(m) {
       }) + '</p></div>';
 }
 
+
+
+function syncOrdered(code, has) {
+  try {
+    var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+    var i = arr.indexOf(code);
+    if (has && i < 0) arr.push(code);
+    if (!has && i >= 0) arr.splice(i, 1);
+    sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+
+    var ix = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
+    if (!ix) ix = { at: Date.now(), uid: (me && me.uid) || '', codes: [] };
+    ix.codes = ix.codes || [];
+    var j = ix.codes.indexOf(code);
+    if (has && j < 0) ix.codes.push(code);
+    if (!has && j >= 0) ix.codes.splice(j, 1);
+    sessionStorage.setItem('we_ordered_idx', JSON.stringify(ix));
+  } catch (e) {}
+}
+
+ 
+function markOrdered(code) { syncOrdered(code, true); }
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -546,9 +569,20 @@ function boot(d) {
     
     
     
+    
+    
+    
+    
+    
     try {
-      var mine = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
-      if (mine.indexOf(CODE) >= 0) ordered = { partial: true, items: [] };
+      var idx = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
+      if (idx && (idx.codes || []).indexOf(CODE) >= 0) {
+        ordered = { partial: true, items: [] };
+      }
+      if (!ordered) {
+        var mine = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
+        if (mine.indexOf(CODE) >= 0) ordered = { partial: true, items: [] };
+      }
     } catch (e) {}
 
     loadCart();
@@ -670,11 +704,7 @@ function boot(d) {
         
         if (!d.orderFailed) {
           try {
-            var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
-            var i = arr.indexOf(CODE);
-            if (ordered && i < 0) arr.push(CODE);
-            if (!ordered && i >= 0) arr.splice(i, 1);
-            sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+            syncOrdered(CODE, !!ordered);
           } catch (e) {}
         }
 
@@ -851,7 +881,14 @@ function orderedMap() {
 function view1() {
   var closed = (C.state !== '開放收單');
   var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
-  if (C.cover) h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
+  
+  
+  
+  
+  
+  if (C.cover && !C.hideCover) {
+    h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
+  }
   h += '<div class="hd"><div class="bd">' + esc(C.brand) + '</div>' +
        '<h1>' + esc(C.name) + '</h1>' +
        '<span class="due' + (closed ? ' closed' : '') + '">' +
@@ -1470,9 +1507,7 @@ function submitOrder() {
           if (lastOrder) lastOrder.orderNo = res.orderNo || '';
           clearCart();
           try {
-            var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
-            if (arr.indexOf(C.id) < 0) arr.push(C.id);
-            sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+            markOrdered(C.id);
           } catch (e) {}
           step = 3;
           draw(true);
@@ -1550,9 +1585,7 @@ function submitOrder() {
         }
         clearCart();
         try {
-          var arr = JSON.parse(sessionStorage.getItem('we_ordered') || '[]');
-          if (arr.indexOf(C.id) < 0) arr.push(C.id);
-          sessionStorage.setItem('we_ordered', JSON.stringify(arr));
+          markOrdered(C.id);
         } catch (e) {}
         step = 3;
         draw(true);

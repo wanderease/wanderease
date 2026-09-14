@@ -310,7 +310,16 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
   
   
   
-  if (early) setTimeout(function () { loadMine(early); }, 400);
+  
+  if (early) {
+    try {
+      var idx0 = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
+      if (idx0 && idx0.uid === early && Date.now() - idx0.at < 300000) {
+        (idx0.codes || []).forEach(function (c) { MINE[c] = 1; });
+      }
+    } catch (e) {}
+    setTimeout(function () { loadMine(early); }, 400);
+  }
 
   if (typeof liff === 'undefined') return;
   liff.init({ liffId: LIFF_ID }).then(function () {
@@ -332,13 +341,30 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
   }).catch(function () {});
 
    
+  
+
   function loadMine(uid) {
+    
+    try {
+      var idx = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
+      if (idx && idx.uid === uid && Date.now() - idx.at < 300000) {
+        (idx.codes || []).forEach(function (c) { MINE[c] = 1; });
+        if (CAMPS.length) render();
+      }
+    } catch (e) {}
+
+    
     fetch(GAS_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.codes) return;
         d.codes.forEach(function (c) { MINE[c] = 1; });
-        try { sessionStorage.setItem('we_ordered', JSON.stringify(d.codes)); } catch (e) {}
+        try {
+          sessionStorage.setItem('we_ordered', JSON.stringify(d.codes));
+          sessionStorage.setItem('we_ordered_idx', JSON.stringify({
+            at: Date.now(), uid: uid, codes: d.codes, failed: !!d.failed
+          }));
+        } catch (e) {}
         if (CAMPS.length) render();
       })
       .catch(function () {});
