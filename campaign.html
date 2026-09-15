@@ -124,6 +124,16 @@ function autoLoginIfNeeded() {
   return true;
 }
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+
+
+
+
+
+
+
+
+
+var MYORD_URL = "https://wanderease-api.wanderease-th.workers.dev/";
 var CAMPS = [];
 var MINE = {};   
 
@@ -354,7 +364,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
     } catch (e) {}
 
     
-    fetch(GAS_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
+    fetch(MYORD_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || !d.codes) return;

@@ -116,6 +116,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
        padding:15px;margin-bottom:14px}
 .idbox h4{font-size:14.5px;font-weight:800;margin-bottom:3px}
 .idbox .lead{font-size:12px;color:var(--mute);margin-bottom:12px}
+ 
+.idbox .lead.first{color:var(--brown);font-weight:700;font-size:12.5px}
 .fld{margin-bottom:11px}
 .fld label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:5px;font-weight:600}
 .fld label b{color:var(--brown)}
@@ -1259,7 +1261,7 @@ function view2() {
       ? '<div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div>'
       : (me.bound
         ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
-        : '<div class="lead">第一次下單？填完就會自動記住你，下次進來會自動帶入。</div>')) +
+        : '<div class="lead first">第一次下單嗎？請協助填寫資訊，下次開始會自動帶入哦~</div>')) +
     
     
     
@@ -1284,7 +1286,7 @@ function view2() {
         '<div class="hint">這是系統裡記錄的名稱。在社群改過名字的話請按右上角修改。</div>'
       : '<label>社群名稱 <b>*</b></label>' +
         '<input id="fName"' + (bound ? '' : dis) + ' value="' + esc(me.name || '') + '" ' +
-        'placeholder="例：小謝">' +
+        'placeholder="例如：J">' +
         '<div class="hint">' +
         (bound
           ? '請填你現在在社群裡顯示的名稱。送出訂單時會一起更新你的會員資料。'
