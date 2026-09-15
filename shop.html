@@ -1280,12 +1280,15 @@ function submitOrder() {
       loadOrders(uid);
       go('done');
     })
-    .catch(function () {
+    .catch(function (e) {
       if (over) return;
       clearTimeout(timer);
-      submitting = false;
-      alert('網路異常，訂單沒有送出。請確認網路後重試。');
-      draw();
+      
+      
+      
+      
+      console.error('送出時的網路錯誤：', e && e.message);
+      setTimeout(function () { verifyAfterTimeout(uid, before, last5, 0); }, 2000);
     });
 }
 
