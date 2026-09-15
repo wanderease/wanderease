@@ -203,6 +203,9 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
     vertical-align:-1px;margin-right:4px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .fld input:disabled{background:#f3efe9;color:#a0907a}
+.fld label.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.fld .edt{background:none;border:0;padding:0;font:inherit;font-size:11.5px;font-weight:700;color:var(--brown);cursor:pointer;white-space:nowrap;text-decoration:underline}
+.fld .edt:active{opacity:.6}
 .pay{background:#f4f7f3;border:1px solid #cfdbcb;border-radius:14px;padding:15px 16px;margin-bottom:14px}
 .pay h4{font-size:13px;font-weight:800;color:#4a6132;margin-bottom:9px}
 .pay .r{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:14px}
@@ -345,6 +348,10 @@ var meLoading = false;
 
 
 var touched = {};
+
+
+
+var nameEditing = false;
 
 
 
@@ -1233,13 +1240,28 @@ function view2() {
     
     
     
-    '<div class="fld"><label>社群名稱 <b>*</b></label>' +
-    (bound
-      ? '<input id="fName" value="' + esc(me.name || '') + '" disabled>' +
-        '<div class="hint">要修改請到會員中心</div>'
-      : '<input id="fName"' + dis + ' value="' + esc(me.name || '') + '" ' +
+    
+    
+    
+    
+    
+    
+    
+    
+    '<div class="fld">' +
+    (bound && !nameEditing
+      ? '<label class="row"><span>社群名稱 <b>*</b></span>' +
+        '<button type="button" class="edt" onclick="editName()">✏️ 修改社群名稱</button></label>' +
+        '<input id="fName" value="' + esc(me.name || '') + '" disabled>' +
+        '<div class="hint">這是系統裡記錄的名稱。在社群改過名字的話請按右上角修改。</div>'
+      : '<label>社群名稱 <b>*</b></label>' +
+        '<input id="fName"' + (bound ? '' : dis) + ' value="' + esc(me.name || '') + '" ' +
         'placeholder="例：小謝">' +
-        '<div class="hint">您在泰中毒裡的社群名稱</div>') +
+        '<div class="hint">' +
+        (bound
+          ? '請填你現在在社群裡顯示的名稱。送出訂單時會一起更新你的會員資料。'
+          : '您在泰中毒裡的社群名稱') +
+        '</div>') +
     '</div>' +
     '<div class="fld"><label>手機號碼 <b>*</b></label>' +
     '<input id="fPhone"' + dis + ' inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
@@ -1422,7 +1444,90 @@ function doLogin() {
   liff.login({ redirectUri: location.href });
 }
 
+
+
+function editName() {
+  nameEditing = true;
+  touched['fName'] = 1;   
+  draw();
+  setTimeout(function () {
+    var el = document.getElementById('fName');
+    if (el) { el.focus(); try { el.select(); } catch (e) {} }
+  }, 0);
+}
+
+
+
 function submitOrder() {
+  if (meLoading) {
+    var b0 = document.querySelectorAll('.bar button');
+    if (b0.length) b0[b0.length - 1].textContent = '準備中…';
+    setTimeout(submitOrder, 400);
+    return;
+  }
+
+  
+  if (!(me && me.bound && nameEditing)) { submitOrder_(); return; }
+
+  var el = document.getElementById('fName');
+  var newName = String((el && el.value) || '').trim();
+  var oldName = String((me && me.name) || '').trim();
+
+  if (!newName) { alert('社群名稱不能空白。'); return; }
+  if (newName === oldName) { nameEditing = false; submitOrder_(); return; }
+
+  var btns = document.querySelectorAll('.bar button');
+  var sendBtn = btns.length ? btns[btns.length - 1] : null;
+  try { btns.forEach(function (b) { b.disabled = true; }); } catch (e) {}
+  if (sendBtn) sendBtn.textContent = '更新名稱中…';
+
+  var restore = function () {
+    try { btns.forEach(function (b) { b.disabled = false; }); } catch (e) {}
+    if (sendBtn) sendBtn.textContent = '送出訂單';
+  };
+
+  
+  var fallback = function (msg) {
+    if (msg) alert(msg);
+    nameEditing = false;
+    if (el) el.value = oldName;   
+    submitOrder_();
+  };
+
+  fetch(GAS_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      action: 'updateSocialName',
+      lineUid: (me && me.uid) || '',
+      name: newName,
+      campaign: CODE
+    })
+  })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.status === 'SUCCESS') {
+        me.name = newName;
+        nameEditing = false;
+        try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
+        submitOrder_();
+        return;
+      }
+      
+      if (d && d.status === 'DUPLICATE') {
+        restore();
+        alert(d.message || '這個社群名稱已經有其他會員在使用。');
+        return;
+      }
+      fallback('名稱沒有更新成功，這筆訂單會先用「' + oldName + '」送出。\n' +
+               '你可以稍後到會員中心再改一次。');
+    })
+    .catch(function () {
+      fallback('名稱沒有更新成功（網路問題），這筆訂單會先用「' + oldName + '」送出。');
+    });
+}
+
+function submitOrder_() {
   
   
   
@@ -1433,7 +1538,7 @@ function submitOrder() {
   if (meLoading) {
     var btns = document.querySelectorAll('.bar button');
     if (btns.length) btns[btns.length - 1].textContent = '準備中…';
-    setTimeout(submitOrder, 400);
+    setTimeout(submitOrder_, 400);
     return;
   }
 
