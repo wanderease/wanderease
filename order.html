@@ -320,6 +320,16 @@ function autoLoginIfNeeded() {
   return true;
 }
 var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+
+
+
+
+
+
+
+
+
+var PREP_URL = "https://wanderease-api.wanderease-th.workers.dev/";
 var DEPOSIT = 20;   
 var SERVICE_URL = 'https://lin.ee/mty4uxj';   
 
@@ -694,7 +704,7 @@ function boot(d) {
       if (step === 2) draw();
     }, 8000);
 
-    fetch(GAS_URL + '?action=campaignPrep&lineUid=' + encodeURIComponent(uid) +
+    fetch(PREP_URL + '?action=campaignPrep&lineUid=' + encodeURIComponent(uid) +
           '&campaign=' + encodeURIComponent(CODE),
           { signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.json(); })
