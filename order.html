@@ -330,6 +330,24 @@ var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj
 
 
 var PREP_URL = "https://wanderease-api.wanderease-th.workers.dev/";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var SUBMIT_URL = "https://wanderease-api.wanderease-th.workers.dev/";
 var DEPOSIT = 20;   
 var SERVICE_URL = 'https://lin.ee/mty4uxj';   
 
@@ -1690,7 +1708,7 @@ function submitOrder_() {
       return false;
     };
 
-    fetch(GAS_URL + '?action=campaignCheckOrdered&lineUid=' +
+    fetch(SUBMIT_URL + '?action=campaignCheckOrdered&lineUid=' +
           encodeURIComponent((me && me.uid) || '') +
           '&campaign=' + encodeURIComponent(CODE))
       .then(function (r) { return r.json(); })
@@ -1736,7 +1754,7 @@ function submitOrder_() {
   
   
   
-  fetch(GAS_URL, {
+  fetch(SUBMIT_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) }),
