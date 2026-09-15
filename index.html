@@ -146,6 +146,16 @@ var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj
 
 
 
+
+
+
+
+var MYORD_URL = "https://wanderease-api.wanderease-th.workers.dev/";
+
+
+
+
+
 function isAdmin(hashes) {
   if (!hashes || !hashes.length) return Promise.resolve(false);
   try {
@@ -303,7 +313,7 @@ function applyShopState(shop) {
 
   function prefetchOrdered(uid) {
     if (!uid) return;
-    fetch(GAS_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
+    fetch(MYORD_URL + '?action=campaignMyOrdered&lineUid=' + encodeURIComponent(uid))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (!d || d.status !== 'SUCCESS') return;
