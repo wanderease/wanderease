@@ -27,7 +27,7 @@
     .loader-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 0;text-align:center;}
     .spinner-border{color:var(--brand-brown);}
     .text-carousel{font-size:14px;font-weight:bold;color:var(--brand-charcoal);margin-top:15px;min-height:20px;}
-    /* 🆕 全螢幕 modal loader（用於敏感操作如改五碼，保留底層內容不被清空） */
+     
     @keyframes lmSpin{to{transform:rotate(360deg);}}
     @keyframes lmFadeIn{from{opacity:0;}to{opacity:1;}}
     .lm-backdrop{position:fixed;inset:0;background:rgba(245,240,232,.82);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:9999;animation:lmFadeIn .18s ease-out;}
@@ -38,7 +38,7 @@
     .lm-sub{font-size:11.5px;color:#a0907a;margin-top:5px;font-weight:600;}
     @media(min-width:768px){#adminArea,.page-content{max-width:600px;margin:0 auto;}}
 
-    /* 底部導航 */
+     
     .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:1000;background:var(--brand-white);border-top:1px solid #e0d8d0;display:flex;justify-content:space-around;align-items:center;padding:10px 0 calc(env(safe-area-inset-bottom,10px) + 4px);box-shadow:0 -4px 16px rgba(0,0,0,.06);}
     .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:6px 0;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative;}
     .bottom-nav-item .nav-icon{font-size:24px;line-height:1;margin-bottom:4px;}
@@ -50,7 +50,7 @@
     .btn-contact-line{display:block;width:100%;background:#fff;border:1.5px solid #e8d5c4;color:#7a6c5d;border-radius:12px;padding:12px;font-weight:800;font-size:14px;text-align:center;margin-bottom:20px;box-shadow:0 2px 6px rgba(0,0,0,.02);text-decoration:none;}
     .btn-contact-line:hover{background:#faf5f0;color:#4A3C49;text-decoration:none;}
 
-    /* 正式訂單卡片 */
+     
     .card-order{background:var(--brand-white);border-radius:16px;border:1px solid #e0d8d0;margin-bottom:20px;box-shadow:0 4px 16px rgba(44,44,47,.03);overflow:hidden;text-align:left;}
     .card-order.is-waitlist{background:#fef3e8;border-left:4px solid #a96a3f;}
     .order-header{background:#fbfaf9;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:15px;}
@@ -60,7 +60,7 @@
     .order-source-badge{display:inline-block;background:#a96a3f;color:#fff;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:10px;margin-bottom:5px;letter-spacing:0.5px;box-shadow:0 1px 2px rgba(121,82,56,0.2);}
     .waitlist-flow-note{margin:0 20px 20px;padding:14px 16px;background:#fff;border:1px solid #e8d4bf;border-left:4px solid #a96a3f;border-radius:8px;color:#5e3f2b;font-size:13.5px;line-height:1.7;white-space:pre-wrap;}
     .waitlist-flow-note .wfn-title{font-size:13px;font-weight:800;color:#a96a3f;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
-    /* 多品牌候補補貨：標題藥丸與分組卡片 */
+     
     .brand-pills-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
     .brand-pill{display:inline-block;background:rgba(169,106,63,0.12);color:#5e3f2b;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
     .wl-grp{background:#fff;border:1px solid #e8d4bf;border-radius:8px;padding:12px 14px;margin:0 20px 10px;}
@@ -90,7 +90,7 @@
     .step-dot.final{border-color:var(--track-final);color:var(--track-final);}.step-dot.final.active{background:var(--track-final);border-color:var(--track-final);color:var(--brand-white);}
     .step-label{font-size:12px;font-weight:bold;color:var(--track-active);text-align:center;margin-bottom:4px;white-space:nowrap;}.step-label.muted{color:var(--track-muted);}.step-label.final{color:var(--track-final);}
     .step-pct{font-size:16px;font-weight:900;color:var(--brand-charcoal);}.step-pct.muted{color:var(--track-muted);}
-    /* 🆕 官方尚未出貨完成清單（在進度條框框內，總體進度下方） */
+     
     .unship-section{margin-top:16px;padding-top:14px;border-top:1px dashed #e0d8d0;}
     .unship-section-title{font-size:12.5px;font-weight:800;color:#a96a3f;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
     .unship-row{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:8px;padding:9px 11px;margin-bottom:7px;}
@@ -103,7 +103,7 @@
     .unship-bar-pending{background:transparent;}
     .unship-pending-label{text-align:right;font-size:10.5px;font-weight:800;color:#a96a3f;margin-top:5px;}
     .unship-pending-label .all-waiting{margin-left:4px;font-size:0.9em;opacity:0.85;}
-    /* 🆕 該批次客人品項全數已出 → 內斂版安撫提示（無綠底，避免與卡片頂部 ship-complete-bar 視覺打架） */
+     
     .ship-batch-done{display:flex;align-items:flex-start;gap:7px;font-size:12.5px;font-weight:700;color:#5e3f2b;line-height:1.6;padding:2px 2px 0;}
     .ship-batch-done i{color:#5a9d6d;flex-shrink:0;font-size:14px;line-height:inherit;}
     .details-box{background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;margin:0 20px 20px;padding:15px 20px;}
@@ -115,9 +115,9 @@
     .last5-value{color:var(--brand-charcoal);font-weight:700;display:flex;align-items:center;gap:8px;}
     .edit-btn{cursor:pointer;color:var(--brand-brown);font-size:13px;font-weight:700;padding:4px 8px;background:#f6f0ea;border-radius:4px;border:1px solid #e0d8d0;z-index:10;position:relative;}
     .edit-btn:hover{background:var(--brand-brown);color:var(--brand-white);border-color:var(--brand-brown);}
-    /* 🆕 尚未出貨標籤（部分出貨情境下標在品項旁） */
+     
     .unshipped-tag{display:inline-block;margin-left:6px;font-size:11px;color:#a96a3f;background:#fef3e8;border:1px solid #e8d4bf;padding:1px 7px;border-radius:10px;font-weight:700;letter-spacing:.3px;vertical-align:middle;}
-    /* 🆕 已全數出貨完成狀態條（綠色，只在 allShipped 時顯示） */
+     
     .ship-complete-bar{display:flex;align-items:center;gap:6px;background:#e7f2ea;color:#2d6a3e;border:1px solid #c5dccb;padding:8px 12px;border-radius:8px;font-size:12.5px;font-weight:700;margin-bottom:10px;letter-spacing:.3px;}
     .total-row{display:flex;justify-content:space-between;padding-top:15px;border-top:2px solid #e0d8d0;font-size:1.15rem;font-weight:900;color:var(--brand-charcoal);}
     .total-price{color:#dc3545;}
@@ -129,7 +129,7 @@
     .bank-warning{font-size:13px;font-weight:bold;color:#a95a52;margin-top:12px;}
     .done-note{margin-top:10px;font-size:13.5px;font-weight:700;color:var(--brand-brown);background:#f6f0ea;padding:8px 12px;border-radius:8px;display:inline-block;}
 
-    /* 預購卡片 */
+     
     .po-card{background:#fff;border-radius:16px;margin-bottom:20px;overflow:hidden;text-align:left;box-shadow:0 4px 16px rgba(44,44,47,.03);}
     @keyframes wespin{to{transform:rotate(360deg);}}
     .po-card.po-submitting{border-color:#b8b0a8 !important;}
@@ -164,14 +164,14 @@
     .po-pv-undo{font-size:11px;font-weight:700;cursor:pointer;}
     .po-shortage-row{border-radius:8px;padding:8px;margin:3px 0;border:none!important;}
 
-    /* 候補 */
+     
     .wl-card{background:#fff;border-radius:16px;border:1px solid #e0d8d0;margin-bottom:16px;overflow:hidden;text-align:left;}
     .wl-card-h{background:#fbfaf9;padding:12px 16px;font-size:14px;font-weight:900;color:var(--brand-charcoal);border-bottom:.5px dashed #e0d8d0;}
     .wl-item{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:.5px dashed #e0d8d0;font-size:13px;}
     .wl-item:last-child{border-bottom:none;}
     .wl-cancel-btn{background:#fdf3f2;color:#a95a52;font-size:11px;padding:4px 12px;border-radius:6px;font-weight:700;border:none;cursor:pointer;white-space:nowrap;}
 
-    /* 候補頁面新版 V2 */
+     
     .wl-rules-box{background:linear-gradient(135deg,#fff9f0 0%,#fff4e5 100%);border:1px solid #f0d9b5;border-radius:12px;padding:16px;margin-bottom:20px;}
     .wl-rules-box h3{font-size:14px;font-weight:900;color:#8b6f3d;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
     .wl-rules-box ul{list-style:none;padding:0;font-size:13px;line-height:1.7;color:#5c4423;margin:0;}
@@ -202,7 +202,7 @@
     .wl-link-orders{background:#f6f0ea;border:1px dashed #795238;border-radius:10px;padding:14px;text-align:center;font-size:13px;color:#795238;font-weight:700;cursor:pointer;margin-bottom:12px;}
     .wl-collapse-head{padding:10px 14px;background:#f5f3ef;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#666;margin-bottom:12px;}
     .wl-empty{background:white;border:2px dashed #e0d8d0;padding:40px 20px;border-radius:12px;text-align:center;color:#888;font-size:14px;font-weight:600;}
-    /* 放棄/取消 Modal */
+     
     .wl-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;padding:16px;z-index:2000;}
     .wl-modal-card{background:white;border-radius:16px;max-width:400px;width:100%;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-height:90vh;display:flex;flex-direction:column;}
     .wl-modal-head{padding:16px;text-align:center;font-size:16px;font-weight:900;flex-shrink:0;}
@@ -220,23 +220,21 @@
     .wl-rule-check input{margin-top:3px;transform:scale(1.2);}
     .wl-rule-check label{font-size:12.5px;line-height:1.5;color:#555;cursor:pointer;}
 
-    /* 新增品項 Modal */
+     
     .additem-search{border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 14px;font-size:14px;width:100%;background:#fbfaf9;}
     .additem-row{padding:12px 14px;border-bottom:.5px solid #e0d8d0;display:flex;justify-content:space-between;align-items:center;gap:10px;}
     .additem-row.sel{background:#eaf3de;}
     .additem-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;font-size:13px;}
     .additem-price{font-size:12px;color:#888;}
 
-    /* ========================================
-       🆕 v2 改版新樣式
-       ======================================== */
+     
     :root{
       --pre-soft:#b08bdf; --pre-soft-2:#8a6db5;
       --ord-soft:#7fa9d8; --ord-soft-2:#5a87b8;
       --ship-soft:#7dc89e; --ship-soft-2:#5fab7e;
       --wait-soft:#e4b878; --wait-soft-2:#c79753;
     }
-    /* 整合 header 棕色漸層條（welcome + 4 個 SVG 導航）*/
+     
     .home-header-bar{background:linear-gradient(135deg,#8a6d52,#5a4738);padding:14px 14px 12px;color:#fff;text-align:left;}
     .home-header-bar .hhb-greet{font-size:12px;opacity:.85;font-weight:600;}
     .home-header-bar .hhb-name{font-size:18px;font-weight:700;margin-top:2px;}
@@ -247,10 +245,10 @@
     .home-header-bar .hhb-nav-item .hhb-l{font-size:11px;opacity:.95;margin-top:4px;font-weight:600;}
     .home-header-bar .hhb-nav-item.cs{background:rgba(252,211,77,.28);}
     .home-header-bar .hhb-nav-item.cs .hhb-ic{color:#fef08a;}
-    /* 隱藏原舊 header（被新 header-bar 取代）*/
+     
     #homeArea > .header-img{display:none;}
 
-    /* 頂部 Header 4 個導航（舊樣式保留以防殘留呼叫） */
+     
     .top-nav-row{display:flex;gap:6px;padding:11px 14px 0;}
     .top-nav-item{flex:1;background:rgba(255,255,255,.15);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;border:none;color:#fff;-webkit-tap-highlight-color:transparent;}
     .top-nav-item:active{background:rgba(255,255,255,.28);}
@@ -259,7 +257,7 @@
     .top-nav-item.cs{background:rgba(252,211,77,.28);}
     .top-nav-item.cs .tni-ic{color:#fef08a;}
 
-    /* 三頁滑動容器 */
+     
     .swipe-wrap{position:relative;}
     .page-tabs{display:flex;background:#fff;padding:8px 11px 4px;gap:5px;border-bottom:1px solid #f0ebe5;position:sticky;top:0;z-index:50;}
     .page-tab{flex:1;padding:8px 4px;text-align:center;border-radius:9px;cursor:pointer;border:none;background:transparent;-webkit-tap-highlight-color:transparent;}
@@ -272,12 +270,12 @@
     .swipe-dot{width:7px;height:7px;border-radius:50%;background:#d0c7be;transition:.25s;}
     .swipe-dot.active{background:var(--brand-brown);width:22px;border-radius:5px;}
 
-    /* 滑動 viewport */
+     
     .swipe-viewport{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
     .swipe-viewport::-webkit-scrollbar{display:none;}
     .swipe-page{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;min-width:100%;}
 
-    /* 4 個大框（紫/藍/綠/橘黃）*/
+     
     .big-frame{border-radius:16px;padding:14px;margin-bottom:11px;color:#fff;position:relative;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.07);}
     .big-frame .watermark{position:absolute;right:10px;top:8px;font-size:54px;opacity:.22;line-height:1;transform:rotate(8deg);pointer-events:none;}
     .big-frame .frame-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;z-index:1;gap:8px;}
@@ -290,8 +288,7 @@
     .frame-ship{background:linear-gradient(135deg,var(--ship-soft) 0%,var(--ship-soft-2) 100%);}
     .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
 
-    /* 訂單/候補框統計 cell：用 CSS Grid 三等分（最可靠的等寬實現）
-       ⚠ 注意：不能用 .alert（會跟 Bootstrap .alert class 衝突，被加上額外 padding/border） */
+     
     .order-stats-inline{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:9px;position:relative;z-index:1;width:100%;}
     .order-stat-cell{background:rgba(255,255,255,.2);border-radius:8px;padding:11px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:62px;box-sizing:border-box;min-width:0;margin:0;border:none;}
     .order-stat-cell.is-alert{background:rgba(255,235,180,.42);}
@@ -299,7 +296,7 @@
     .order-stat-cell.stat-clickable:active{transform:scale(.96);}
     .order-stat-cell.stat-active{background:rgba(255,255,255,.92);box-shadow:0 3px 10px rgba(0,0,0,.18);}
     .order-stat-cell.stat-active .n,.order-stat-cell.stat-active .l{color:#5e3f2b;}
-    /* 篩選模式：只顯示對應 data-ostatus 的卡片 */
+     
     #regularOrdersContainer.ofilter-on[data-show="unpaid"]   .card-order:not([data-ostatus="unpaid"]){display:none;}
     #regularOrdersContainer.ofilter-on[data-show="shipping"] .card-order:not([data-ostatus="shipping"]){display:none;}
     #regularOrdersContainer.ofilter-on[data-show="done"]     .card-order:not([data-ostatus="done"]){display:none;}
@@ -314,12 +311,12 @@
     .wait-stat .l{font-size:11px;opacity:.95;margin-top:5px;font-weight:600;}
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
 
-    /* 出貨框內容 */
+     
     .ship-info-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px;position:relative;z-index:1;}
     .ship-cell{background:rgba(255,255,255,.22);border-radius:8px;padding:7px 8px;min-width:0;}
     .ship-cell .lbl{font-size:9px;opacity:.92;line-height:1.25;}
     .ship-cell .val{font-size:14px;font-weight:700;margin-top:2px;white-space:nowrap;}
-    /* 系列卡片：白底加深、文字用深綠，提升可讀性 */
+     
     .ship-series-card{background:rgba(255,255,255,.92);border-radius:8px;padding:8px 10px;margin-bottom:7px;position:relative;z-index:1;}
     .ship-series-card .sc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:5px;}
     .ship-series-card .sc-name{font-size:12px;font-weight:700;color:#2f6b50;}
@@ -331,7 +328,7 @@
     .shipf-lbl{display:block;font-size:12px;color:#4b5563;font-weight:700;margin:8px 0 3px;}
     .shipf-inp{width:100%;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827;box-sizing:border-box;}
     .shipf-inp:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.15);}
-    /* 配送說明分區（條列式）*/
+     
     .ship-detail-inner{display:flex;flex-direction:column;gap:8px;}
     .sd-block{border-radius:8px;padding:8px 10px;border:1px solid #eee;}
     .sd-block .sd-title{font-weight:800;font-size:12px;margin-bottom:3px;}
@@ -344,7 +341,7 @@
     .sd-pay{background:#f5f3ff;border-color:#ddd6fe;}    .sd-pay .sd-title{color:#6d28d9;}
     .sd-info{background:#f9fafb;border-color:#e5e7eb;}   .sd-info .sd-title{color:#374151;}
     .sd-pack{background:#fffbeb;border:2px solid #fbbf24;}  .sd-pack .sd-title{color:#b45309;font-size:14px;}
-    /* 內嵌表單 */
+     
     .sd-formbox{margin-top:10px;padding-top:10px;border-top:1px solid #e5e7eb;}
     .sd-formtitle{font-weight:800;font-size:13px;color:#374151;margin-bottom:4px;}
     .shipf-row-flex{display:flex;gap:8px;align-items:flex-end;}
@@ -359,10 +356,10 @@
     .shipf-agree{display:flex;gap:8px;align-items:flex-start;font-size:12px;color:#78350f;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;margin-top:12px;cursor:pointer;}
     .shipf-agree input{margin-top:2px;}
 
-    /* 候補框舊統計樣式已合併到上方訂單框 cell，保留 wait-action */
+     
     .wait-action{display:block;background:rgba(255,255,255,.25);color:#fff;text-align:center;padding:9px;border-radius:8px;font-weight:700;font-size:12.5px;border:1px solid rgba(255,255,255,.35);position:relative;z-index:1;cursor:pointer;width:100%;}
 
-    /* 尚未出貨列表（按系列分組）*/
+     
     .unship-page-section{background:#fff;border-radius:12px;padding:12px;margin-top:7px;}
     .unship-page-title{font-size:13px;font-weight:700;color:var(--brand-brown);margin-bottom:11px;display:flex;align-items:center;gap:5px;}
     .unship-page-title .count{font-size:11px;background:#f5f3ef;color:var(--brand-brown);padding:1px 8px;border-radius:8px;font-weight:600;}
@@ -376,7 +373,7 @@
     .unship-row-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;}
     .unship-row-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600;white-space:nowrap;}
     .unship-row-tag.delay{background:#fee2e2;color:#991b1b;}
-    /* 🆕 出貨流程示意（純說明用，透明底，無進度）*/
+     
     .flow-guide{display:flex;align-items:flex-start;justify-content:space-between;gap:2px;padding:10px 4px 14px;margin-bottom:4px;}
     .flow-step{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;}
     .flow-step .fi{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:#a96a3f;border:1.5px solid #e0d0bf;background:transparent;margin-bottom:5px;}
@@ -384,23 +381,23 @@
     .flow-arrow{flex:0 0 auto;align-self:center;margin-top:-12px;color:#d8c4af;font-size:11px;}
     .unship-row-tag.wait{background:#fef3c7;color:#92400e;}
 
-    /* 預購框「+ 新增品項」改用卡內展開（補強 modal 已存在的 fallback）*/
+     
     .po-add-inline-box{background:#fffbf2;border:1.5px dashed var(--brand-brown);border-radius:9px;padding:10px;margin-top:5px;}
     .po-add-inline-title{font-size:12px;font-weight:700;color:var(--brand-brown);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
     .po-add-inline-close{font-size:14px;color:#888;cursor:pointer;background:none;border:none;padding:0;}
 
-    /* 第一頁專屬內距：viewport 內每頁加 padding */
+     
     .swipe-page-inner{padding:12px 14px 90px;}
 
-    /* 隱藏舊底部 nav（但保留容器以防 JS 引用，把 display:none） */
+     
     .bottom-nav{display:none!important;}
 
-    /* admin search wrap 縮小 */
+     
     body{padding-bottom:20px;}
   </style>
 </head>
 <body>
-  <!-- 🆕 Modal loader（敏感操作用，保留底層內容） -->
+  
   <div class="lm-backdrop" id="lmBackdrop" role="status" aria-live="polite">
     <div class="lm-card">
       <div class="lm-ring"></div>
@@ -409,7 +406,7 @@
     </div>
   </div>
   <div id="maintenanceArea" style="display:none;text-align:center;padding:80px 20px;background:var(--brand-bg);height:100vh;">
-    <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
+    <div style="margin-bottom:25px;"><img src="https://drive.google.com/thumbnail?id=1K8G2I1a-8umj8thU1LXOhbO6HVYpYwk6&amp;sz=w800" style="max-width:160px;height:auto;" alt="Logo"></div>
     <h3 class="fw-bold mb-4" style="color:var(--brand-brown);letter-spacing:2px;">系統升級維護中</h3>
     <div class="card-custom mx-auto" style="max-width:400px;"><p id="maintenanceMsg" class="fw-bold mb-0" style="color:var(--brand-brown);line-height:1.8;font-size:16px;"></p></div>
   </div>
@@ -443,12 +440,12 @@
         <span>清除前台 Cache</span>
       </button>
     </div>
-    <!-- 🆕 整合頭部 header（welcome + 4 個導航 SVG 圖示 in one gradient bar）-->
+    
     <div class="home-header-bar">
       <div class="hhb-name" id="welcomeMsg"></div>
       <div class="hhb-nav-row">
-        <a class="hhb-nav-item" href="/c"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">預購填單</span></a>
-        <a class="hhb-nav-item" href="/s"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></a>
+        <button class="hhb-nav-item" onclick="showSubOverlay('promos')"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
+        <button class="hhb-nav-item" onclick="instkOpenCart()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
         <button class="hhb-nav-item" onclick="showSubOverlay('rules')"><span class="hhb-ic"><i class="bi bi-journal-text"></i></span><span class="hhb-l">規則</span></button>
         <button class="hhb-nav-item cs" onclick="openLineContact()"><span class="hhb-ic"><i class="bi bi-chat-dots"></i></span><span class="hhb-l">客服</span></button>
       </div>
@@ -462,7 +459,7 @@
       </div></div>
     </div>
 
-    <!-- 🆕 三頁滑動容器 -->
+    
     <div class="swipe-wrap" style="max-width:600px;margin:0 auto;">
       <div class="page-tabs">
         <button class="page-tab active" id="pageTab0" onclick="switchPageTab(0)"><span class="pt-l"><i class="bi bi-cart3" style="color:var(--pre-soft-2);"></i> 預購 / 訂單</span></button>
@@ -477,10 +474,10 @@
         <div class="swipe-dot" id="swipeDot3" style="display:none;"></div>
       </div>
       <div class="swipe-viewport" id="swipeViewport">
-        <!-- 頁 1：預購 + 訂單 -->
+        
         <div class="swipe-page" id="swipePage0">
           <div class="swipe-page-inner">
-            <!-- 預購紫框 -->
+            
             <div id="preFrameWrap" class="big-frame frame-preorder" style="display:none;">
               <div class="watermark"><i class="bi bi-cart3"></i></div>
               <div class="frame-head">
@@ -490,7 +487,7 @@
               <div class="frame-title" id="preFrameTitle"></div>
               <div id="preorderCardsContainer"></div>
             </div>
-            <!-- 訂單藍框 -->
+            
             <div id="ordFrameWrap" class="big-frame frame-order" style="display:none;">
               <div class="watermark"><i class="bi bi-box-seam"></i></div>
               <div class="frame-head">
@@ -501,13 +498,13 @@
               <div class="order-stats-inline" id="ordStatsRow"></div>
               <button id="ordViewAllBtn" class="order-view-all" onclick="toggleOrderList()"><i class="bi bi-list-ul"></i> 查看完整訂單列表 ›</button>
             </div>
-            <!-- 訂單卡列表（預設折疊，點「查看完整訂單列表」展開）-->
+            
             <div id="orderListWrap" style="display:none;">
               <div id="regularOrdersContainer"></div>
             </div>
           </div>
         </div>
-        <!-- 頁 2：出貨 -->
+        
         <div class="swipe-page" id="swipePage1">
           <div class="swipe-page-inner">
             <div id="shipFrameWrap" class="big-frame frame-ship" style="display:none;">
@@ -526,7 +523,7 @@
             <div id="shipHistorySection"></div>
           </div>
         </div>
-        <!-- 頁 3：候補 -->
+        
         <div class="swipe-page" id="swipePage2">
           <div class="swipe-page-inner">
             <div id="waitlistContainer"></div>
@@ -540,14 +537,14 @@
       </div>
     </div>
 
-    <!-- 隱藏舊 page-content（保留容器以保留 JS 參考相容性，但不顯示） -->
+    
     <div id="pageOrders" class="page-content active" style="display:none !important;"></div>
     <div id="pageWaitlist" class="page-content" style="display:none !important;"></div>
     <div id="pagePromos" class="page-content" style="display:none !important;"></div>
     <div id="pageInstock" class="page-content" style="display:none !important;"></div>
     <div id="pageRules" class="page-content" style="display:none !important;"></div>
 
-    <!-- 🆕 子畫面 overlay（開團/現貨/規則）-->
+    
     <div id="subOverlay" style="display:none;position:fixed;inset:0;background:var(--brand-bg);z-index:1500;overflow-y:auto;">
       <div style="background:linear-gradient(135deg,#795238,#5e3f2b);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
         <button onclick="closeSubOverlay()" style="background:rgba(255,255,255,.2);color:#fff;border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;">‹</button>
@@ -559,8 +556,8 @@
     <nav class="bottom-nav">
       <div class="bottom-nav-item active" onclick="switchBottomTab('pageOrders',this)"><span class="nav-icon">📦</span><span class="nav-text">訂單</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageWaitlist',this)" ><span class="nav-icon">⏳</span><span class="nav-text">候補</span></div>
-      <a class="bottom-nav-item" href="/c" style="text-decoration:none"><span class="nav-icon">🔥</span><span class="nav-text">預購填單</span></a>
-      <a class="bottom-nav-item" href="/s" style="text-decoration:none"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></a>
+      <div class="bottom-nav-item" onclick="switchBottomTab('pagePromos',this)"><span class="nav-icon">🔥</span><span class="nav-text">開團</span></div>
+      <div class="bottom-nav-item" onclick="instkOpenCart()"><span class="nav-icon">🛍️</span><span class="nav-text">現貨</span></div>
       <div class="bottom-nav-item" onclick="switchBottomTab('pageRules',this)"><span class="nav-icon">📝</span><span class="nav-text">規則</span></div>
     </nav>
   </div>
@@ -587,8 +584,8 @@
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 
-    // 🆕 漂亮彈窗（取代醜的原生 alert / confirm）
-    //   type: 'success'(綠) / 'warning'(橘) / 'danger'(紅) / 'info'(藍紫)
+    
+    
     function feAlert(message, opts){
       opts = opts || {};
       const type = opts.type || 'info';
@@ -640,7 +637,7 @@
       });
     }
     function escAttr(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,"&quot;");}
-    // ===== 品牌化通知元件（取代 alert/confirm）=====
+    
     function weToast(msg, type){
       type = type || "success";
       var bg = type==="error" ? "#791f1f" : (type==="info" ? "#795238" : "#27500a");
@@ -654,7 +651,7 @@
       requestAnimationFrame(function(){ t.style.opacity="1"; t.style.transform="translateY(0)"; });
       setTimeout(function(){ t.style.opacity="0"; t.style.transform="translateY(-12px)"; setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); }, 280); }, type==="error"?2600:1900);
     }
-    // weConfirm：回傳 Promise<boolean>，取代原生 confirm
+    
     function weConfirm(opts){
       opts = opts || {};
       var title = opts.title || "請確認";
@@ -675,10 +672,10 @@
         ov.onclick=function(e){ if(e.target===ov) close(false); };
       });
     }
-    // 舊 switchBottomTab 改為 no-op（保留以防其他地方呼叫不報錯）
+    
     window.switchBottomTab=function(pid,btn){if(pid==='pageWaitlist'){switchPageTab(2);loadWaitlistData();}else if(pid==='pageOrders'){switchPageTab(0);}};
 
-    // 🆕 三頁滑動切換
+    
     window.switchPageTab=function(idx){
       const vp=document.getElementById('swipeViewport');
       if(!vp)return;
@@ -686,7 +683,7 @@
       if(!pages[idx])return;
       vp.scrollTo({left:pages[idx].offsetLeft,behavior:'smooth'});
       updatePageIndicator(idx);
-      // 切到候補時觸發載入（沿用現有 loadWaitlistData）
+      
       if(idx===2)loadWaitlistData();
       if(idx===3)histLoadOnce();
     };
@@ -697,7 +694,7 @@
         if(dot)dot.classList.toggle('active',i===idx);
       }
     }
-    // 監聽滾動同步 indicator
+    
     document.addEventListener('DOMContentLoaded',()=>{
       const vp=document.getElementById('swipeViewport');
       if(!vp)return;
@@ -713,7 +710,7 @@
       });
     });
 
-    // 🆕 子畫面 overlay（開團/現貨/規則）
+    
     window.showSubOverlay=function(type){
       const ov=document.getElementById('subOverlay'),tt=document.getElementById('subOverlayTitle'),bd=document.getElementById('subOverlayBody');
       if(!ov)return;
@@ -730,7 +727,7 @@
       document.body.style.overflow='';
     };
     window.openLineContact=function(){
-      // 使用已驗證可用的官方 LINE 連結（與 friendshipModal 的「加入官方 LINE」按鈕同連結）
+      
       const url='https://lin.ee/mty4uxj';
       try{
         if(window.liff && liff.isInClient && liff.isInClient()){
@@ -741,148 +738,17 @@
       }catch(e){window.open(url,'_blank');}
     };
 
-    // ===== LIFF =====
-    /* ── 啟動流程的分段計時 ──────────────────────────────────
-     *
-     * 客人說「進會員中心很久」，但手機沒有 Console 可以看，
-     * 所以把每一步的耗時直接顯示在載入畫面上。
-     *
-     * 啟動有四步，每一步都可能是瓶頸：
-     *   liff.init()        LINE SDK 初始化
-     *   getProfile()       拿身分
-     *   getFriendship()    查有沒有加好友 —— 這一步打的是 LINE 的伺服器
-     *   getMemberData      我們自己的 API
-     *
-     * 之前只有最後一步被懷疑，但前三步都沒量過。
-     */
-    var _mt0 = Date.now(), _mtLog = [];
-    function _mtMark(name) {
-      var ms = Date.now() - _mt0;
-      _mtLog.push(name + ' ' + ms + 'ms');
-      /* 客人的畫面只保持原本的「載入中…」。
-       *
-       * 秒數與步驟名稱對他沒有意義 —— 看到「好友狀態 15800ms」
-       * 只會覺得系統怪怪的。那是給我們排查用的。
-       *
-       * 管理員身分要等 API 回來才知道，而載入畫面在那之前就在跑，
-       * 所以這裡一律不顯示，等資料回來再由管理員區塊補上。 */
-      try { console.log('[會員中心] ' + name + ' ' + ms + 'ms'); } catch (e) {}
-    }
-    window._mtLog = _mtLog;
-
-    window.onload=async function(){
-      try{
-        _mtMark('開始');
-        await liff.init({liffId:LIFF_ID});
-        _mtMark('LIFF 初始化完成');
-
-        if(!liff.isLoggedIn()){ liff.login(); return; }
-
-        const p=await liff.getProfile();
-        currentLineUid=p.userId;
-        _mtMark('取得身分');
-
-        try{
-          const f=await liff.getFriendship();
-          _mtMark('好友狀態');
-          if(!f.friendFlag){
-            document.getElementById('loadingArea').style.display='none';
-            new bootstrap.Modal(document.getElementById('friendshipModal')).show();
-            return;
-          }
-        }catch(e){ _mtMark('好友狀態查詢失敗'); }
-
-        checkMemberStatus();
-      }catch(err){
-        alert("LINE 登入失敗");
-        document.getElementById('loadingArea').style.display='none';
-      }
-    };
+    
+    window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
     window.skipFriendship=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
     window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https://lin.ee/mty4uxj',external:false});}catch(e){window.open('https://lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
-    // ===== 會員 =====
-    async function checkMemberStatus(_try){
-      _try = _try || 0;
-      try{
-        _mtMark(_try ? ('重試中 ' + (_try + 1) + '/3') : '查詢會員資料');
-
-        /* 逾時保護。
-         *
-         * 原本這個 fetch 沒有任何逾時 —— 卡住就一直轉，
-         * 客人只能自己關掉重開，而你完全不知道發生過。
-         *
-         * 25 秒後放棄並自動重試，最多三次。
-         * 伺服器實測 3～5 秒，25 秒已經很寬鬆。 */
-        const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-        const timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 25000);
-
-        /* 用 POST 而不是 GET。
-         *
-         * ── 為什麼 ──────────────────────────────────────────────
-         * GAS 的 GET 回應會被轉址到 googleusercontent.com 再拿一次。
-         * 實測那兩趟：exec 等 5.8 秒回 302，echo 等 15.4 秒回 404 ——
-         * 轉址的鑰匙在中途過期，Google 回傳的是 HTML 錯誤頁。
-         *
-         * 然後 JSON.parse 失敗，客人看到「API 連線異常」。
-         * 那不是網路問題，也不是查詢慢，是 GAS 的轉址機制。
-         *
-         * POST 不走那一層，一趟就結束。實測 1.5～2.5 秒。
-         *
-         * 參數放在 body 而不是網址 —— 放網址的話 GAS 有時候
-         * 還是會走轉址那條路。
-         */
-        const opt = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            action: 'getMemberData',
-            lineUid: currentLineUid
-          })
-        };
-        if (ctrl) opt.signal = ctrl.signal;
-
-        let r;
-        try{
-          r = await fetch(GAS_URL, opt);
-        }catch(netErr){
-          clearTimeout(timer);
-          if(_try < 2){ return checkMemberStatus(_try + 1); }
-          throw new Error("連線逾時，請確認網路後重新整理");
-        }
-        clearTimeout(timer);
-        _mtMark('資料回來了');
-
-        let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}/* 🆕 歷史訂單開放給所有已綁定的客人（原本只有管理員看得到）。 API getMyHistory 本來就是用呼叫者自己的 LINE 綁定查自己的資料， 客人只會看到自己的訂單，不需要額外權限控管。 */var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);
-
-          /* 慢的時候把分段明細印出來。
-           * 快的時候不吵 —— 正常就不需要知道細節。 */
-          var _total = Date.now() - _mt0;
-          _mtLog.push('完成 ' + _total + 'ms');
-          try{ console.log('[會員中心] 總共 ' + _total + 'ms\n' + _mtLog.join('\n')); }catch(_e){}
-          /* 載入耗時只有管理員看得到。
-             客人看到一串毫秒數只會困惑，那是給我們排查用的。 */
-          if(d.isAdmin && _total > 8000){
-            var _w = document.getElementById('welcomeMsg');
-            if(_w) _w.insertAdjacentHTML('afterend',
-              '<div style="font-size:10.5px;color:#b9b2a9;margin-top:4px">' +
-              '⏱ ' + (_total/1000).toFixed(1) + ' 秒：' + _mtLog.join('　') + '</div>');
-          }
-        }else document.getElementById('bindArea').style.display='block';
-      }catch(e){
-        document.getElementById('loadingArea').style.display='none';
-        /* 分段明細只給管理員。
-           客人需要的是「怎麼辦」，不是「哪一步慢」。 */
-        var _isAdm = false;
-        try { _isAdm = !!window.IS_ADMIN; } catch(_e) {}
-        alert("連線異常：\n" + e.message +
-          (_isAdm ? "\n\n" + _mtLog.join('\n') : ""));
-      }
-    }
+    
+    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';} var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
-    // ===== 管理員清除 Cache =====
+    
     async function executeAdminClearCache() {
       if (!confirm("確定清除所有前台 Cache？\n（所有客人下次查詢會讀取最新資料）")) {
         return;
@@ -915,9 +781,9 @@
         btn.disabled = false;
       }
     }
-    // ===== 管理員搜尋 =====
+    
     let fetchInterval;function startFetchAnim(t){const tx=t?[t,"跨海連線中...","快好了..."]:["載入中...","努力撈取...","連線中..."];let i=0;document.getElementById('carouselText').innerText=tx[0];fetchInterval=setInterval(()=>{i=(i+1)%tx.length;document.getElementById('carouselText').innerText=tx[i];},1500);}
-    // 🆕 完整管理員模式：用 adminViewCustomer 取得目標客人完整資料，以客人視角全頁渲染
+    
     async function executeAdminSearch(){
       const ty=document.getElementById('adminSearchType').value;
       const kw=document.getElementById('adminSearchKeyword').value.trim();
@@ -928,14 +794,14 @@
         const d=await r.json();
         hideLoaderModal();
         if(d.status==="BOUND"){
-          // 儲存原本自己的 uid，以便結束模式時回復
+          
           if(!window._adminOriginalUid)window._adminOriginalUid=currentLineUid;
           window._adminViewMode=true;
           window._adminViewCustomer=d.viewingCustomer||{name:kw};
           window.lastAdminSearchText=`【${d.viewingCustomer?d.viewingCustomer.name:kw}】的訂單`;
-          // 把目標客人 uid 設為當前操作對象（讓改五碼/取消候補等動作打到該客人）
-          // 注意：這些動作後端會檢查 admin 權限，可能需要後端額外配合
-          // 完整客人視角渲染
+          
+          
+          
           document.getElementById('welcomeMsg').innerText=`【管理員檢視】${d.viewingCustomer?d.viewingCustomer.name:kw}`;
           renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});
           poData=d.preorderData||{preorders:[],cancelCount:0};
@@ -943,17 +809,17 @@
           renderPoCards();
           wlInitialData=d.waitlistData||{groups:[],cancelled:[]};
           renderWL(wlInitialData);
-          window.instkAdminData = d.instockData || null;  // 🆕 給管理員模式的 instkOpenCart 用
+          window.instkAdminData = d.instockData || null;  
           renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);
-          // 🆕 歷史訂單：顯示 tab/圓點/頁，並注入該客人的歷史資料（完全模擬客人畫面）
+          
           var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';
           var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';
           var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';
           if(window.histReset)window.histReset();
           if(window.histInjectData)window.histInjectData(d.historyData||null);
-          // 顯示「結束模式」按鈕
+          
           showAdminViewExitBtn();
-          // 滾到頂部
+          
           window.scrollTo({top:0,behavior:'smooth'});
         } else {
           alert(d.message||"查詢失敗");
@@ -966,7 +832,7 @@
       window._adminViewCustomer=null;
       window.instkAdminData=null;
       window.lastAdminSearchText='';
-      if(window.histReset)window.histReset();  // 🆕 清掉被檢視客人的歷史，回自己時重載
+      if(window.histReset)window.histReset();  
       const btn=document.getElementById('adminViewExitBtn');
       if(btn)btn.remove();
       showLoaderModal('返回中', '請稍候...');
@@ -984,8 +850,8 @@
       document.body.appendChild(btn);
     }
 
-    // ===== 後五碼修改 =====
-    // 🆕 全螢幕 modal loader 控制
+    
+    
     function showLoaderModal(title, sub){
       document.getElementById('lmTitle').textContent = title || '處理中';
       document.getElementById('lmSub').textContent  = sub   || '請稍候，不要關閉視窗';
@@ -1009,7 +875,7 @@
           showLoaderModal('更新成功，重新載入中', '請稍候');
           await checkMemberStatus();
           hideLoaderModal();
-          // 不再 alert：modal 全程已經明確告知「更新成功 → 重新載入完成」，再彈 alert 是冗餘
+          
         } else {
           hideLoaderModal();
           alert("失敗："+d.message);
@@ -1017,7 +883,7 @@
         }
       }catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
     }
-    // 🆕 合併卡 bulk 改五碼（前端不顯示「合併」字樣，後端仍同步至所有同系列未匯款單）
+    
     async function promptEditLast5Bulk(brand, series, cur, mergedCount){
       if(event)event.stopPropagation();
       let v=prompt("請輸入匯款帳號最後五碼：",cur||"");
@@ -1040,19 +906,19 @@
         }
       } catch(e){hideLoaderModal();alert("網路錯誤");checkMemberStatus();}
     }
-    // 🆕 樂觀更新：把畫面上所有「last5-value」「尚未提供」字串立即換成新五碼
-    //   這樣即使 reload 慢，客人也不會看到舊資料（避免在 alert 阻塞的空檔重複按修改）
-    //   注意：只是視覺暫時更新，最終仍依賴 checkMemberStatus reload 回來的真實值
+    
+    
+    
     function optimisticUpdateLast5OnDom(newLast5){
       try {
-        // 蓋掉所有 last5-value（卡片內已填的五碼）
+        
         document.querySelectorAll('.last5-value').forEach(el => {
-          // 保留可能存在的「修改」按鈕（避免覆蓋按鈕 DOM）；只改文字節點
+          
           let editBtn = el.querySelector('.edit-btn');
           el.textContent = newLast5 + ' ';
           if (editBtn) el.appendChild(editBtn);
         });
-        // 蓋掉「尚未提供」狀態的 row（last5-row 內含 .text-muted）
+        
         document.querySelectorAll('.last5-row .text-muted.fst-italic').forEach(el => {
           let editBtn = el.querySelector('.edit-btn');
           el.classList.remove('text-muted','fst-italic');
@@ -1060,17 +926,17 @@
           el.textContent = newLast5 + ' ';
           if (editBtn) el.appendChild(editBtn);
         });
-      } catch(err) {/* 樂觀更新失敗無傷大雅，reload 後仍會校正 */}
+      } catch(err) { }
     }
     function toggleOrderCard(id){document.getElementById(id).classList.toggle('show');}
     function toggleProgressCard(id){if(event)event.stopPropagation();let el=document.getElementById(id),btn=document.getElementById(id+'-btn');if(el.classList.contains('show')){el.classList.remove('show');btn.innerHTML='🚚 查看詳細貨況進度 <i class="bi bi-chevron-down"></i>';}else{el.classList.add('show');btn.innerHTML='🚚 收起貨況進度 <i class="bi bi-chevron-up"></i>';}}
 
-    // ===== 正式訂單渲染 =====
+    
     function renderOrders(orders,promos,gp){
-      // 🆕 重畫訂單前重置狀態篩選（改五碼、切換檢視客人等情境，避免殘留）
+      
       window._ordFilter=null;
       const oc=document.getElementById('regularOrdersContainer');
-      // 一般客人不再顯示「您的訂單紀錄」標題（已移至訂單藍框內），但 admin 搜尋結果仍保留標題
+      
       let tt = window.lastAdminSearchText ? `<h6 class="fw-bold mb-3 ms-1 mt-3" style="color:#a95a52;"><i class="bi bi-person-lines-fill me-2"></i>客戶：${window.lastAdminSearchText}</h6>` : '';
       if(!orders||!orders.length){oc.innerHTML=`<div class="text-start">${tt}<div class="p-4 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;margin-top:10px;"><h6 class="fw-bold m-0" style="color:#888;">📦 目前沒有訂單</h6></div></div>`;}
       else{
@@ -1085,15 +951,15 @@
           const isInstock = o.sourceType === 'INSTOCK';
           const wlGroups = isWL && Array.isArray(o.waitlistGroups) ? o.waitlistGroups : [];
           const isMultiBrand = wlGroups.length > 1;
-          // 🆕 匯款急件排序用（保留浮頂排序，但不顯示逾期/即將到期標籤）
+          
           const _now = Date.now();
 
-          // === 標題區 ===
+          
           let th;
           const sb = (isWL ? `<span class="order-source-badge">候補補貨</span>`
                    : (isInstock ? `<span class="order-source-badge" style="background:#7a6a78;">現貨</span>` : ''));
           if (isWL && isMultiBrand) {
-            // 多品牌系列候補單：標題顯示 N 個系列 + 各品牌系列藥丸
+            
             const pillsHtml = wlGroups.map(g => {
               const pillText = g.series ? `${g.brand} · ${g.series}` : g.brand;
               return `<span class="brand-pill">${escHTML(pillText)}</span>`;
@@ -1110,14 +976,14 @@
           }
 
           // === 公告 ===
-          //   🆕 候補單也顯示公告（原本被 !isWL 直接排除，候補公告填了永遠看不到）。
-          //      後端 (前台查詢Code.gs) 已在 sourceType==='WAITLIST' 時把 groupNotice
-          //      換成候補專用公告 wlNotice，沒填才 fallback 成一般公告。
-          //      候補只顯示公告本體，不帶一般訂單的備註 groupMemo。
-          //      位置在 flowNote（📦 候補貨況&公告）上方，由卡片組裝順序 ${nh}${ph} 決定。
+          
+          
+          
+          
+          
           let nh = '';
           if (isInstock) {
-            // 🆕 現貨單：卡片內顯示現貨公告（後台現貨上架頁設定）
+            
             const _ia = (gp && gp.instockAnnounce) ? String(gp.instockAnnounce).trim() : '';
             if (_ia) nh = `<div class="notice-box">📢 公告：<br>${escHTML(_ia).replace(/\n/g,'<br>')}</div>`;
           } else if (isWL) {
@@ -1127,19 +993,19 @@
             nh = `<div class="notice-box">📢 公告：<br>${escHTML(o.groupNotice)}<br>${escHTML(o.groupMemo)}</div>`;
           }
 
-          // === 候補單分組明細區 / 一般單貨況進度區 ===
+          
           let ph = '', pch = '';
           let db = '';
 
           if (isWL && isMultiBrand) {
-            // 多品牌候補：依 group 渲染（每組獨立 flowNote + 商品 + 小計）
+            
             const groupsHtml = wlGroups.map(g => {
               const seriesLabel = g.series ? `<span class="wl-grp-series">· ${escHTML(g.series)}</span>` : '';
               const flowHtml = g.flowNote
                 ? `<div class="wl-grp-flow"><div class="wl-grp-flow-title">📦 候補貨況&公告</div><div class="wl-grp-flow-body">${escHTML(g.flowNote)}</div></div>`
                 : '';
               const itemsHtml = g.items.map(i => {
-                // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
+                
                 const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
                 return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
               }).join('');
@@ -1154,7 +1020,7 @@
                     : '')
             ) : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
+            
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
             db = `${shipBar}${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           } else {
@@ -1164,53 +1030,53 @@
                 ph = `<div class="waitlist-flow-note"><div class="wfn-title">📦 候補貨況&公告</div>${escHTML(o.waitlistFlowNote)}</div>`;
               }
             } else if (o.progress) {
-              // 一般單：原本的進度條邏輯
+              
               const p = o.progress;
               const h1 = p.b1 && (p.b1.purchased > 0 || p.b1.totalPurchased > 0);
               const h2 = p.b2 && (p.b2.purchased > 0 || p.b2.totalPurchased > 0);
               const n1 = (h1 && h2) ? "📦 [非預購款] 全體貨況" : "📦 全體貨況";
               const n2 = (h1 && h2) ? "🚚 [預購款] 全體貨況" : "🚚 全體貨況";
-              // 🆕 渲染「官方尚未出貨完成清單」雙色橫條（依批次分流，依客人購買品項過濾）
-              //   邏輯：
-              //   (a) 客人此批次完全沒買 → 不顯示任何訊息
-              //   (b) 客人此批次有買，但「該客人這個品項已被官方出貨給他」 → 排除（避免造成「我已收到怎麼還在未出貨清單」的困惑）
-              //   (c) 客人此批次仍有未收到的品項 → 列出對應的雙色橫條
-              //   (d) 客人此批次有買、但「他的部分都已被官方出完」 → 改顯示綠色安撫訊息
+              
+              
+              
+              
+              
+              
               function mkUnshippedList(isB1) {
                 if (!p.itemProgress || !Array.isArray(p.itemProgress)) return '';
                 const norm = (s) => String(s || '').replace(/\s+/g, '').toLowerCase();
-                // 該批次內客人買的所有品項 / 還沒收到的品項
+                
                 const allCustomerNames = new Set();
                 const pendingCustomerNames = new Set();
                 (o.items || []).forEach(it => {
                   let n = norm(it.name);
                   if (!n) return;
-                  // 用品項名是否含「預購」判斷該品項屬 b1 或 b2，跟戰情中心一致
+                  
                   let itemIsPreorder = String(it.name || '').indexOf('預購') > -1;
                   if (isB1 && itemIsPreorder) return;
                   if (!isB1 && !itemIsPreorder) return;
                   allCustomerNames.add(n);
                   if (!it.isShipped) pendingCustomerNames.add(n);
                 });
-                if (allCustomerNames.size === 0) return ''; // (a) 該批次客人沒品項
-                // 篩選需要列出的：官方還沒全出 + 客人那部分還沒收到
+                if (allCustomerNames.size === 0) return ''; 
+                
                 const listed = p.itemProgress.filter(ip => {
                   if (isB1 && ip.isPreorder) return false;
                   if (!isB1 && !ip.isPreorder) return false;
-                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; // 官方已全出
-                  return pendingCustomerNames.has(norm(ip.name)); // 客人這部分未收到
+                  if ((ip.purchased || 0) <= (ip.step1 || 0)) return false; 
+                  return pendingCustomerNames.has(norm(ip.name)); 
                 });
                 if (listed.length === 0) {
-                  // 區分兩種「無未出貨清單」情境，文案不同
-                  // 同時有預購+非預購時加 [批次] 標籤；只有單一批次時不加
+                  
+                  
                   const hasBothBatches = h1 && h2;
                   const batchLabel = hasBothBatches ? (isB1 ? '[非預購款]' : '[預購款]') : '';
                   let msg;
                   if (pendingCustomerNames.size === 0) {
-                    // (d-1) 客人這批次品項都已收到 → 短版
+                    
                     msg = `您的${batchLabel}訂單品項，已全數出貨完成。`;
                   } else {
-                    // (d-2) 客人還沒收到，但官方已全數出完 → 長版（等待台灣到貨後安排）
+                    
                     msg = `您的${batchLabel}訂單品項，官方已全數出貨完成，待到台灣後會陸續安排出貨`;
                   }
                   return `<div class="unship-section">
@@ -1255,7 +1121,7 @@
             // 一般單與單品牌候補：用既有 details-box
             let ih;
             if (isInstock) {
-              // 🆕 現貨單：明細按「品牌 / 系列」分組
+              
               const grp = {};
               const grpOrder = [];
               (o.items || []).forEach(it => {
@@ -1287,12 +1153,12 @@
                     : '')
             ) : '';
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
-            // 🆕 已全數出貨完成狀態條（只在 allShipped 時顯示，置於品項區頂端）
+            
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
             db = `<div class="details-box shadow-sm mb-3">${shipBar}${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           }
 
-          // === 銀行資訊區 ===
+          
           let bh = '';
           if (ip) {
             const nn = o.personalNote ? `<div class="done-note">${escHTML(o.personalNote)}</div>` : '';
@@ -1306,23 +1172,23 @@
         }).join('');
         oc.innerHTML = `<div class="text-start">${tt}${cards}</div>`;
       }
-      // 開團/現貨/規則
+      
       const pc=document.getElementById('pagePromos');pc.innerHTML=promos&&promos.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6>${promos.map(p=>`<div style="background:#fffaf5;border:1px solid #e8d5c4;border-radius:12px;padding:16px;margin-bottom:12px;text-align:left;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:12px;">👑 ${escHTML(p.title)}</h6><div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:14.5px;color:#dc3545;font-weight:900;">${p.exp?`⏰ 結單: ${escHTML(p.exp)}`:''}</div><button style="background:var(--brand-brown);color:#fff;border:none;padding:8px 20px;font-size:14px;border-radius:8px;font-weight:bold;cursor:pointer;" onclick="window.open('${p.url}','_blank')">👉 前往填單</button></div></div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-megaphone me-2"></i>最新開團</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">目前沒有開團</h6></div></div>`;
       const ic=document.getElementById('pageInstock');let ia=gp.instock;ic.innerHTML=ia&&ia.length>0?`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6>${ia.map(s=>`<div style="background:#fbfaf9;border:1px solid #e0d8d0;border-radius:12px;padding:15px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left;"><div style="flex:1;min-width:0;"><h6 style="font-weight:900;color:var(--brand-charcoal);margin-bottom:${s.content?'6px':'0'};"><i class="bi bi-shop me-2"></i>${escHTML(s.title||'現貨賣場')}</h6>${s.content?`<div class="text-muted small" style="line-height:1.5;white-space:pre-wrap;">${escHTML(s.content)}</div>`:''}</div>${s.link?`<button style="background:var(--brand-brown);color:#fff;border:none;padding:10px 16px;font-size:14px;border-radius:8px;white-space:nowrap;font-weight:bold;cursor:pointer;" onclick="window.open('${s.link}','_blank')">👉 前往逛逛</button>`:''}</div>`).join('')}</div>`:`<div class="text-start"><h6 class="fw-bold mb-3 ms-1" style="color:var(--brand-charcoal);"><i class="bi bi-shop-window me-2"></i>現貨賣場</h6><div class="p-5 rounded border border-2 bg-white shadow-sm text-center" style="border-color:#e0d8d0!important;"><h6 class="fw-bold m-0" style="color:#888;">尚未開放</h6></div></div>`;
       document.getElementById('pageRules').innerHTML=`<div class="text-start"><div class="card-order p-4 shadow-sm"><h6 class="fw-bold mb-3" style="color:var(--brand-charcoal);"><i class="bi bi-book me-2"></i>代購與服務規則</h6><div class="text-muted small" style="line-height:1.8;white-space:pre-wrap;">${escHTML(gp.rules.content||'尚無規則。')}</div></div></div>`;
     }
 
-    // =============================================
-    // 🆕 主頁 4 框統計 / 出貨頁渲染
-    // =============================================
+    
+    
+    
     function renderHomeFrames(orders, preorderData, shipData){
-      // ---- 預購框 ----
+      
       const preList = (preorderData && (preorderData.mergedPreorders !== undefined)) ? (preorderData.mergedPreorders || []) : (preorderData && preorderData.preorders || []);
       const preW = document.getElementById('preFrameWrap');
       if(preW){
         if(preList.length > 0){
           preW.style.display = 'block';
-          // 需關注數：EDITING / SWEEP 狀態
+          
           const needAttention = preList.filter(p => {
             const s = (p.stage || '').toUpperCase();
             return s === 'EDITING' || s === 'SWEEP';
@@ -1333,7 +1199,7 @@
           preW.style.display = 'none';
         }
       }
-      // ---- 訂單框（統計）----
+      
       const ordW = document.getElementById('ordFrameWrap');
       if(ordW){
         const total = orders.length;
@@ -1354,14 +1220,14 @@
             <div class="order-stat-cell stat-clickable" data-fstatus="shipping" onclick="switchPageTab(1)" title="前往出貨頁"><div class="n">${shipping}</div><div class="l">待出貨 <i class="bi bi-chevron-right" style="font-size:9px;opacity:.6;"></i></div></div>
             <div class="order-stat-cell stat-clickable" data-fstatus="done" onclick="filterOrdersByStatus('done')"><div class="n">${done}</div><div class="l">已完成</div></div>
           `;
-          // 渲染後處理「查看完整訂單列表」按鈕的有無
+          
           renderOrdViewAllBtn(total);
         } else {
           ordW.style.display = 'none';
           renderOrdViewAllBtn(0);
         }
       }
-      // ---- 出貨頁 ----
+      
       renderShipPage(shipData);
     }
 
@@ -1371,8 +1237,8 @@
       const unship = document.getElementById('unshipListSection');
       if(!wrap) return;
       window._shipMyshipUrl = (shipData && shipData.myshipUrl) ? shipData.myshipUrl : '';
-      window._shipDeliveryMap = (shipData && shipData.deliveryMap) ? shipData.deliveryMap : {};   // 🆕 CM→D70
-      // 後端尚未提供 shipData：先全部隱藏，留 empty
+      window._shipDeliveryMap = (shipData && shipData.deliveryMap) ? shipData.deliveryMap : {};   
+      
       if(!shipData || (!shipData.upcoming && !shipData.unshipped)){
         wrap.style.display = 'none';
         if(empty) empty.style.display = 'block';
@@ -1381,15 +1247,15 @@
       }
       const up = shipData.upcoming || {};
       const series = Array.isArray(up.series) ? up.series : [];
-      // 🆕 存商品明細供送出檢查（單件 > $5000 提醒用）
+      
       window._shipItemsForCheck = [];
       series.forEach(function(s){ (Array.isArray(s.items)?s.items:[]).forEach(function(it){ window._shipItemsForCheck.push({ name: it.name||'', amount: Number(it.amount)||0, qty: it.qty||1 }); }); });
       const totalItems = up.totalItems || 0;
       const totalAmount = up.totalAmount || 0;
-      // 🆕 前台顯示開關：未開放時，綠框與配送選擇都不顯示（維持一般畫面，只留尚未出貨列表）
+      
       const _shipMod = shipData.shipModule || null;
       const _shipPublished = !!(_shipMod && _shipMod.published);
-      window._shipTotalItems = totalItems;  // 供送出時計算保留尾款（件數×20）
+      window._shipTotalItems = totalItems;  
       if(!_shipPublished){
         wrap.style.display = 'none';
         if(empty) empty.style.display = 'none';
@@ -1398,7 +1264,7 @@
       } else if(series.length > 0){
         wrap.style.display = 'block';
         if(empty) empty.style.display = 'none';
-        // 重設上半部顯示（可能被前一位「出貨後」客人藏過）
+        
         const _fh = wrap.querySelector('.frame-head'); if(_fh) _fh.style.display = '';
         const _ir = document.getElementById('shipInfoRow'); if(_ir) _ir.style.display = '';
         const _sl = document.getElementById('shipSeriesList'); if(_sl) _sl.style.display = '';
@@ -1438,12 +1304,12 @@
           </div>`;
         }).join('');
       } else {
-        // 🆕 已確認配送（出貨後）→ 有配送模組狀態時，wrap 要顯示（否則裡面的 shipModuleArea 被一起藏掉），
-        //   但把上半部「近期將出貨」系列區藏起來，只露出配送模組（三階段狀態/包裹查詢）。
+        
+        
         const _hasShipState = !!(_shipMod && _shipMod.state && (_shipMod.state.confirmed || _shipMod.state.locked));
         if(_hasShipState){
           wrap.style.display = 'block';
-          // 藏掉待出貨系列部分（標題/件數/系列卡），只留 shipModuleArea
+          
           const _fh = wrap.querySelector('.frame-head'); if(_fh) _fh.style.display = 'none';
           const _ir = document.getElementById('shipInfoRow'); if(_ir) _ir.style.display = 'none';
           const _sl = document.getElementById('shipSeriesList'); if(_sl) _sl.style.display = 'none';
@@ -1454,11 +1320,11 @@
           if(empty) empty.style.display = 'block';
         }
       }
-      // 🆕 配送模組（客人自選貨運）— 僅開關開放時渲染
+      
       if(_shipPublished){
         try { renderShipModule(_shipMod); } catch(e){ console.warn('shipModule render fail', e); }
       }
-      // 尚未出貨列表（按系列分組）
+      
       const unshipGroups = Array.isArray(shipData.unshipped) ? shipData.unshipped : [];
       let totalUnship = 0;
       unshipGroups.forEach(g => { totalUnship += (g.items||[]).length; });
@@ -1519,13 +1385,13 @@
       catch(e){ console.warn('shipHistory render fail', e); }
     }
 
-    // 🆕 出貨歷史摺疊區
+    
     function renderShipHistory(history){
       const box = document.getElementById('shipHistorySection');
       if(!box) return;
       if(!Array.isArray(history) || history.length === 0){ box.innerHTML = ''; return; }
 
-      // 時間轉台灣（UTC+8）
+      
       const _twTime = (iso) => {
         try {
           const dt = new Date(iso);
@@ -1539,7 +1405,7 @@
 
       const cards = history.map(h => {
         const pickedStr = h.pickedAt ? _twTime(h.pickedAt) : '';
-        // 明細（含金額）
+        
         const itemsHtml = (Array.isArray(h.items) && h.items.length > 0)
           ? `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e5e7eb;">
                ${h.items.map(it => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#374151;">
@@ -1548,7 +1414,7 @@
                  </div>`).join('')}
              </div>`
           : '';
-        // 寄件編號（多個分列＋複製）
+        
         const d70s = Array.isArray(h.d70List) ? h.d70List : [];
         const d70Html = d70s.length > 0
           ? `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #e5e7eb;">
@@ -1610,9 +1476,9 @@
 
 
     // ═══════════════════════════════════════════════════════════════
-    // 📦 台灣端配送模組（客人自選貨運）— 前台
-    // ═══════════════════════════════════════════════════════════════
-    window._shipModuleData = null;   // 後端回傳的 shipModule
+    
+    
+    window._shipModuleData = null;   
     window._shipSelectedChoice = null;
 
     const SHIPFE_BOX = {
@@ -1622,11 +1488,11 @@
     };
     const SHIPFE_LABEL = { myship:'賣貨便', crossmart:'7-11 交貨便', blackcat:'黑貓宅急便', post:'郵局包裹' };
 
-    // 🆕 配送責任說明：條文版本對照（日後條文改動就新增版本，舊訂單仍顯示當時版本）
+    
     const FE_AGREE_TEXTS = {
       v1: '我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。'
     };
-    // 產生「已同意配送責任說明」區塊（已確認畫面 / 歷史紀錄共用）
+    
     function _feAgreedHtml(ag){
       if(!ag || !ag.at) return '';
       const _tw = (iso)=>{
@@ -1650,49 +1516,49 @@
 
     // 交貨便分箱
     function _feCrossmartBoxFee(v){ if(v<=1000)return 60; if(v<=2000)return 70; if(v<=3000)return 80; if(v<=4000)return 90; return 100; }
-    function _feCeilK(v){ return Math.ceil(Math.max(0,Number(v)||0)/1000)*1000; }   // 進位到千
+    function _feCeilK(v){ return Math.ceil(Math.max(0,Number(v)||0)/1000)*1000; }   
 
-    // ★ 用「實際商品」裝箱（每箱報值上限 5000，商品不可分割）
-    //   之前是機械式切 5000（6800→5000+1800），但實際打包不可能這樣切，
-    //   造成前台報值與實際分箱對不上、收款有落差。改用實際商品湊箱。
-    //   單件 > 5000 → 自己一箱，報值仍以 5000 計（官方上限）
+    
+    
+    
+    
     function _fePackBoxes(items){
       const CAP = 5000;
-      // 1) 按「單件」展開（同品項多件可拆到不同箱）
+      
       const units = [];
       (Array.isArray(items)?items:[]).forEach(function(it){
         const qty = Math.max(1, Number(it.qty)||1);
-        const unit = Math.round((Number(it.amount)||0) / qty);   // 單價
+        const unit = Math.round((Number(it.amount)||0) / qty);   
         for (let i=0;i<qty;i++) units.push({ name: it.name||'', value: unit });
       });
       if (units.length === 0) return { boxes:[], fee:60, hasOverItem:false };
 
-      // 2) 大到小排序（先放大的，比較容易湊滿）
+      
       units.sort(function(a,b){ return b.value - a.value; });
 
       const boxes = [];
       let hasOverItem = false;
 
       units.forEach(function(u){
-        // 單件超過上限 → 自己一箱（報值仍以 5000 計）
+        
         if (u.value > CAP) {
           hasOverItem = true;
           boxes.push({ items:[u], sum:u.value, over:true });
           return;
         }
-        // 找「放得下、且放進去後最接近 5000」的箱（盡量湊滿）
+        
         let best = -1, bestAfter = -1;
         for (let i=0;i<boxes.length;i++){
-          if (boxes[i].over) continue;                 // 超標箱不再放東西
+          if (boxes[i].over) continue;                 
           const after = boxes[i].sum + u.value;
-          if (after > CAP) continue;                   // 放不下
+          if (after > CAP) continue;                   
           if (after > bestAfter) { bestAfter = after; best = i; }
         }
         if (best >= 0) { boxes[best].items.push(u); boxes[best].sum = bestAfter; }
         else boxes.push({ items:[u], sum:u.value, over:false });
       });
 
-      // 3) 算每箱報值（進位到千，上限 5000）與運費
+      
       let fee = 0;
       const out = boxes.map(function(b, i){
         const declared = Math.min(CAP, _feCeilK(b.sum));
@@ -1701,26 +1567,26 @@
         console.log('[交貨便自動箱] 第'+(i+1)+'箱 商品總值sum='+b.sum+' → 進位報值='+declared+' → 運費$'+bf+' | 品項:'+b.items.map(function(x){return x.name+'($'+x.value+')';}).join(', '));
         return {
           boxNo: i+1,
-          value: declared,          // 報值（官方上限 5000）
-          goodsValue: b.sum,        // 實際商品總值
+          value: declared,          
+          goodsValue: b.sum,        
           fee: bf,
-          over: !!b.over,           // 單件超過 5000（賠償上限提醒用）
+          over: !!b.over,           
           items: b.items.map(function(x){ return { name:x.name, amount:x.value }; })
         };
       });
       return { boxes: out, fee: fee, hasOverItem: hasOverItem };
     }
 
-    // 🆕 用後台預先分好的分箱（Set 手動分箱）→ 轉成前台顯示格式
-    //    itemKeys 是後台明細 recId，前台沒有；用金額對照品名顯示（盡量），對不上就只顯示報值
-    // 🆕 部分固定：用「品名（正規化）+數量」從自動池扣掉固定箱已裝的品項
+    
+    
+    
     function _feRemoveFixedItems(items, adminBd){
-      // 正規化品名：去空格、去頭尾標記、小寫（前後台品名格式可能有差）
+      
       const _norm = function(s){
         return String(s||'').replace(/^\s*[\[\uFF3B][^\[\]\uFF3B\uFF3D]*[\]\uFF3D]\s*/,'')
           .replace(/\s+/g,'').toLowerCase();
       };
-      // 統計固定箱已裝的品項數量（依正規化品名）
+      
       const used = {};
       (adminBd||[]).forEach(function(b){
         (b.itemNames||[]).forEach(function(it){
@@ -1729,7 +1595,7 @@
           if (nm) used[nm] = (used[nm]||0) + q;
         });
       });
-      // 從 items 扣除
+      
       const remain = [];
       (items||[]).forEach(function(it){
         const nm = _norm(it.name);
@@ -1744,11 +1610,11 @@
       return remain;
     }
 
-    // 🆕 交貨便部分固定：只有 isFixed 的箱照後台報值 + 其他品項按 $5000 自動拆
+    
     function _feCrossmartPartial(adminBd, items){
       let fee = 0; const boxes = [];
-      const fixedBoxes = (adminBd||[]).filter(function(b){ return b.isFixed; });   // ★ 只取固定箱
-      // 固定箱：照後台報值，明細用 itemNames（含 name/amount）
+      const fixedBoxes = (adminBd||[]).filter(function(b){ return b.isFixed; });   
+      
       fixedBoxes.forEach(function(b,i){
         const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue)||0));
         const bf = _feCrossmartBoxFee(declared);
@@ -1758,10 +1624,10 @@
         });
         boxes.push({ boxNo:i+1, value:declared, goodsValue:Number(b.goodsValue)||0, fee:bf,
           over: false, fromAdmin:true, items:_its,
-          itemKeys: Array.isArray(b.itemKeys)?b.itemKeys:undefined,   // 🆕 帶回後台 itemKeys（送出後台建揀貨單用）
+          itemKeys: Array.isArray(b.itemKeys)?b.itemKeys:undefined,   
           zone: b.zone||undefined, size: b.size||undefined, isFixed:true });
       });
-      // 其他品項（扣掉固定箱裝的）→ 按 $5000 自動拆
+      
       const remain = _feRemoveFixedItems(items, fixedBoxes);
       if (remain.length > 0) {
         const auto = _fePackBoxes(remain);
@@ -1777,7 +1643,7 @@
         const declared = Math.min(5000, Number(b.declaredValue) || _feCeilK(Number(b.goodsValue) || 0));
         const bf = _feCrossmartBoxFee(declared);
         fee += bf;
-        // 品項：後台有 itemKeys 但前台無法對應 recId，顯示金額即可（Set 內容本就不明）
+        
         return {
           boxNo: b.boxNo || (i+1),
           value: declared,
@@ -1785,13 +1651,13 @@
           fee: bf,
           over: declared >= 5000 && (Number(b.goodsValue) || 0) > 5000,
           fromAdmin: !!b.fromManual,
-          items: []   // Set 分箱內容不明，不逐項顯示
+          items: []   
         };
       });
       return { fee: fee, boxes: boxes, packed: true, fromAdmin: true };
     }
 
-    // 相容舊呼叫：沒有商品明細時退回原本的機械切法
+    
     function _feCalcCrossmart(val, items){
       if (Array.isArray(items) && items.length > 0) {
         const r = _fePackBoxes(items);
@@ -1802,28 +1668,20 @@
       while(remain>0){ const v=Math.min(5000,remain); const bf=_feCrossmartBoxFee(v); boxes.push({value:v,fee:bf}); fee+=bf; remain-=v; }
       return {fee:fee,boxes:boxes};
     }
-    /**
-     * 🆕 郵局／黑貓：算出每箱裝什麼（回傳 [[{name,amount,qty}], ...]）
-     *    規則跟賣貨便同一套：
-     *      ‧ 固定箱  → 裝後台指定的品項
-     *      ‧ 不分類箱 → 剩餘品項按「筆數」輪流放（有幾個不分類箱就分幾份）
-     *    ★ 只用來顯示，不影響任何金額計算。
-     * @param {Array} adminBd 後台分箱設定（每箱含 isFixed / itemNames）
-     * @param {Array} allItems 這次要出的全部品項 [{name,amount,qty}]
-     * @param {Number} boxN 實際箱數
-     */
+    
+
     function _feBoxContents(adminBd, allItems, boxN){
       const N = Math.max(1, Number(boxN) || 1);
       const out = []; for (let i=0;i<N;i++) out.push([]);
       const bd = Array.isArray(adminBd) ? adminBd : [];
 
-      // 沒有後台分箱設定 → 全部品項平均分
+      
       if (bd.length === 0) {
         (allItems||[]).forEach((it,i)=>{ out[i % N].push(it); });
         return out;
       }
 
-      const used = {};   // 已被固定箱佔用的品名（同名多筆用計數扣）
+      const used = {};   
       const _key = it => String((it&&it.name)||'') + '|' + String((it&&it.amount)||0);
       bd.forEach((b,bi)=>{
         if (!b || !b.isFixed || bi >= N) return;
@@ -1833,7 +1691,7 @@
         });
       });
 
-      // 剩餘品項（扣掉固定箱已佔用的）
+      
       const remain = [];
       (allItems||[]).forEach(it=>{
         const k=_key(it);
@@ -1841,18 +1699,18 @@
         remain.push(it);
       });
 
-      // 不分類箱（沒有 isFixed 的箱位）→ 輪流放
+      
       const normalIdx = [];
       for (let i=0;i<N;i++){ const b=bd[i]; if (!b || !b.isFixed) normalIdx.push(i); }
       if (normalIdx.length === 0) {
-        remain.forEach((it,i)=>{ out[i % N].push(it); });   // 全是固定箱 → 保底不讓品項消失
+        remain.forEach((it,i)=>{ out[i % N].push(it); });   
       } else {
         remain.forEach((it,i)=>{ out[normalIdx[i % normalIdx.length]].push(it); });
       }
       return out;
     }
 
-    /** 把某箱的品項清單轉成一行文字（超過 3 項收合） */
+     
     function _feBoxItemsText(list){
       const arr = Array.isArray(list) ? list : [];
       if (arr.length === 0) return '';
@@ -1874,29 +1732,29 @@
         if(mod && mod._error) console.error('[shipModule] 後端錯誤 =', mod._error, mod._errorStack);
         if(mod && mod._debug) console.log('[shipModule] 診斷 =', JSON.stringify(mod._debug));
       } catch(e){}
-      // 開關關閉或無模組資料：不顯示任何配送內容（綠框已由 renderShipPage 隱藏）
+      
       if(!mod || !mod.published){
         area.innerHTML = '';
         return;
       }
       const state = mod.state;
-      // 已確認：依階段顯示（等待 / 開放匯款）
-      // ★ 送出即鎖定：confirmed 或 locked 任一為 true 就不能再改
-      //   （唯一例外：客服在後台按「放行」，兩個旗標都會被清掉）
+      
+      
+      
       if(state && (state.confirmed || state.locked)){
         area.innerHTML = renderShipConfirmed(mod, state);
         return;
       }
-      // 🆕 已選「這次不出貨」→ 顯示狀態卡（可取消改回下單）
+      
       if(state && state.skipBatch){
         area.innerHTML = renderShipSkipped(mod, state);
         return;
       }
-      // 未確認：顯示選擇介面（不出貨選項已移到 renderShipChooser 裡的「選擇配送方式」之上）
+      
       area.innerHTML = renderShipChooser(mod);
     }
 
-    // 🆕「這次不出貨」選項（放在配送選擇之上）
+    
     function renderSkipOption(){
       return `<div style="margin-bottom:10px;padding:10px 12px;background:#f9fafb;border:1px dashed #d1d5db;border-radius:10px;">
         <label style="display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:12.5px;color:#4b5563;">
@@ -1906,7 +1764,7 @@
       </div>`;
     }
 
-    // 🆕 已選擇不出貨的狀態卡
+    
     function renderShipSkipped(mod, state){
       const _tw = (iso)=>{
         try{ const dt=new Date(iso); if(isNaN(dt.getTime())) return String(iso||'').replace('T',' ').slice(0,16);
@@ -1955,7 +1813,7 @@
       .catch(e=>{ alert('連線失敗：' + e.message); location.reload(); });
     };
 
-    // 階段1：選擇介面
+    
     function renderShipChooser(mod){
       const rates = mod.rates || {};
       const declared = (rates.declaredValue!=null) ? rates.declaredValue : 0;
@@ -1964,13 +1822,13 @@
       const note = mod.compensationNote || '';
 
       let h = '';
-      // 責任提醒（最上方）
+      
       h += `<div style="border:2px solid #f59e0b;background:#fffbeb;border-radius:12px;padding:12px 14px;margin:10px 0;">
         <div style="font-weight:800;color:#92400e;margin-bottom:6px;"><i class="bi bi-megaphone-fill"></i> 關於配送責任，請閱讀後選擇</div>
         <div style="font-size:12.5px;color:#78350f;line-height:1.7;white-space:pre-wrap;">${escHTML(note || '從海外出貨、國際運送到台灣海關查驗出關為止，全程由 Wander Ease 負責。商品在台完成包裝後的境內配送，若途中發生包裹遺失或損毀，賠償將由貨運公司負責——能獲得多少賠償，取決於您在下方選擇的配送方式。請依需求選擇合適的配送方式並確認。')}</div>
       </div>`;
 
-      // 包裹尺寸區間
+      
       if(boxInfo){
         h += `<div style="display:flex;align-items:center;gap:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:8px 12px;margin-bottom:10px;">
           <span style="font-size:12.5px;color:#374151;">📦 您的包裹尺寸區間</span>
@@ -1991,14 +1849,14 @@
         </div>`;
       }
 
-      // 選項
-      h += renderSkipOption();   // 🆕 「這次不出貨」移到配送方式選擇之上
+      
+      h += renderSkipOption();   
       h += `<div style="font-weight:700;color:#374151;margin:6px 0;font-size:13.5px;">選擇台灣端配送方式</div>`;
       h += `<div id="shipOptList">`;
       // 🆕 箱數標註（各貨運的箱數可能不同：交貨便會因金額額外拆箱）
       const _bc = rates.boxCount || {};
       const _bTag = function(n){ return (Number(n)||1) > 1 ? ` · ${n} 箱` : ''; };
-      // ★ 交貨便箱數/運費：用跟「點開明細」同一套計算（部分固定 or 純金額拆），確保選項列與明細一致
+      
       const _cvsAdminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
       const _cvsHasFixed = _cvsAdminBd && _cvsAdminBd.some(function(b){ return b.isFixed; });
       let _cvsCalc;
@@ -2013,7 +1871,7 @@
       h += _feOptRow('myship', `賣貨便${_bTag(_bc.myship || _mb)}`, `$${rates.myship?rates.myship.fee:38}`, true);
       h += _feOptRow('crossmart', `7-11 交貨便${_bTag(_crossN)}`, `$${_crossFee}`, true);
       const bcAvail = rates.blackcat && rates.blackcat.available;
-      // 🆕 判斷「已設區間」：單一區間(boxInfo) 或 逐箱 zone 已算出運費(rates.blackcat/post 有 fee)
+      
       const _bcReady = !!boxInfo || !!(rates.blackcat && rates.blackcat.fee > 0);
       const _poReady = !!boxInfo || !!(rates.post && rates.post.fee > 0);
       h += _feOptRow('blackcat', `黑貓宅急便${_bTag(_bc.blackcat || _mb)}`, rates.blackcat?`$${rates.blackcat.fee}`:'需設定尺寸', bcAvail && _bcReady, !_bcReady?'請待客服設定包裹尺寸區間':(!bcAvail?'商品價值超過2萬，不適用':''));
@@ -2039,8 +1897,8 @@
     }
 
     // 點選：展開說明 + 記錄選擇
-    // 🆕 已展開的再點一次 → 收合（可以繼續點下一個看）
-    //    收合時「只隱藏、不清空」，客人填到一半的收件表單不會消失
+    
+    
     window.feSelectShip = function(choice){
       const mod = window._shipModuleData; if(!mod) return;
       const detail = document.getElementById(`shipOptDetail-${choice}`);
@@ -2048,27 +1906,27 @@
 
       const isOpen = (detail.style.display === 'block' && detail.innerHTML.trim() !== '');
 
-      // 箭頭方向切換
+      
       const _chev = c => document.getElementById(`shipOptChev-${c}`);
       const _setChev = (c, open) => {
         const el = _chev(c);
         if(el) el.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
       };
 
-      // ── 已展開 → 收合此項（保留已填內容）──
+      
       if(isOpen){
-        detail.style.display = 'none';          // ★ 不清空 innerHTML
+        detail.style.display = 'none';          
         const row0 = document.querySelector(`.ship-opt-row[data-choice="${choice}"]`);
         if(row0){ row0.style.borderColor='#e5e7eb'; row0.style.boxShadow='none'; }
         _setChev(choice, false);
-        window._shipSelectedChoice = null;      // 取消選擇
+        window._shipSelectedChoice = null;      
         return;
       }
 
-      // ── 未展開 → 收合其他、展開此項 ──
+      
       window._shipSelectedChoice = choice;
 
-      // 其他項只隱藏，不清空（客人可能填過）
+      
       document.querySelectorAll('.ship-opt-detail').forEach(el=>{
         if(el.id !== `shipOptDetail-${choice}`) el.style.display = 'none';
       });
@@ -2083,15 +1941,15 @@
       detail.style.display = 'block';
       _setChev(choice, true);
 
-      // 首次展開才建立內容；已建立過的直接顯示（保留填過的字）
+      
       if(detail.innerHTML.trim() === ''){
         detail.innerHTML = _feShipDetailHtml(choice, mod.rates||{}, mod);
       }
     };
 
-    // 說明區塊（條列式分區：運費計算 / 賠償責任 / 匯款提醒）
+    
     function _feShipDetailHtml(choice, rates, mod){
-      mod = mod || window._shipModuleData || {};   // 🔧 保底：確保 mod 一定有定義（避免 ReferenceError）
+      mod = mod || window._shipModuleData || {};   
       const declared = rates.declaredValue||0;
       const wrapOpen = `<div class="ship-detail-inner">`;
       let info = '';
@@ -2106,18 +1964,18 @@
             <ul class="sd-list"><li>賣貨便若發生遺失／損毀 <b>無賠償</b></li></ul>
           </div>`;
       } else if(choice==='crossmart'){
-        // ★ 交貨便邏輯（交貨便無視實際箱數，只看金額$5000上限）：
-        //   有固定箱(partialFixed) → 固定箱照後台報值 + 非固定品項按$5000拆
-        //   全一般箱 / 沒設定 → 全部品項按$5000自動拆（無視後台分的箱數）
+        
+        
+        
         const _adminBd = (mod && Array.isArray(mod.adminBoxDetails) && mod.adminBoxDetails.length > 0) ? mod.adminBoxDetails : null;
         const _hasFixed = _adminBd && _adminBd.some(function(b){ return b.isFixed; });
         let c;
         if (_hasFixed) {
-          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);   // 固定箱照報值+其他$5000拆
+          c = _feCrossmartPartial(_adminBd, window._shipItemsForCheck || []);   
         } else {
-          c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);      // 全按$5000拆（無視後台箱）
+          c = _feCalcCrossmart(declared, window._shipItemsForCheck || []);      
         }
-        // 完整顯示：每箱裝哪幾件、報值、運費
+        
         const boxesLi = c.boxes.map(function(b,i){
           const _its = Array.isArray(b.items) && b.items.length>0
             ? `<div style="font-size:11.5px;color:#6b7280;line-height:1.6;margin:2px 0 0 4px;">${b.items.map(function(it){ return '・'+escHTML(it.name||'')+' <span style="color:#9ca3af;">$'+it.amount+'</span>'; }).join('<br>')}</div>`
@@ -2164,11 +2022,11 @@
       } else if(choice==='blackcat'){
         const b = rates.blackcat;
         if(!b){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
-        // 🆕 逐箱列出運費（分箱時每箱各自尺寸區間、各自收費）
+        
         const bBoxes = b.boxes || [];
         const bN = bBoxes.length || 1;
         const _zLabel = {'S':'60↓','M':'61~90','L':'90~120'};
-        // 🆕 每箱內容（跟賣貨便同一套分配規則）
+        
         const _bcContents = _feBoxContents(
           (mod && mod.adminBoxDetails) || [],
           window._shipItemsForCheck || [],
@@ -2212,11 +2070,11 @@
       } else if(choice==='post'){
         const p = rates.post;
         if(!p){ return wrapOpen + `<div style="font-size:12px;color:#9ca3af;">請待客服設定包裹尺寸區間後顯示。</div></div>`; }
-        // 🆕 逐箱列出：每箱各自報值（賠償按箱計算）+ 各自尺寸區間
+        
         const pBoxes = p.boxes || [];
         const pN = pBoxes.length || 1;
         const _pzLabel = {'S':'60↓','M':'61~90','L':'90~120'};
-        // 🆕 每箱內容（跟賣貨便同一套分配規則）
+        
         const _pContents = _feBoxContents(
           (mod && mod.adminBoxDetails) || [],
           window._shipItemsForCheck || [],
@@ -2273,7 +2131,7 @@
       const isCvs = (choice==='myship' || choice==='crossmart');
       const saved = mod.savedRecipient || {};
       const pre = isCvs ? (saved.cvs||{}) : (saved.addr||{});
-      // 判斷是否初次輸入（該型態資料全空）→ 顯示安撫提醒
+      
       const isFirstTime = isCvs
         ? !(pre.store || pre.storeName || pre.name || pre.phone)
         : !(pre.zip || pre.address || pre.name || pre.phone);
@@ -2303,14 +2161,14 @@
           <label class="shipf-lbl">收件人姓名 *</label><input class="shipf-inp" id="shipf-name-${choice}" value="${escHTML(pre.name||'')}" placeholder="${nameHint}">
           <label class="shipf-lbl">手機號碼 *</label><input class="shipf-inp" id="shipf-phone-${choice}" value="${escHTML(pre.phone||'')}" placeholder="09xxxxxxxx" inputmode="numeric">`;
       }
-      // ★ 賣貨便＝連結下單：不填收件資訊，直接顯示「客人自行下單」說明。
-      //   其他貨運＝填收件資訊（照舊）。
+      
+      
       const isMyshipChoice = (choice === 'myship');
 
-      // 賣貨便：不顯示收件表單，也不用一大串說明（送出後直接跳賣貨便下單）
+      
       const myshipLinkBlock = '';
 
-      // 收件表單：只有非賣貨便顯示
+      
       const recipBlock = isMyshipChoice ? '' : `
           <div id="shipf-recip-block-${choice}">
           <div class="sd-formtitle">✍️ 收件資訊</div>
@@ -2340,18 +2198,16 @@
     }
 
     // ═══════════════════════════════════════════════════════════
-    // 🔒 送出防連點：後端要跑幾秒，這段時間內按鈕會沒反應，
-    //    客人會以為沒送出而重複點擊 → 造成重複送出。
-    //    用「旗標 + 按鈕鎖 + loading 文字」三重防護。
-    // ═══════════════════════════════════════════════════════════
-    window._feBusy = {};   // key → true 表示送出中
+    
+    
+    
+    
+    window._feBusy = {};   
 
-    /**
-     * 開始送出：鎖住旗標與按鈕
-     * @returns {Object|null}  null = 已在送出中（本次呼叫應直接中止）
-     */
+    
+
     function feLockSubmit(key, btn, busyText){
-      if(window._feBusy[key]) return null;      // ★ 已在送出中，擋掉
+      if(window._feBusy[key]) return null;      
       window._feBusy[key] = true;
 
       let orig = null;
@@ -2386,19 +2242,19 @@
     };
 
     window.feSubmitShip = async function(choice, _btn){
-      console.log('[shipSubmit] 版本 v2-myshipLink｜choice =', choice);   // 版本標記：console 看得到＝跑最新版
+      console.log('[shipSubmit] 版本 v2-myshipLink｜choice =', choice);   
       if(!choice) choice = window._shipSelectedChoice;
       if(!choice) return;
-      const isMyshipLink = (choice==='myship');   // ★ 賣貨便＝連結下單
+      const isMyshipLink = (choice==='myship');   
       const agree = document.getElementById(`shipf-agree-${choice}`);
       if(!agree || !agree.checked){ alert('請先勾選並閱讀配送責任說明'); return; }
 
       const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
       let recipient = {};
-      // ★★★ 賣貨便：完全不驗證、不讀收件欄位，只帶空 recipient ★★★
+      
       if(isMyshipLink){
-        recipient = {};   // 下單後從賣貨便訂單資訊檔回填
-        // 🆕 賣貨便分箱警示：送出前先提醒（多箱才提醒，單箱跳過）
+        recipient = {};   
+        
         const _smd = window._shipModuleData || {};
         const _smRates = _smd.rates || {};
         const _bcMyship = (_smRates.boxCount && _smRates.boxCount.myship) ? Number(_smRates.boxCount.myship) : 0;
@@ -2408,13 +2264,13 @@
         console.log('[賣貨便分箱警示] boxCount.myship=' + _bcMyship + ' manualBoxes=' + _bcManual + ' adminBoxes=' + _bcAdmin + ' → 最終=' + _myBoxN);
         if(_myBoxN > 1){
           const _goOn = await feConfirm('您的包裹需分成 ' + _myBoxN + ' 箱寄出。\n\n若您在賣貨便建立的名稱有 2 個以上，代表要分箱出貨，請務必分開下單，每一箱各建立一筆訂單。\n\n確認了解後，即可前往下單。', {type:'warning', title:'⚠️ 請注意分箱', okText:'我了解，前往下單', cancelText:'返回'});
-          if(!_goOn) return;   // 客人按返回 → 不送出
+          if(!_goOn) return;   
         }
       } else if(choice==='crossmart'){
-        // 交貨便（超商取貨）：必填店號店名收件人手機
+        
         recipient = { store:val(`shipf-store-${choice}`), storeName:val(`shipf-storeName-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.store||!recipient.storeName||!recipient.name||!recipient.phone){ await feAlert('請完整填寫店號、店名、收件人與手機', {type:'warning'}); return; }
-        // 🆕 交貨便：有單件商品 > $5000 → 提醒賠償上限（客人可繼續或返回重選）
+        
         const _items = window._shipItemsForCheck || [];
         const _highItems = _items.filter(function(it){ const _unit = (it.qty>0)? (it.amount/it.qty) : it.amount; return _unit > 5000; });
         if(_highItems.length > 0){
@@ -2422,10 +2278,10 @@
           const _ok = window.confirm(
             `⚠️ 提醒：有商品單件價值超過 $5000\n\n${_names}\n\n若使用交貨便，貨運方最高賠償只會有 $5000（超過部分無法理賠）。\n\n・按「確定」＝了解並繼續使用交貨便\n・按「取消」＝返回重新選擇其他貨運方式`
           );
-          if(!_ok) return;   // 返回重選
+          if(!_ok) return;   
         }
       } else {
-        // 黑貓／郵局（宅配）：必填郵遞區號地址收件人手機
+        
         recipient = { zip:val(`shipf-zip-${choice}`), address:val(`shipf-address-${choice}`), name:val(`shipf-name-${choice}`), phone:val(`shipf-phone-${choice}`) };
         if(!recipient.zip||!recipient.address||!recipient.name||!recipient.phone){ await feAlert('請完整填寫郵遞區號、地址、收件人與手機', {type:'warning'}); return; }
       }
@@ -2438,28 +2294,28 @@
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
       const _items = (window._shipTotalItems != null) ? window._shipTotalItems : 0;
-      // ★ 交貨便：把前台算好的「實際商品分箱」一起送出，後台直接照這個打包（報值與收款一致）
-      //   ★★ 必須用跟「顯示給客人看」完全同一套計算，否則客人看到 3 箱、存回後台卻是 2 箱
+      
+      
       let _boxDetails = null;
       if (choice === 'crossmart') {
         try {
           const _adminBd2 = (window._shipModuleData && Array.isArray(window._shipModuleData.adminBoxDetails) && window._shipModuleData.adminBoxDetails.length > 0) ? window._shipModuleData.adminBoxDetails : null;
           const _hasFixed2 = _adminBd2 && _adminBd2.some(function(b){ return b.isFixed; });
-          // 有固定箱 → 部分固定（固定箱照報值+其他$5000拆）；否則純金額拆。與 renderShipChooser/明細一致
+          
           const _pk = _hasFixed2 ? _feCrossmartPartial(_adminBd2, window._shipItemsForCheck || [])
                                  : _feCalcCrossmart(_decl, window._shipItemsForCheck || []);
           if (_pk && _pk.packed && Array.isArray(_pk.boxes) && _pk.boxes.length > 0) {
             _boxDetails = _pk.boxes.map(function(b){
               var o = {
                 boxNo: b.boxNo,
-                declaredValue: b.value,      // 報值（上限 5000）
-                goodsValue: b.goodsValue,    // 實際商品總值
+                declaredValue: b.value,      
+                goodsValue: b.goodsValue,    
                 fee: b.fee,
                 over: !!b.over,
-                fromAdmin: !!b.fromAdmin,    // 🆕 標記是否為後台固定箱
+                fromAdmin: !!b.fromAdmin,    
                 items: (b.items||[]).map(function(it){ return { name: it.name, amount: it.amount }; })
               };
-              // 🆕 固定箱：帶回後台的 itemKeys/zone/size（後台建揀貨單對應品項用）
+              
               if (Array.isArray(b.itemKeys) && b.itemKeys.length > 0) o.itemKeys = b.itemKeys;
               if (b.zone) o.zone = b.zone;
               if (b.size) o.size = b.size;
@@ -2469,21 +2325,21 @@
           }
         } catch(e) {}
       }
-      // ★ 配送責任說明：記錄客人同意的事實（保護雙方，歷史訂單可回查）
+      
       const _agreeText = '我已閱讀上方配送責任與說明，了解此選擇將影響日後遺失／損毀的賠償權益（賣貨便無賠償；其他貨運由該貨運方認定與賠償）。';
       const _agreement = {
         agreed: true,
         at: new Date().toISOString(),
         choice: choice,
-        ver: 'v1',              // 條文版本，日後條文改動可辨識
+        ver: 'v1',              
         text: _agreeText
       };
       const payload = JSON.stringify({ lineUid: currentLineUid, shipChoice: choice, recipient: recipient, unavailable: unavailable, declaredValue: _decl, itemCount: _items, useMyshipCoupon: isMyshipLink, boxDetails: _boxDetails, agreement: _agreement });
 
-      // 🔒 上鎖（所有驗證都通過之後才鎖，這樣驗證失敗時按鈕不會卡住）
+      
       const _btnEl = _btn || document.querySelector(`#shipOptDetail-${choice} .shipf-submit-btn`);
       const _lock = feLockSubmit('shipChoice', _btnEl, '送出中，請勿重複點擊…');
-      if(!_lock) return;   // ★ 已在送出中 → 直接忽略這次點擊
+      if(!_lock) return;   
       let _ok = false;
 
       try{
@@ -2503,22 +2359,22 @@
             recipient:Object.assign({type:(choice==='myship'||choice==='crossmart')?'cvs':'addr'},recipient),
             unavailable:unavailable, last5:''
           };
-          // 非賣貨便：彈出應匯款視窗；賣貨便：直接完成
-          // 補上帳戶分行資料到 mod，供綠框下方顯示
+          
+          
           if(dd.shipBankCode!=null) mod.shipBankCode = dd.shipBankCode;
           if(dd.shipBankAcct!=null) mod.shipBankAcct = dd.shipBankAcct;
           if(dd.shipBankInfo!=null) mod.shipBankInfo = dd.shipBankInfo;
           if(dd.duplicated && choice!=='myship'){
-            // 後端偵測到重複送出（內容完全相同）→ 不再彈視窗，靜默同步畫面即可
-            //   ★ 但賣貨便例外：客人重複點就是想再去下單頁，仍要開連結（往下走 myship 分支）
+            
+            
             console.log('[shipChoice] 重複送出，已忽略');
           } else if(choice==='myship'){
-            // ★ 賣貨便：送出成功（或重複送出）都要跳到賣貨便下單網址
-            //   ★★ 先標記 url，等 renderShipModule 重繪完成後再開，避免重繪打斷 liff.openWindow
+            
+            
             const _murl = window._shipMyshipUrl || (mod && mod.myshipUrl) || '';
             console.log('[賣貨便下單] dup=' + !!dd.duplicated + ' 最終url=' + (_murl||'(空)') + ' isInClient=' + (window.liff&&liff.isInClient?liff.isInClient():'無liff'));
             if(_murl){
-              window.__pendingMyshipUrl = _murl;   // 標記，重繪後開
+              window.__pendingMyshipUrl = _murl;   
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
@@ -2528,8 +2384,8 @@
             await feAlert('剩餘費用於取貨時付款。', {type:'success', title:'✅ 已送出'});
           }
           _ok = true;
-          renderShipModule(mod);   // 成功 → 整區重繪，按鈕會消失，不需還原
-          // ★ 賣貨便：重繪完成後才開下單連結（避免重繪打斷；LINE 用 liff.openWindow）
+          renderShipModule(mod);   
+          
           if(window.__pendingMyshipUrl){
             const _openUrl = window.__pendingMyshipUrl;
             window.__pendingMyshipUrl = null;
@@ -2549,26 +2405,26 @@
       }catch(e){
         alert('連線異常：'+e.message);
       }finally{
-        // 🔓 一定解鎖：成功時畫面已重繪（keepLocked=true 不還原按鈕，
-        //    避免重繪前一瞬間閃回「確認送出」讓客人又點一次）；
-        //    失敗／例外則還原按鈕，讓客人可以重試。
+        
+        
+        
         feUnlockSubmit(_lock, _ok);
       }
     };
 
-    // 匯款彈窗（送出後立即顯示應匯金額 + 期限 + 帳戶）
+    
     window.feCloseModal = function(){ const h=document.getElementById('feModalHolder'); if(h)h.remove(); };
-    // 匯款帳戶分行顯示（銀行代碼 / 匯款帳號 + 備註提醒）
-    // 相容：若後台尚未填新的兩個欄位，自動從舊的單一欄位字串解析出代碼與帳號
+    
+    
     function _feParseBank(fallback){
       const s = String(fallback||'');
       let code = '', acct = '';
-      // 支援「銀行代碼：700 郵局 匯款帳號：01210370281612」這類寫法
+      
       const mCode = s.match(/銀行代碼[:：]?\s*([^\s匯]+(?:\s+[^\s匯：:]+)?)/);
       const mAcct = s.match(/(?:匯款)?帳號[:：]?\s*([0-9\-]{5,})/);
       if(mCode) code = mCode[1].trim();
       if(mAcct) acct = mAcct[1].trim();
-      // 沒有關鍵字時，抓最長的數字串當帳號
+      
       if(!acct){
         const nums = s.match(/[0-9\-]{8,}/g);
         if(nums && nums.length) acct = nums.sort((a,b)=>b.length-a.length)[0];
@@ -2576,7 +2432,7 @@
       return { code: code, acct: acct };
     }
     function _feBankHtml(code, acct, fallback){
-      // 新欄位空 → 嘗試從舊欄位解析
+      
       if(!code && !acct && fallback){
         const p = _feParseBank(fallback);
         code = p.code; acct = p.acct;
@@ -2650,22 +2506,22 @@
       document.body.removeChild(ta);
     }
 
-    // 已確認後的顯示（綠框下方常駐匯款區）
+    
     function renderShipConfirmed(mod, state){
       const choice = state.shipChoice;
       const isMyship = (choice==='myship');
       const r = state.recipient || {};
 
-      // 🆕 第4階段判斷：揀貨完成滿 48 小時 → 視為「已寄出」
+      
       const _isShippedOut = (pickedAtIso) => {
         if (!pickedAtIso) return false;
         try {
           const t = new Date(pickedAtIso).getTime();
           if (isNaN(t)) return false;
-          return (Date.now() - t) >= 48 * 3600 * 1000;   // 滿 48 小時
+          return (Date.now() - t) >= 48 * 3600 * 1000;   
         } catch(e) { return false; }
       };
-      // 🆕 第4階段 HTML（統一樣式）：包裹已寄出 + 連結 + 寄件單號
+      
       const _stage4Html = (d70s, trackUrl, trackSiteName, itemsHtml) => {
         const _d70Rows = (d70s && d70s.length>0)
           ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #bfdbfe;"><div style="font-size:11px;color:#6b7280;margin-bottom:3px;">🚚 寄件單號${d70s.length>1?`（${d70s.length} 件）`:''}</div>${d70s.map(dd=>`<div style="display:flex;align-items:center;gap:6px;margin-top:2px;"><span style="font-family:monospace;font-size:13px;font-weight:700;color:#1d4ed8;">${escHTML(dd)}</span><button onclick="navigator.clipboard.writeText('${escHTML(dd)}').then(()=>{this.textContent='已複製';setTimeout(()=>{this.textContent='複製';},1500);})" style="font-size:10px;padding:2px 8px;background:#dbeafe;color:#1d4ed8;border:none;border-radius:4px;cursor:pointer;">複製</button></div>`).join('')}</div>`
@@ -2680,13 +2536,13 @@
       };
 
       // ★ 賣貨便連結下單模式：專屬顯示
-      //   判斷改用 shipChoice=myship（賣貨便都是連結下單），不靠 useMyshipCoupon
-      //   （早期舊模式選賣貨便的客人沒有 useMyshipCoupon 旗標，也要能顯示連結）
+      
+      
       if(isMyship){
         const url = (mod && mod.myshipUrl) ? mod.myshipUrl : '';
-        // 已下單判斷：有 CM 訂單編號（trackingNos）＝已建單；或後台偵測到已在賣貨便下單（myshipOrdered）
-        //   ★ 補：出貨表已有本客記錄（myshipShip 有 D70／已揀貨／已出貨）＝一定已下單出貨
-        //     （修正：CM 沒回填 trackingNos 時，已出貨客人不該退回「請前往下單」）
+        
+        
+        
         const _cms = (Array.isArray(state.trackingNos) ? state.trackingNos : []).filter(function(t){ return /^CM/i.test(String(t||'').trim()); });
         const _msShip = (mod && mod.myshipShip) ? mod.myshipShip : {};
         const _shipHasRecord = !!(_msShip.hasD70 || _msShip.picked || _msShip.shipped || (Array.isArray(_msShip.d70List) && _msShip.d70List.length > 0));
@@ -2699,10 +2555,10 @@
         // ① 已下單（後台偵測到 CM）→ 三階段狀態顯示
         if(hasOrdered){
           const ship = (mod && mod.myshipShip) ? mod.myshipShip : {};
-          // 7-11 查詢首頁（不帶參數，避免「不允許查詢」防盜連）
+          
           const _url711 = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
 
-          // 明細清單（理賠快照品項）
+          
           const _itemsHtml = (Array.isArray(ship.items) && ship.items.length > 0)
             ? `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
                  <div style="font-size:11px;color:#6b7280;margin-bottom:3px;">📦 出貨明細</div>
@@ -2726,9 +2582,9 @@
           if(ship.picked && _isShippedOut(ship.pickedAt) && (ship.d70 || _d70s.length > 0)){
             return _stage4Html(_d70s.length>0?_d70s:(ship.d70?[ship.d70]:[]), _url711, '7-11 貨態查詢', _itemsHtml) + unav;
           }
-          // 階段三：已揀貨完成 → 明細 + 寄件編號 + 查詢首頁（自行貼上編號查）
+          
           if(ship.picked && (ship.d70 || _d70s.length > 0)){
-            // Airtable 存 UTC（...Z）→ 轉台灣時間（UTC+8）顯示
+            
             let pickedStr = '';
             try {
               const _dt = new Date(ship.pickedAt);
@@ -2762,7 +2618,7 @@
             </div>`;
           }
 
-          // 階段一：已下單、還沒申請寄送單號
+          
           return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> 賣貨便 · 已完成下單</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">我們已收到您的賣貨便訂單，將盡快為您安排出貨。</div>
@@ -2770,7 +2626,7 @@
           </div>`;
         }
 
-        // ② 還沒下單 → 持續顯示「前往下單」連結（客人隨時可回來下單）
+        
         if(url){
           return `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:8px;"><i class="bi bi-cart-check"></i> 賣貨便 · 請前往下單</div>
@@ -2789,7 +2645,7 @@
         </div>`;
       }
 
-      // 依標題分行顯示
+      
       const _row = (label, val) => val ? `<div style="display:flex;gap:8px;font-size:12.5px;margin-top:3px;">
           <span style="color:#6b7280;min-width:62px;flex-shrink:0;">${label}</span>
           <span style="color:#111827;font-weight:600;word-break:break-all;">${val}</span>
@@ -2814,27 +2670,27 @@
         </div>`;
       }
 
-      // 🆕 配送責任說明：顯示客人已同意的記錄（保護雙方，可回查）
+      
       unavailRow += _feAgreedHtml(state.agreed);
 
-      // 🆕 出貨判斷：交貨便/黑貓/郵局＝有單號；賣貨便＝後台已建立訂單（無單號）
+      
       const _tNos = Array.isArray(state.trackingNos) ? state.trackingNos.filter(s=>String(s||'').trim()!=='') : [];
       const _isMyshipChoice = (choice==='myship');
       const _isCvsShip = (choice==='crossmart');
       const _isBlackcat = (choice==='blackcat');
       const _isPost = (choice==='post');
-      const _isManualShip = (_isBlackcat || _isPost);   // 🆕 黑貓/郵局：手動單號，比照交貨便顯示
+      const _isManualShip = (_isBlackcat || _isPost);   
       const _shipped = _isMyshipChoice ? (!!state.myshipExported || _tNos.length > 0) : (_tNos.length > 0);
-      // 🆕 CM → D70 對應（後端從出貨表撈）：客人查 7-11 包裹進度用
+      
       const _dMap = window._shipDeliveryMap || {};
-      // 7-11 追蹤網址（帶寄件編號 D70，客人直接查得到，不用自己輸入）
-      const _mk711 = (d70) => `https://eservice.7-11.com.tw/E-Tracking/search.aspx?CRM_PaymentNo=${encodeURIComponent(d70)}&FLAG=93&FROM=C2CPlatform`;
+      
+      const _mk711 = (d70) => `https:
 
       let trackRows = '';
       if(_shipped && (_isMyshipChoice || _isCvsShip)){
-        // 賣貨便 / 交貨便：統一用 D70 查 7-11
-        //   每箱各自的 CM → 找對應 D70 → 各自查詢連結
-        //   沒有 CM 單號時 fallback 用 state 的（相容）
+        
+        
+        
         const _boxNos = _tNos.length > 0 ? _tNos : [''];
         let anyD70 = false;
         const rowsHtml = _boxNos.map((cm, i) => {
@@ -2875,16 +2731,16 @@
         const _carrierName = _isCvsShip ? '7-11 交貨便' : (_isBlackcat ? '黑貓宅急便' : '郵局包裹');
         const _carrierIcon = _isCvsShip ? '7-11' : (_isBlackcat ? '🐱' : '📮');
         const _url711home = _isCvsShip
-          ? "https://eservice.7-11.com.tw/E-Tracking/search.aspx"
+          ? "https:
           : (_isBlackcat ? "https://www.t-cat.com.tw/inquire/trace.aspx"
                          : "https://postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100");
         const _trackSiteName = _isCvsShip ? '7-11 貨態查詢' : (_isBlackcat ? '黑貓宅急便查詢' : '中華郵政查詢');
-        // 明細（含金額）
-        // 🆕 出貨明細：有分箱（boxes 多箱）→ 按箱顯示（跟後台分箱一致）；單箱→整單列
+        
+        
         let _cvsItems = '';
         const _boxes = Array.isArray(_cvsShip.boxes) ? _cvsShip.boxes : [];
         if (_boxes.length > 1) {
-          // 多箱：依箱號排序，每箱顯示品項+申報價值+單號
+          
           const _sortedBoxes = _boxes.slice().sort(function(a,b){ return (a.boxNo||0)-(b.boxNo||0); });
           _cvsItems = `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
             <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">📦 出貨明細（共 ${_sortedBoxes.length} 箱）</div>
@@ -2918,7 +2774,7 @@
         if(_cvsShip.picked && _isShippedOut(_cvsShip.pickedAt) && (_cvsShip.hasD70 || _cvsD70s.length>0)){
           _cvsStageHtml = _stage4Html(_cvsD70s, _url711home, _trackSiteName, _cvsItems);
         }
-        // 階段三：已揀貨完成（未滿 48 小時）
+        
         else if(_cvsShip.picked && (_cvsShip.hasD70 || _cvsD70s.length>0)){
           const _pk = _twTime(_cvsShip.pickedAt);
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
@@ -2937,14 +2793,14 @@
             ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
           </div>`;
         }
-        // 階段一：已確認配送方式（paid=true，還沒單號）
+        
         else if(state.paid){
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> ${_carrierName} · 已確認配送方式</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">已收到您的款項與配送選擇，將盡快為您安排出貨。</div>
           </div>`;
         }
-        // paid=false → 不顯示配送階段框（下方匯款區會顯示待匯款）
+        
       }
 
       let h = (_isCvsShip || _isManualShip)
@@ -2970,19 +2826,19 @@
         return h;
       }
 
-      // 非賣貨便（方案B）：送出即開放，常駐顯示應匯金額 + 帳戶 + 後五碼 + 匯款狀態
+      
       const mAmt = (state.myshipAmount!=null)?state.myshipAmount:0;
       const ship = (state.shipFee!=null)?state.shipFee:0;
       const due = (state.finalDue!=null)?state.finalDue:(mAmt+ship);
       let deadlineStr='';
       if(state.payDeadlineTs){ const dt=new Date(state.payDeadlineTs); deadlineStr=`${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
 
-      // 匯款狀態徽章
+      
       const statusBadge = state.paid
         ? `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:800;font-size:12px;">✅ 已匯款</span>`
         : `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#fef3c7;color:#92400e;font-weight:800;font-size:12px;">⏳ 待匯款</span>`;
 
-      // 🆕 已匯款（paid=true）→ 只顯示簡單確認，拿掉所有應匯明細/合計/帳戶/帳號
+      
       if(state.paid){
         h += `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -3028,12 +2884,12 @@
       if(!/^\d{5}$/.test(v)){ alert('請輸入匯款帳號後五碼（5 位數字）'); return; }
       const payload = JSON.stringify({ lineUid: currentLineUid, last5: v });
 
-      // 🔒 防連點（後端要跑幾秒，客人會以為沒反應而重複點）
+      
       const _lock = feLockSubmit('shipLast5', _btn, '送出中…');
       if(!_lock) return;
       let _ok = false;
 
-      // 同時鎖住輸入框，避免送出過程中被改動
+      
       const _origRO = el.readOnly;
       el.readOnly = true;
 
@@ -3056,8 +2912,8 @@
     };
 
 
-    // 🆕 訂單列表展開/收合
-    // 🆕 點主頁統計方塊 → 展開訂單列表並只顯示該狀態的卡片；再點同方塊 → 取消篩選
+    
+    
     window._ordFilter = null;
     window.filterOrdersByStatus = function(status){
       const wrap=document.getElementById('orderListWrap');
@@ -3065,7 +2921,7 @@
       const btn=document.getElementById('ordViewAllBtn');
       if(!wrap||!container)return;
 
-      // 再點同一個 → 取消篩選並收合
+      
       if(window._ordFilter===status){
         window._ordFilter=null;
         container.classList.remove('ofilter-on');
@@ -3077,14 +2933,14 @@
         return;
       }
 
-      // 套用篩選
+      
       window._ordFilter=status;
       container.classList.add('ofilter-on');
       container.setAttribute('data-show',status);
       wrap.style.display='block';
       if(btn){btn.style.display='block';btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起（目前篩選中）';}
       _syncStatHighlight();
-      // 空狀態提示
+      
       var _vis=container.querySelectorAll('.card-order[data-ostatus="'+status+'"]').length;
       var _old=document.getElementById('ordFilterEmpty');if(_old)_old.remove();
       if(_vis===0){
@@ -3103,7 +2959,7 @@
 
     window.toggleOrderList=function(){
       const wrap=document.getElementById('orderListWrap'),btn=document.getElementById('ordViewAllBtn');
-      // 從「完整列表」按鈕進入時，清除狀態篩選
+      
       window._ordFilter=null;
       const _c=document.getElementById('regularOrdersContainer');
       if(_c){_c.classList.remove('ofilter-on');_c.removeAttribute('data-show');}
@@ -3122,7 +2978,7 @@
       const btn=document.getElementById('ordViewAllBtn');
       if(!btn)return;
       btn.style.display = total>0 ? 'block' : 'none';
-      // 預設保持折疊；如已展開則維持
+      
       const wrap=document.getElementById('orderListWrap');
       if(wrap && wrap.style.display==='block'){
         btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起訂單列表';
@@ -3131,13 +2987,13 @@
       }
     }
 
-    // =============================================
-    // 🎯 預購卡片
-    // =============================================
+    
+    
+    
     async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};submittingCards.clear();renderPoCards();}}catch(e){}}
     function renderPoCards(){const c=document.getElementById('preorderCardsContainer');let list=(poData.mergedPreorders&&poData.mergedPreorders.length>=0&&poData.mergedPreorders!==undefined)?poData.mergedPreorders:(poData.preorders||[]);if(poData.mergedPreorders===undefined)list=poData.preorders||[];if(!list||!list.length){c.innerHTML='';return;}c.innerHTML=list.map((po,i)=>buildPoCard(po,i)).join('');}
 
-    // ===== 🆕 合併卡編輯輔助（跨主單路由） =====
+    
     function poCurList(){ return (poData.mergedPreorders!==undefined) ? (poData.mergedPreorders||[]) : (poData.preorders||[]); }
     function poCardMids(po){ return (po.masterIds&&po.masterIds.length)?po.masterIds:[po.masterId]; }
     function poCardEdits(po){ let r=[]; poCardMids(po).forEach(m=>{(pendingEdits[m]||[]).forEach((e,idx)=>r.push(Object.assign({_mid:m,_idx:idx},e)));}); return r; }
@@ -3150,9 +3006,9 @@
     function _poSetSrc(src,newQty,prod){ let mid=src.masterId; if(!pendingEdits[mid])pendingEdits[mid]=[]; let a=pendingEdits[mid]; let di=a.findIndex(e=>e.type==='DELETE'&&e.recordId===src.recordId); if(di>-1)a.splice(di,1); let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId); if(newQty===src.reqQty){if(ex>-1)a.splice(ex,1);} else if(newQty<=0){if(ex>-1)a.splice(ex,1); if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:prod,oldQty:src.reqQty});} else {if(ex>-1)a[ex].newQty=newQty; else a.push({type:'MODIFY',recordId:src.recordId,product:prod,oldQty:src.reqQty,newQty:newQty});} }
     function poFindItem(cardIdx,repRid){ let po=poCurList()[cardIdx]; if(!po)return null; let it=(po.items||[]).find(x=>x.recordId===repRid); return it?{po:po,it:it}:null; }
     function poCardByMid(mid){ return poCurList().find(p=>poCardMids(p).includes(mid)); }
-    // 改數量：加→加購(最新)、減→加購先扣再原單；底層各自路由到來源主單
+    
     function poMergedQty(cardIdx,repRid,delta,maxQ){ let f=poFindItem(cardIdx,repRid); if(!f)return; let it=f.it; let srcs=poItemSrcs(it); let total=poItemEff(it); if(delta>0){ if(maxQ>0&&total+1>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;} let last=srcs[srcs.length-1]; _poSetSrc(last,poSrcEff(last)+1,it.product);} else { if(total<=1)return; for(let k=srcs.length-1;k>=0;k--){let eff=poSrcEff(srcs[k]); if(eff>0){_poSetSrc(srcs[k],eff-1,it.product);break;}} } renderPoCards(); }
-    // 刪除整品項：底層兩筆一起刪
+    
     function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length;
       function _doDel(){ srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
       if(activeCnt<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
@@ -3227,7 +3083,7 @@
           }
         });
       }
-      // === 唯讀 ===
+      
       else{po.items.filter(i=>!i.isSwapped).forEach(i=>{
         if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
         if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
@@ -3238,7 +3094,7 @@
         else if(s==='LOCKED'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#dc3545;">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)} x${sh}</span><span class="po-iprice" style="color:#a95a52;">等待處理</span></div>`;}
       });}
 
-      // 預覽
+      
       let pv='';
       if(s==='EDITING'&&ed.length>0){let pi=ed.map((e)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits(${idx})">確認送出修改</button></div>`;}
       if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${d._mid}',${d._idx})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep(${idx})">確認送出</button></div>`;}
@@ -3251,7 +3107,7 @@
       return`<div class="${_cardCls}" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${_pvShow}${_updBar}${nt}${notes}</div></div>`;
     }
 
-    // ===== 改單操作 =====
+    
     function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;
       function _doDel(){ a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty}); renderPoCards(); }
@@ -3286,7 +3142,7 @@
         let mids = poCardMids(po);
         let hasAny = mids.some(m => (pendingEdits[m]||[]).length>0);
         if(!hasAny) return;
-        // 組合變更摘要
+        
         let _rows = "";
         mids.forEach(mid => { (pendingEdits[mid]||[]).forEach(function(e){
           if(e.type==='ADD') _rows+='<div style="background:#eaf3de;color:#27500a;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">➕ 新增：'+escHTML(e.product)+' ×'+e.qty+'</div>';
@@ -3295,9 +3151,9 @@
         }); });
         weConfirm({ title:"確認送出修改？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">本次變更</div>'+_rows }).then(function(ok){
           if(!ok) return;
-          // 🌟 樂觀更新：加鎖→立即顯opt狀→背景fetch→成功清pending+重拉 / 失敗還原
-          mids.forEach(mid => submittingCards.add(mid)); // 鎖定（防重複送出）
-          renderPoCards();                                // pending 暫不清，畫面呈現最終樣子+更新中
+          
+          mids.forEach(mid => submittingCards.add(mid)); 
+          renderPoCards();                                
           let _jobs = [];
           mids.forEach(mid => {
             let ed = pendingEdits[mid];
@@ -3307,25 +3163,25 @@
               .then(r => r.json()).then(d => { if(d.status !== "SUCCESS"){ console.error("背景處理異常:", d.message); throw new Error(d.message||"FAIL"); } return true; }));
           });
           Promise.all(_jobs).then(function(){
-            // ✅ 全數成功：清 pending、解鎖、重拉真實資料
+            
             mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
             weToast("修改已完成","success");
             setTimeout(loadPreorderData, 600);
           }).catch(function(err){
-            // ❌ 失敗：退回原狀（撤銷本次變更）+紅 Toast
+            
             mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
             renderPoCards();
             weToast("更新失敗，已還原，請再試一次","error");
-            setTimeout(loadPreorderData, 600); // 以後端真實狀態為準
+            setTimeout(loadPreorderData, 600); 
           });
         });
     }
 
-    // ===== 二選一操作 =====
+    
     function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
     function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
     
-    // 🌟 樂觀更新 (Optimistic UI)
+    
     function submitSweep(cardIdx){
         let po = poCurList()[cardIdx]; if(!po) return;
         let mids = poCardMids(po);
@@ -3339,7 +3195,7 @@
         }); });
         weConfirm({ title:"確認送出決定？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">您的決定</div>'+_rows }).then(function(ok){
           if(!ok) return;
-          mids.forEach(mid => submittingCards.add(mid)); // 鎖定
+          mids.forEach(mid => submittingCards.add(mid)); 
           renderPoCards();
           let _jobs = [];
           mids.forEach(mid => {
@@ -3362,12 +3218,12 @@
         });
     }
 
-    // ===== 候補頁面（V2 完整版） =====
+    
     let wlCustomerData = null;
 
     async function loadWaitlistData(){
-      // 🔑 管理員檢視模式：不重打 API（會用 currentLineUid 變成管理員自己的資料），
-      //    改用 executeAdminSearch 已載入的目標客人候補資料重新渲染
+      
+      
       if (window._adminViewMode && wlInitialData) {
         renderWL(wlInitialData);
         return;
@@ -3911,7 +3767,7 @@
     }
   </script>
 
-<!-- 現貨購物車 -->
+
 <style>
   #instkCartOverlay{position:fixed;inset:0;background:#faf8f6;z-index:9999;display:none;flex-direction:column;}
   #instkCartOverlay.open{display:flex;}
@@ -4024,14 +3880,14 @@
 
 <script>
 (function(){
-  let DATA=null;          // {groups, batch}
+  let DATA=null;          
   let activeBrand=null;
-  let cart={};            // key=inventoryId → {inventoryId, name, size, price, qty, max}
+  let cart={};            
   let lightboxPhotos=[], lightboxIdx=0;
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
-  // 共用：明細按品牌/系列分組渲染（摘要列、首頁卡、訂單sheet 共用）
+  
   function instkRenderItemsByBrand(items){
     const byBS={};
     (items||[]).forEach(function(it){
@@ -4052,11 +3908,11 @@
     return fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
   }
 
-  // ── 開關購物車 ──
+  
   window.instkOpenCart=function(){
     document.getElementById('instkCartOverlay').classList.add('open');
     document.body.style.overflow='hidden';
-    // 🔑 管理員檢視模式：不打商品 API、改顯示目標客人現貨訂單
+    
     if (window._adminViewMode) {
       instkRenderAdminView();
       return;
@@ -4064,7 +3920,7 @@
     instkLoad();
   };
 
-  // 🔑 管理員模式：顯示目標客人現貨訂單（不顯示商品賣場、不可代下單）
+  
   function instkRenderAdminView(){
     const sc = document.getElementById('instkScroll');
     const tabs = document.getElementById('instkBrandTabs');
@@ -4119,7 +3975,7 @@
     document.body.style.overflow='';
   };
 
-  // ── 載入商品 ──
+  
   function instkLoad(){
     const sc=document.getElementById('instkScroll');
     sc.innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div><div class="mt-2">載入中…</div></div>';
@@ -4140,19 +3996,19 @@
     }).catch(function(e){sc.innerHTML='<div class="instk-empty">連線錯誤：'+esc(e.message)+'</div>';});
   }
 
-  // 公告（管理員在上架頁設定，顯示在商品目錄上方）
+  
   function instkRenderAnnouncement(){
     const box=document.getElementById('instkAnnounce');
     if(!box)return;
     const txt=(DATA&&DATA.announcement)?String(DATA.announcement).trim():'';
     if(!txt){box.innerHTML='';return;}
-    // 換行轉 <br>，跳脫 HTML
+    
     const safe=esc(txt).replace(/\n/g,'<br>');
     box.innerHTML='<div style="margin:8px 12px;padding:11px 13px;background:#fff8e8;border:1px solid #f0d98a;border-radius:10px;font-size:13px;color:#7a5c00;line-height:1.6;">'
       +'<div style="font-weight:bold;margin-bottom:3px;"><i class="bi bi-megaphone-fill"></i> 公告</div>'+safe+'</div>';
   }
 
-  // 頁面內訂單摘要列（有訂單才顯示，點開看明細）
+  
   function instkLoadOrderStrip(){
     const box=document.getElementById('instkOrderStrip');
     if(!box)return;
@@ -4179,7 +4035,7 @@
     if(ch)ch.className=open?'bi bi-chevron-down':'bi bi-chevron-up';
   };
 
-  // 品牌 tab：從 groups 的 category 取「品牌」(category 可能是 "品牌" 或 "品牌 / 系列")
+  
   function instkBuildBrandTabs(){
     const brands=[];
     DATA.groups.forEach(function(g){
@@ -4208,20 +4064,20 @@
         const photo=c.photos&&c.photos.length?c.photos[0]:'';
         const cid=c.styleKey;
         html+='<div class="instk-pcard" data-cid="'+esc(cid)+'" data-brand="'+esc(c.brand||'').replace(/"/g,'&quot;')+'" data-series="'+esc(c.series||'').replace(/"/g,'&quot;')+'">';
-        // 左：圖（1/3，可放大）
+        
         html+='<div class="instk-thumb" '+(photo?'style="background-image:url('+photo+');background-size:cover;background-position:center;"':'')+' onclick="instkOpenLightbox('+instkStash(c.photos||[])+')">'+(photo?'':'<i class="bi bi-image"></i>')+'<span class="instk-zoom"><i class="bi bi-zoom-in"></i></span></div>';
-        // 右：資訊
+        
         html+='<div class="instk-pinfo">';
         html+='<div class="instk-nameline"><p class="instk-pname">'+esc(c.name)+'</p>'
           +(c.sizeChartUrl?'<button class="instk-link" onclick="instkOpenLightbox('+instkStash([c.sizeChartUrl])+')"><i class="bi bi-rulers"></i> 尺寸表</button>':'')
           +'</div>';
         html+='<div class="instk-priceline">'+(c.isSpecial?'<span class="instk-price-orig">NT$'+c.sellPrice.toLocaleString()+'</span>':'')+'<span class="instk-price">NT$'+c.effectivePrice.toLocaleString()+'</span></div>';
-        // 尺寸：判斷是否「無尺寸款」（只有一筆且 size 空）
+        
         const noSize=(c.sizes.length===1 && (!c.sizes[0].size || c.sizes[0].size===''));
         if(noSize){
           const s0=c.sizes[0];
           const so=s0.remain<=0;
-          // 無尺寸：不顯示規格按鈕，直接顯示剩餘；用隱藏按鈕承載資料 + 自動選取
+          
           html+='<div class="instk-nosize" style="font-size:12px;color:#888;margin-bottom:6px;">'+(so?'<span style="color:#c0392b;">已售完</span>':'剩 '+s0.remain+' 件')+'</div>';
           html+='<button class="instk-sizebtn sel" style="display:none;" data-inv="'+s0.inventoryId+'" data-name="'+esc(c.name).replace(/"/g,'&quot;')+'" data-size="" data-price="'+s0.effectivePrice+'" data-max="'+s0.remain+'"></button>';
         } else {
@@ -4232,7 +4088,7 @@
           });
           html+='</div>';
         }
-        // 數量加減 + 加入（乾淨一列）
+        
         html+='<div class="instk-actionrow">';
         html+='<div class="instk-qtygrp"><button class="instk-qtybtn" onclick="instkCardQty(this,-1)">−</button><span class="instk-qtyval">1</span><button class="instk-qtybtn" onclick="instkCardQty(this,1)">＋</button></div>';
         html+='<button class="instk-add" onclick="instkAddToCart(this)"><i class="bi bi-cart-plus"></i> 加入</button>';
@@ -4243,7 +4099,7 @@
     sc.innerHTML=html||'<div class="instk-empty">此品牌目前無商品</div>';
   }
 
-  // 卡上數量加減
+  
   window.instkCardQty=function(btn,delta){
     const grp=btn.closest('.instk-qtygrp');
     const span=grp.querySelector('.instk-qtyval');
@@ -4252,7 +4108,7 @@
     span.textContent=v;
   };
 
-  // 暫存陣列給 onclick 用（避免大量 JSON 塞進屬性）
+  
   let stashStore=[];
   window.instkStash=function(){};
   function instkStash(arr){stashStore.push(arr);return stashStore.length-1;}
@@ -4272,7 +4128,7 @@
   });
   window.instkCloseLightbox=function(){document.getElementById('instkLightbox').classList.remove('open');};
 
-  // 選尺寸（同卡內單選）
+  
   window.instkPickSize=function(btn,inv){
     const card=btn.closest('.instk-pcard');
     card.querySelectorAll('.instk-sizebtn').forEach(function(b){b.classList.remove('sel');});
@@ -4283,7 +4139,7 @@
   window.instkAddToCart=function(addBtn){
     const card=addBtn.closest('.instk-pcard');
     let inv=card.getAttribute('data-selinv');
-    // 無尺寸款：自動取卡內唯一的（隱藏）品項按鈕
+    
     if(!inv){
       const only=card.querySelectorAll('.instk-sizebtn');
       if(only.length===1){inv=only[0].getAttribute('data-inv');}
@@ -4301,8 +4157,8 @@
     addBtn.innerHTML='<i class="bi bi-check"></i> 已加入';setTimeout(function(){addBtn.innerHTML='<i class="bi bi-cart-plus"></i> 加入';},800);
   };
 
-  // ── 首頁置頂訂單卡（客人一進首頁就看到，可點開明細）──
-  // 用法：在 index 首頁容器放一個 <div id="instkHomeBanner"></div>，頁面載入後呼叫 instkRenderHomeBanner()
+  
+  
   window.instkRenderHomeBanner=function(){
     const box=document.getElementById('instkHomeBanner');
     if(!box||!currentLineUid)return;
@@ -4346,12 +4202,12 @@
     btn.textContent=cnt>0?'查看購物車':'查看購物車';
   }
 
-  // ── 購物車 sheet ──
+  
   window.instkOpenCartSheet=function(){
     const arr=instkCartArr();
     if(!arr.length)return;
     document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-cart3"></i> 我的購物車';
-    // 按品牌/系列分組
+    
     const grp={};
     arr.forEach(function(i){
       const k=(i.brand||'其他')+'\u0001'+(i.series||'');
@@ -4396,9 +4252,9 @@
     instkOpenCartSheet();
   };
 
-  // ── 送出 ──
+  
   let _instkPendingLast5='';
-  // 按「送出訂單」先驗證五碼，再跳確認彈窗
+  
   window.instkSubmit=function(){
     const arr=instkCartArr();
     if(!arr.length)return;
@@ -4411,7 +4267,7 @@
   };
   window.instkCloseConfirm=function(){ document.getElementById('instkConfirmModal').classList.remove('open'); };
 
-  // 彈窗按「確認送出」才真正送出
+  
   window.instkDoSubmit=function(){
     const arr=instkCartArr();
     if(!arr.length)return;
@@ -4426,7 +4282,7 @@
       if(res&&res.status==='SUCCESS'){
         cart={};instkUpdateCartBar();
         instkShowSuccess(res);
-        instkLoad();  // 刷新商品列表+訂單摘要，剩餘庫存即時反映
+        instkLoad();  
       }else if(res&&res.status==='STOCK_INSUFFICIENT'){
         const names=(res.failedItems||[]).map(function(f){return f.name+'（剩'+f.remain+'）';}).join('、');
         alert('部分商品剛被搶完：\n'+names+'\n\n請調整數量或移除後再送出。');
@@ -4458,7 +4314,7 @@
       +'<button class="instk-checkout" style="flex:1;" onclick="instkCloseSheet();instkOpenMyOrders()">看我的訂單</button></div>';
   }
 
-  // ── 我的訂單 ──
+  
   window.instkOpenMyOrders=function(){
     document.getElementById('instkSheetTitle').innerHTML='<i class="bi bi-clipboard-check"></i> 現貨訂單';
     document.getElementById('instkSheetBody').innerHTML='<div class="instk-empty"><div class="spinner-border text-secondary"></div></div>';
@@ -4481,7 +4337,7 @@
           +'<div style="display:flex;justify-content:space-between;font-weight:700;color:#4A3C49;font-size:13px;margin-bottom:5px;"><span>第 '+o.index+' 筆 · '+o.itemCount+' 件</span></div>'
           +itemsHtml+money+'</div>';
       }).join('');
-      // 總應匯款
+      
       body+='<div style="background:#fbeef0;border-radius:10px;padding:10px 12px;margin-top:6px;">'
         +'<div style="display:flex;justify-content:space-between;font-weight:bold;color:#4A3C49;"><span>本次總應匯款</span><span style="color:#c0392b;font-size:16px;">$'+((d.grandDue||0)).toLocaleString()+'</span></div></div>';
       body+='<div style="background:#fff7e6;border-radius:10px;padding:9px;margin-top:6px;text-align:center;font-size:12px;color:#915b00;"><i class="bi bi-info-circle"></i> 訂單送出 15 分鐘後，可至訂單頁面查詢應匯款金額與匯款資訊</div>';
@@ -4491,13 +4347,9 @@
 })();
 </script>
 
-<!-- ════════════════════════════════════════════════════════════════
-     📜 歷史訂單 Overlay（自包含區塊：CSS + HTML + 獨立 IIFE）
-     入口：訂單藍框「歷史訂單 ›」按鈕 → histOpen()
-     後端：action=getMyHistory
-     ════════════════════════════════════════════════════════════════ -->
+
 <style>
-  /* 歷史頁採頁內模式（在 swipePage3 內），無需 overlay/fixed 樣式 */
+   
 
   .hist-overview{background:linear-gradient(135deg,#795238,#5e3f2b);border-radius:18px;padding:22px 22px 20px;color:#fff;box-shadow:0 10px 28px rgba(94,63,43,.32);position:relative;overflow:hidden;}
   .hist-overview::after{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;background:rgba(201,163,106,.16);border-radius:50%;}
@@ -4577,23 +4429,23 @@
     return fetch(GAS,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body}).then(function(r){return r.json();});
   }
 
-  var _data = null;       // 快取本次載入的 data，切換檢視不重打 API
+  var _data = null;       
   var _loaded = false;
 
-  // 滑到歷史頁時呼叫（只載一次；管理員限定由 tab 是否顯示控制）
+  
   window.histLoadOnce = function(){
-    // 管理員檢視客人模式：資料已由後端注入（histInjectData），不打 API
+    
     if(window._adminViewMode) return;
     if(!_loaded) histLoad();
   };
 
   window.histRefresh = function(){
-    // 檢視客人模式下不重打（資料源自後端注入）
+    
     if(window._adminViewMode) return;
     _loaded=false; histLoad(true);
   };
 
-  // 🆕 外部直接注入歷史資料並渲染（管理員檢視客人用，不打 API）
+  
   window.histInjectData = function(data){
     if(!data){
       document.getElementById('histScroll').innerHTML=
@@ -4604,7 +4456,7 @@
     render('brand');
   };
 
-  // 重設狀態（結束檢視模式或切換客人時呼叫）
+  
   window.histReset = function(){ _data=null; _loaded=false; };
 
   function histLoad(force){
@@ -4633,7 +4485,7 @@
     }
 
     var html='';
-    // 總覽卡
+    
     html+='<div class="hist-overview">'
       +'<div class="hist-ov-label"><i class="bi bi-graph-up-arrow"></i> 我的累計消費<button onclick="histRefresh()" style="margin-left:auto;background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;" title="重新整理"><i class="bi bi-arrow-clockwise"></i></button></div>'
       +'<div class="hist-ov-total"><small>NT$</small>'+money(sm.total)+'</div>'
@@ -4645,7 +4497,7 @@
       +'<div class="hist-ov-stat"><div class="n">'+(sm.seriesCount||0)+'</div><div class="t">系列</div></div>'
       +'</div></div>';
 
-    // 檢視切換
+    
     html+='<div class="hist-toggle">'
       +'<button class="hist-vt '+(view==='brand'?'active':'')+'" onclick="histSwitch(\'brand\')">依品牌系列</button>'
       +'<button class="hist-vt '+(view==='time'?'active':'')+'" onclick="histSwitch(\'time\')">依時間</button>'
@@ -4729,34 +4581,5 @@
 })();
 </script>
 
-<script>
-/* ── 現貨賣場未開放時，導覽的「現貨」灰掉 ──────────────────
- *
- * 會員中心不讀 campaigns.json（它是純 API 驅動的頁面），
- * 所以要自己抓一次。那是 CDN 上的靜態檔，很輕。
- *
- * ── 為什麼每個入口都要擋 ──
- * 後端本來就會擋（回傳「即將開放」），所以不會超賣。
- * 但客人點進去、等載入、看到一行字、再自己返回 ——
- * 四個動作換來一個「還沒開」。在入口講清楚比較尊重他的時間。
- *
- * 抓失敗就什麼都不做 —— 寧可讓他點進去看到提示，
- * 也不要因為一個靜態檔讀不到就把功能藏起來。
- */
-(function () {
-  fetch('/data/campaigns.json', { cache: 'no-cache' })
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) {
-      if (!d || (d.shop && d.shop.open)) return;
-      var note = (d.shop && d.shop.note) || '即將開放';
-      document.querySelectorAll('a[href="/s"]').forEach(function (a) {
-        a.style.opacity = '.4';
-        a.style.pointerEvents = 'none';
-        a.title = note;
-      });
-    })
-    .catch(function () {});
-})();
-</script>
 </body>
 </html>
