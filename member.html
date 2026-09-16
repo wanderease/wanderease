@@ -575,6 +575,19 @@
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
     const GAS_URL="https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    const CORE_URL="https://wanderease-api.wanderease-th.workers.dev/";
     const LIFF_ID="2009208139-8lZaYbbd";
     let currentLineUid="";
     let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
@@ -745,7 +758,77 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     
-    async function checkMemberStatus(){try{const r=await fetch(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);let d;try{d=JSON.parse(await r.text());}catch(e){throw new Error("API 連線異常");}document.getElementById('loadingArea').style.display='none';if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';} var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){document.getElementById('loadingArea').style.display='none';alert("連線異常：\n"+e.message);}}
+    
+
+    async function fetchJsonRetry(url, tries, timeoutMs){
+      tries = tries || 3; timeoutMs = timeoutMs || 25000;
+      let last = null;
+      for(let i=0;i<tries;i++){
+        if(i>0) await new Promise(r=>setTimeout(r, 800*i));
+        const ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
+        const timer = setTimeout(()=>{ try{ ctrl && ctrl.abort(); }catch(e){} }, timeoutMs);
+        try{
+          const r = await fetch(url, ctrl ? {signal:ctrl.signal} : undefined);
+          clearTimeout(timer);
+          const txt = await r.text();
+          return JSON.parse(txt);     
+        }catch(e){ clearTimeout(timer); last = e; }
+      }
+      throw last || new Error("連線失敗");
+    }
+
+    
+
+    function showBodyError(msg){
+      let el = document.getElementById('bodyErrorArea');
+      if(!el){
+        el = document.createElement('div');
+        el.id = 'bodyErrorArea';
+        el.style.cssText = 'margin:16px;padding:16px;border:1px solid #e8d5b0;background:#fdf3e3;border-radius:10px;text-align:center';
+        const home = document.getElementById('homeArea');
+        if(home && home.parentNode) home.parentNode.insertBefore(el, home);
+        else document.body.appendChild(el);
+      }
+      el.innerHTML = '<div style="font-size:14px;color:#8a5a1e;margin-bottom:10px">'+
+        '訂單資料載入失敗<br><span style="font-size:12px">'+(msg||'')+'</span></div>'+
+        '<button onclick="loadMemberBody()" style="background:#795238;color:#fff;border:0;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700">重新載入</button>';
+      el.style.display = 'block';
+    }
+    function hideBodyError(){ const el=document.getElementById('bodyErrorArea'); if(el) el.style.display='none'; }
+
+     
+    window.loadMemberBody = async function(){
+      hideBodyError();
+      try{
+        const d = await fetchJsonRetry(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);
+        if(d.status!=="BOUND"){ showBodyError(d.message||d.status); return; }
+        renderMemberBody(d);
+      }catch(e){ showBodyError(e.message); }
+    };
+
+     
+    async function checkMemberStatus(){try{const core=await fetchJsonRetry(`${CORE_URL}?action=memberCore&lineUid=${encodeURIComponent(currentLineUid)}`,3,12000);
+      document.getElementById('loadingArea').style.display='none';
+      if(core.status==="CHECK_FAILED"){ showBodyError(core.message||"請稍後再試"); return; }
+      if(core.status!=="BOUND"){ document.getElementById('bindArea').style.display='block'; return; }
+      if(core.isUnderMaintenance && !ADMIN_HINT(currentLineUid)){
+        document.getElementById('maintenanceArea').style.display='block';
+        document.getElementById('maintenanceMsg').innerText=core.maintenanceMessage||"";
+        return;
+      }
+       
+      document.getElementById('homeArea').style.display='block';
+      document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${core.userData["最新社群名稱"]||""}`;
+       
+      loadMemberBody();
+      return;
+    }catch(e){document.getElementById('loadingArea').style.display='none';showBodyError(e.message);}}
+
+    
+
+    function ADMIN_HINT(){ return false; }
+
+    function renderMemberBody(d){try{if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';} var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){showBodyError(e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     
