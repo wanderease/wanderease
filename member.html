@@ -752,7 +752,60 @@
     };
 
     
-    window.onload=async function(){try{await liff.init({liffId:LIFF_ID});if(!liff.isLoggedIn()){liff.login();}else{const p=await liff.getProfile();currentLineUid=p.userId;try{const f=await liff.getFriendship();if(!f.friendFlag){document.getElementById('loadingArea').style.display='none';new bootstrap.Modal(document.getElementById('friendshipModal')).show();}else checkMemberStatus();}catch(e){checkMemberStatus();}}}catch(err){alert("LINE 登入失敗");document.getElementById('loadingArea').style.display='none';}};
+    
+
+    var bootStep = "啟動";
+    function withTimeout(promise, ms, label){
+      return Promise.race([
+        promise,
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+" 逾時")), ms))
+      ]);
+    }
+    function bootFail(msg){
+      var el=document.getElementById('loadingArea');
+      if(el) el.style.display='none';
+      showBodyError(msg);
+    }
+    window.onload=async function(){
+       
+      setTimeout(function(){
+        var el=document.getElementById('loadingArea');
+        if(el && el.style.display!=='none'){
+          bootFail("卡在「"+bootStep+"」這一步，請重新整理或稍後再試");
+        }
+      }, 12000);
+
+      try{
+        bootStep="LINE 初始化";
+        await withTimeout(liff.init({liffId:LIFF_ID}), 8000, "LINE 初始化");
+
+        if(!liff.isLoggedIn()){ bootStep="導向登入"; liff.login(); return; }
+
+        bootStep="取得個人資料";
+        const p = await withTimeout(liff.getProfile(), 8000, "取得個人資料");
+        currentLineUid = p.userId;
+
+        
+
+        bootStep="好友檢查";
+        let friendFlag = true;
+        try{
+          const f = await withTimeout(liff.getFriendship(), 5000, "好友檢查");
+          if(f && typeof f.friendFlag==='boolean') friendFlag = f.friendFlag;
+        }catch(e){ friendFlag = true; }
+
+        if(!friendFlag){
+          document.getElementById('loadingArea').style.display='none';
+          new bootstrap.Modal(document.getElementById('friendshipModal')).show();
+          return;
+        }
+
+        bootStep="查詢會員資料";
+        checkMemberStatus();
+      }catch(err){
+        bootFail((err && err.message) ? err.message : "LINE 登入失敗");
+      }
+    };
     window.skipFriendship=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
     window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https://lin.ee/mty4uxj',external:false});}catch(e){window.open('https://lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
