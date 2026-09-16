@@ -118,6 +118,27 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .idbox .lead{font-size:12px;color:var(--mute);margin-bottom:12px}
  
 .idbox .lead.first{color:var(--brown);font-weight:700;font-size:12.5px}
+ 
+.fgate{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px}
+.fbox{background:var(--white);border-radius:14px;padding:26px 22px 20px;
+  max-width:340px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.2)}
+.fic{font-size:34px;color:#06C755;line-height:1;margin-bottom:12px}
+.fbox h3{font-size:16.5px;margin:0 0 10px;color:var(--ink)}
+.fbox p{font-size:13px;color:#5a5a5e;line-height:1.75;margin:0 0 16px;text-align:left}
+.fstat{font-size:12.5px;color:var(--mute);margin-bottom:12px}
+.fbtn{width:100%;background:#06C755;color:#fff;border:0;border-radius:9px;
+  padding:13px;font-size:15px;font-weight:700;cursor:pointer}
+.fbtn2{width:100%;background:var(--brown);color:#fff;border:0;border-radius:9px;
+  padding:13px;font-size:15px;font-weight:700;cursor:pointer;margin-top:10px}
+.fskip{display:block;margin-top:14px;font-size:12px;color:var(--mute);text-decoration:underline}
+ 
+.fwarn{background:#fdf3e3;border:1px solid #e8d5b0;border-radius:10px;
+  padding:14px 15px;margin-top:14px;text-align:left}
+.fwarn b{display:block;font-size:13.5px;color:#8a5a1e;margin-bottom:7px}
+.fwarn p{font-size:12.5px;color:#8a5a1e;line-height:1.75;margin:0 0 12px}
+.fwarn button{width:100%;background:#06C755;color:#fff;border:0;border-radius:8px;
+  padding:11px;font-size:14px;font-weight:700;cursor:pointer}
 .fld{margin-bottom:11px}
 .fld label{display:block;font-size:12.5px;color:var(--mute);margin-bottom:5px;font-weight:600}
 .fld label b{color:var(--brown)}
@@ -1368,6 +1389,19 @@ function view3() {
   
   
   
+  if (friendState === false) {
+    h += '<div class="step"><div class="fwarn">' +
+      '<b>你尚未加入官方 LINE</b>' +
+      '<p>訂單確認、匯款提醒、出貨通知以及重要訊息，都靠 LINE 私訊發送。' +
+      '若沒有加入好友會收不到訊息，請幫我們加入官方 LINE。</p>' +
+      '<button type="button" onclick="friendOpenLine()">加入官方 LINE</button>' +
+      '</div></div>';
+  }
+
+  
+  
+  
+  
   h += '<div class="step"><div class="infobox">' +
     '<div class="rows2">' +
       (r.orderNo ? '<div><span>訂單編號</span><span class="no">' +
@@ -1466,6 +1500,158 @@ function setConfirm(i, v) {
 }
 function go(s) { step = s; draw(true); }
 
+
+
+
+var LINE_ADD_URL = 'https://lin.ee/mty4uxj';
+
+
+var friendState = null;
+var friendChecking = false;
+var friendTimers = [];
+
+ 
+function friendAskClient() {
+  return new Promise(function (resolve) {
+    try {
+      if (typeof liff === 'undefined' || !liff.isLoggedIn()) { resolve(null); return; }
+      liff.getFriendship()
+        .then(function (f) { resolve(f && typeof f.friendFlag === 'boolean' ? f.friendFlag : null); })
+        .catch(function () { resolve(null); });
+    } catch (e) { resolve(null); }
+  });
+}
+
+ 
+function friendAskServer() {
+  var uid = (me && me.uid) || '';
+  if (!uid) return Promise.resolve(null);
+  return fetch(SUBMIT_URL + '?action=checkFriend&lineUid=' + encodeURIComponent(uid))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { return (d && typeof d.friend === 'boolean') ? d.friend : null; })
+    .catch(function () { return null; });
+}
+
+
+
+function friendCheck() {
+  return friendAskClient().then(function (a) {
+    if (a === true) return true;
+    return friendAskServer().then(function (b) {
+      if (b === true) return true;
+      
+      if (a === false && b === false) return false;
+      return null;
+    });
+  });
+}
+
+function friendClearTimers() {
+  friendTimers.forEach(function (t) { clearTimeout(t); });
+  friendTimers = [];
+}
+
+ 
+function friendShowGate() {
+  friendState = false;
+  friendChecking = false;
+  friendClearTimers();
+  var el = document.getElementById('friendGate');
+  if (el) { el.style.display = 'flex'; return; }
+
+  var d = document.createElement('div');
+  d.id = 'friendGate';
+  d.className = 'fgate';
+  d.innerHTML =
+    '<div class="fbox">' +
+      '<div class="fic"><i class="bi bi-line"></i></div>' +
+      '<h3>請先幫我們加入官方 LINE</h3>' +
+      '<p>訂單確認、匯款提醒、出貨通知以及重要訊息，都靠 LINE 私訊發送。' +
+      '若沒有加入好友就會收不到訊息。</p>' +
+      '<div id="fstatus" class="fstat" style="display:none">確認中…</div>' +
+      '<button type="button" class="fbtn" onclick="friendOpenLine()">加入官方 LINE</button>' +
+      '<div id="fmanual" style="display:none">' +
+        '<button type="button" class="fbtn2" onclick="friendManualConfirm()">我加好了，送出訂單</button>' +
+      '</div>' +
+      '<a class="fskip" href="javascript:void(0)" onclick="friendSkip()">我知道會收不到通知，直接送出</a>' +
+    '</div>';
+  document.body.appendChild(d);
+}
+
+function friendHideGate() {
+  friendClearTimers();
+  var el = document.getElementById('friendGate');
+  if (el) el.style.display = 'none';
+}
+
+
+
+function friendOpenLine() {
+  try {
+    if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+      liff.openWindow({ url: LINE_ADD_URL, external: false });
+    } else {
+      window.open(LINE_ADD_URL, '_blank');
+    }
+  } catch (e) { window.open(LINE_ADD_URL, '_blank'); }
+  friendStartWatch();
+}
+
+
+
+function friendStartWatch() {
+  if (friendChecking) return;
+  friendChecking = true;
+
+  var st = document.getElementById('fstatus');
+  if (st) st.style.display = 'block';
+
+  var delays = [0, 1500, 3000, 5000];
+  delays.forEach(function (ms, i) {
+    friendTimers.push(setTimeout(function () {
+      friendCheck().then(function (ok) {
+        if (ok === false && i < delays.length - 1) return;   
+        if (ok === true || ok === null) {
+          friendState = ok;
+          friendHideGate();
+          submitOrder_();
+          return;
+        }
+        
+        friendChecking = false;
+        if (st) st.style.display = 'none';
+        var mn = document.getElementById('fmanual');
+        if (mn) mn.style.display = 'block';
+      });
+    }, ms));
+  });
+}
+
+ 
+function friendManualConfirm() {
+  var st = document.getElementById('fstatus');
+  if (st) st.style.display = 'block';
+  friendCheck().then(function (ok) {
+    friendState = (ok === false) ? false : true;
+    friendHideGate();
+    submitOrder_();
+  });
+}
+
+ 
+function friendSkip() {
+  friendState = false;
+  friendHideGate();
+  submitOrder_();
+}
+
+ 
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) return;
+  var el = document.getElementById('friendGate');
+  if (el && el.style.display !== 'none') friendStartWatch();
+});
+
 function doLogin() {
   if (typeof liff === 'undefined') { alert('LINE 環境載入失敗，請重新整理。'); return; }
   saveCart();
@@ -1497,14 +1683,14 @@ function submitOrder() {
   }
 
   
-  if (!(me && me.bound && nameEditing)) { submitOrder_(); return; }
+  if (!(me && me.bound && nameEditing)) { friendGateThenSubmit(); return; }
 
   var el = document.getElementById('fName');
   var newName = String((el && el.value) || '').trim();
   var oldName = String((me && me.name) || '').trim();
 
   if (!newName) { alert('社群名稱不能空白。'); return; }
-  if (newName === oldName) { nameEditing = false; submitOrder_(); return; }
+  if (newName === oldName) { nameEditing = false; friendGateThenSubmit(); return; }
 
   var btns = document.querySelectorAll('.bar button');
   var sendBtn = btns.length ? btns[btns.length - 1] : null;
@@ -1521,7 +1707,7 @@ function submitOrder() {
     if (msg) alert(msg);
     nameEditing = false;
     if (el) el.value = oldName;   
-    submitOrder_();
+    friendGateThenSubmit();
   };
 
   fetch(GAS_URL, {
@@ -1540,7 +1726,7 @@ function submitOrder() {
         me.name = newName;
         nameEditing = false;
         try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
-        submitOrder_();
+        friendGateThenSubmit();
         return;
       }
       
@@ -1555,6 +1741,24 @@ function submitOrder() {
     .catch(function () {
       fallback('名稱沒有更新成功（網路問題），這筆訂單會先用「' + oldName + '」送出。');
     });
+}
+
+
+
+function friendGateThenSubmit() {
+  var btns = document.querySelectorAll('.bar button');
+  var sendBtn = btns.length ? btns[btns.length - 1] : null;
+  if (sendBtn) sendBtn.textContent = '確認中…';
+
+  friendCheck().then(function (ok) {
+    friendState = ok;
+    if (ok === false) {
+      if (sendBtn) sendBtn.textContent = '送出訂單';
+      friendShowGate();
+      return;
+    }
+    submitOrder_();
+  });
 }
 
 function submitOrder_() {
@@ -1653,7 +1857,10 @@ function submitOrder_() {
     confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
     items: items,
     subtotal: t.sum,
-    deposit: t.dep
+    deposit: t.dep,
+    
+    
+    friendFlag: friendState
   };
 
   
