@@ -444,8 +444,8 @@
     <div class="home-header-bar">
       <div class="hhb-name" id="welcomeMsg"></div>
       <div class="hhb-nav-row">
-        <button class="hhb-nav-item" onclick="showSubOverlay('promos')"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
-        <button class="hhb-nav-item" onclick="instkOpenCart()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
+        <button class="hhb-nav-item" onclick="goCampaign()"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
+        <button class="hhb-nav-item" id="navShopBtn" onclick="goShop()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
         <button class="hhb-nav-item" onclick="showSubOverlay('rules')"><span class="hhb-ic"><i class="bi bi-journal-text"></i></span><span class="hhb-l">規則</span></button>
         <button class="hhb-nav-item cs" onclick="openLineContact()"><span class="hhb-ic"><i class="bi bi-chat-dots"></i></span><span class="hhb-l">客服</span></button>
       </div>
@@ -712,6 +712,45 @@
     });
 
     
+    
+    
+    
+    
+    
+    
+    window.goCampaign = function(){ location.href = '/c'; };
+
+    
+    
+    
+    var shopState = null;
+
+    window.goShop = function(){
+      if (shopState && shopState.open === false) {
+        feAlert((shopState.note || '現貨賣場即將開放，敬請期待～'),
+                { type: 'info', title: '🛍️ 現貨賣場' });
+        return;
+      }
+      location.href = '/s';
+    };
+
+    (function loadShopState(){
+      fetch('/data/campaigns.json', { cache: 'no-cache' })
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(d){
+          if (!d || !d.shop) return;
+          shopState = d.shop;
+          if (d.shop.open === false) {
+            var b = document.getElementById('navShopBtn');
+            
+            
+            if (b) { b.style.opacity = '0.45'; }
+          }
+        })
+        .catch(function(){});
+    })();
+
+    
     window.showSubOverlay=function(type){
       const ov=document.getElementById('subOverlay'),tt=document.getElementById('subOverlayTitle'),bd=document.getElementById('subOverlayBody');
       if(!ov)return;
@@ -788,11 +827,16 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     
-    async function fetchJsonRetry(url, tries, timeoutMs){
+    async function fetchJsonRetry(url, tries, timeoutMs, onRetry){
       tries = tries || 3; timeoutMs = timeoutMs || 25000;
       let last = null;
       for(let i=0;i<tries;i++){
-        if(i>0) await new Promise(r=>setTimeout(r, 800*i));
+        if(i>0){
+          
+          
+          if(onRetry) try{ onRetry(i+1, tries); }catch(e){}
+          await new Promise(r=>setTimeout(r, 800*i));
+        }
         const ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
         const timer = setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} }, timeoutMs);
         try{
@@ -822,13 +866,41 @@
     }
     function hideBodyError(){ const el=document.getElementById('bodyErrorArea'); if(el) el.style.display='none'; }
 
+    
+    
+    
+    
+    
+    function showBodyLoading(msg){
+      let el = document.getElementById('bodyLoadingArea');
+      if(!el){
+        el = document.createElement('div');
+        el.id = 'bodyLoadingArea';
+        el.style.cssText = 'margin:20px 16px;padding:24px 16px;text-align:center';
+        const home = document.getElementById('homeArea');
+        if(home && home.parentNode) home.parentNode.insertBefore(el, home);
+        else document.body.appendChild(el);
+      }
+      el.innerHTML = '<div class="spinner-border mb-3" role="status" style="width:1.8rem;height:1.8rem;"></div>'
+        + '<div style="font-size:13.5px;color:var(--brand-brown);font-weight:700;">'
+        + (msg || '訂單資料載入中…') + '</div>'
+        + '<div style="font-size:11.5px;color:#9a8f86;margin-top:5px;">您的名稱與選單已經可以使用</div>';
+      el.style.display = 'block';
+    }
+    function hideBodyLoading(){ const el=document.getElementById('bodyLoadingArea'); if(el) el.style.display='none'; }
+
     window.loadMemberBody = async function(){
       hideBodyError();
+      showBodyLoading();
       try{
-        const d = await fetchJsonRetry(`${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`);
+        const d = await fetchJsonRetry(
+          `${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`,
+          3, 25000,
+          function(n, total){ showBodyLoading('載入較慢，重新嘗試中（' + n + ' / ' + total + '）'); });
+        hideBodyLoading();
         if(d.status!=="BOUND"){ showBodyError(d.message||d.status); return; }
         renderMemberBody(d);
-      }catch(e){ showBodyError(e.message); }
+      }catch(e){ hideBodyLoading(); showBodyError(e.message); }
     };
 
     async function checkMemberStatus(){
