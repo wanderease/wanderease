@@ -574,8 +574,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const GAS_URL="https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
-    const CORE_URL="https://wanderease-api.wanderease-th.workers.dev/";
+    const GAS_URL="https:\/\/script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+    const CORE_URL="https:\/\/wanderease-api.wanderease-th.workers.dev/";
     const LIFF_ID="2009208139-8lZaYbbd";
     let currentLineUid="";
     let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
@@ -729,7 +729,7 @@
     };
     window.openLineContact=function(){
       
-      const url='https://lin.ee/mty4uxj';
+      const url='https:\/\/lin.ee/mty4uxj';
       try{
         if(window.liff && liff.isInClient && liff.isInClient()){
           liff.openWindow({url:url,external:true});
@@ -784,7 +784,7 @@
       }
     };
     window.skipFriendship=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
-    window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https://lin.ee/mty4uxj',external:false});}catch(e){window.open('https://lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
+    window.openLineAddFriend=function(){let mc=document.querySelector('#friendshipModal .modal-content');mc.style.transition='opacity .3s';mc.style.opacity='0';try{liff.openWindow({url:'https:\/\/lin.ee/mty4uxj',external:false});}catch(e){window.open('https:\/\/lin.ee/mty4uxj','_blank');}setTimeout(()=>{document.getElementById('step1-buttons').classList.replace('d-flex','d-none');let s2=document.getElementById('step2-buttons');s2.classList.remove('d-none');s2.classList.add('d-flex');setTimeout(()=>{mc.style.opacity='1';},500);},300);};
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     
@@ -1507,7 +1507,7 @@
           return `${tw.getUTCFullYear()}-${p(tw.getUTCMonth()+1)}-${p(tw.getUTCDate())} ${p(tw.getUTCHours())}:${p(tw.getUTCMinutes())}`;
         } catch(e){ return String(iso||''); }
       };
-      const _url711 = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
+      const _url711 = "https:\/\/eservice.7-11.com.tw/E-Tracking/search.aspx";
 
       const cards = history.map(h => {
         const pickedStr = h.pickedAt ? _twTime(h.pickedAt) : '';
@@ -1534,8 +1534,8 @@
         // ★ 依承運商給正確查詢連結（之前寫死 7-11，黑貓／郵局會導錯）
         const _c = String(h.carrier||'');
         const _isBc = _c.indexOf('黑貓')>=0, _isPo = _c.indexOf('郵局')>=0;
-        const _qUrl  = _isBc ? 'https://www.t-cat.com.tw/inquire/trace.aspx'
-                     : (_isPo ? 'https://postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100' : _url711);
+        const _qUrl  = _isBc ? 'https:\/\/www.t-cat.com.tw/inquire/trace.aspx'
+                     : (_isPo ? 'https:\/\/postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100' : _url711);
         const _qName = _isBc ? '黑貓宅急便查詢' : (_isPo ? '中華郵政查詢' : '7-11 貨態查詢');
         const query711 = d70s.length > 0
           ? `<a href="${_qUrl}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:8px;padding:7px;background:#f0fdf4;color:#16a34a;font-weight:700;font-size:12.5px;border:1px solid #bbf7d0;border-radius:8px;text-decoration:none;">🔍 前往${_qName}</a>`
@@ -2262,7 +2262,7 @@
               <label class="shipf-lbl">7-11 店號 *</label>
               <input class="shipf-inp" id="shipf-store-${choice}" value="${escHTML(pre.store||'')}" placeholder="例：123456" inputmode="numeric">
             </div>
-            <button type="button" class="shipf-emap-btn" onclick="window.open('https://emap.pcsc.com.tw/','_blank')">🔍 門市查詢</button>
+            <button type="button" class="shipf-emap-btn" onclick="window.open('https:\/\/emap.pcsc.com.tw/','_blank')">🔍 門市查詢</button>
           </div>
           <div class="shipf-hint">在門市查詢頁找到門市後，把「門市店號」與「門市店名」填回下方欄位</div>
           <label class="shipf-lbl">7-11 店名 *</label><input class="shipf-inp" id="shipf-storeName-${choice}" value="${escHTML(pre.storeName||'')}" placeholder="例：花園門市">
@@ -2672,7 +2672,7 @@
         if(hasOrdered){
           const ship = (mod && mod.myshipShip) ? mod.myshipShip : {};
           
-          const _url711 = "https://eservice.7-11.com.tw/E-Tracking/search.aspx";
+          const _url711 = "https:\/\/eservice.7-11.com.tw/E-Tracking/search.aspx";
 
           
           const _itemsHtml = (Array.isArray(ship.items) && ship.items.length > 0)
@@ -2800,7 +2800,7 @@
       
       const _dMap = window._shipDeliveryMap || {};
       
-      const _mk711 = (d70) => `https:
+      const _mk711 = (d70) => "https:\/\/eservice.7-11.com.tw/E-Tracking/search.aspx?CRM_PaymentNo=" + encodeURIComponent(d70) + "&FLAG=93&FROM=C2CPlatform";
 
       let trackRows = '';
       if(_shipped && (_isMyshipChoice || _isCvsShip)){
@@ -2847,16 +2847,16 @@
         const _carrierName = _isCvsShip ? '7-11 交貨便' : (_isBlackcat ? '黑貓宅急便' : '郵局包裹');
         const _carrierIcon = _isCvsShip ? '7-11' : (_isBlackcat ? '🐱' : '📮');
         const _url711home = _isCvsShip
-          ? "https:
-          : (_isBlackcat ? "https://www.t-cat.com.tw/inquire/trace.aspx"
-                         : "https://postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100");
+          ? "https:\/\/eservice.7-11.com.tw/E-Tracking/search.aspx"
+          : (_isBlackcat ? "https:\/\/www.t-cat.com.tw/inquire/trace.aspx"
+                         : "https:\/\/postserv.post.gov.tw/pstmail/main_mail.html?targetTxn=EB500100");
         const _trackSiteName = _isCvsShip ? '7-11 貨態查詢' : (_isBlackcat ? '黑貓宅急便查詢' : '中華郵政查詢');
-        
-        
+        // 明細（含金額）
+        // 🆕 出貨明細：有分箱（boxes 多箱）→ 按箱顯示（跟後台分箱一致）；單箱→整單列
         let _cvsItems = '';
         const _boxes = Array.isArray(_cvsShip.boxes) ? _cvsShip.boxes : [];
         if (_boxes.length > 1) {
-          
+          // 多箱：依箱號排序，每箱顯示品項+申報價值+單號
           const _sortedBoxes = _boxes.slice().sort(function(a,b){ return (a.boxNo||0)-(b.boxNo||0); });
           _cvsItems = `<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #d1fae5;">
             <div style="font-size:11px;color:#6b7280;margin-bottom:4px;">📦 出貨明細（共 ${_sortedBoxes.length} 箱）</div>
@@ -2890,7 +2890,7 @@
         if(_cvsShip.picked && _isShippedOut(_cvsShip.pickedAt) && (_cvsShip.hasD70 || _cvsD70s.length>0)){
           _cvsStageHtml = _stage4Html(_cvsD70s, _url711home, _trackSiteName, _cvsItems);
         }
-        
+        // 階段三：已揀貨完成（未滿 48 小時）
         else if(_cvsShip.picked && (_cvsShip.hasD70 || _cvsD70s.length>0)){
           const _pk = _twTime(_cvsShip.pickedAt);
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
@@ -2909,14 +2909,14 @@
             ${_cvsItems}${(_boxes.length>1)?'':_cvsD70Html}
           </div>`;
         }
-        
+        // 階段一：已確認配送方式（paid=true，還沒單號）
         else if(state.paid){
           _cvsStageHtml = `<div class="details-box shadow-sm mb-3" style="border:2px solid #16a34a;">
             <div style="font-size:14px;font-weight:800;color:#15803d;margin-bottom:6px;"><i class="bi bi-check-circle-fill"></i> ${_carrierName} · 已確認配送方式</div>
             <div style="font-size:12.5px;color:#374151;line-height:1.6;">已收到您的款項與配送選擇，將盡快為您安排出貨。</div>
           </div>`;
         }
-        
+        // paid=false → 不顯示配送階段框（下方匯款區會顯示待匯款）
       }
 
       let h = (_isCvsShip || _isManualShip)
@@ -2942,19 +2942,19 @@
         return h;
       }
 
-      
+      // 非賣貨便（方案B）：送出即開放，常駐顯示應匯金額 + 帳戶 + 後五碼 + 匯款狀態
       const mAmt = (state.myshipAmount!=null)?state.myshipAmount:0;
       const ship = (state.shipFee!=null)?state.shipFee:0;
       const due = (state.finalDue!=null)?state.finalDue:(mAmt+ship);
       let deadlineStr='';
       if(state.payDeadlineTs){ const dt=new Date(state.payDeadlineTs); deadlineStr=`${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`; }
 
-      
+      // 匯款狀態徽章
       const statusBadge = state.paid
         ? `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#dcfce7;color:#166534;font-weight:800;font-size:12px;">✅ 已匯款</span>`
         : `<span style="display:inline-block;padding:2px 10px;border-radius:20px;background:#fef3c7;color:#92400e;font-weight:800;font-size:12px;">⏳ 待匯款</span>`;
 
-      
+      // 🆕 已匯款（paid=true）→ 只顯示簡單確認，拿掉所有應匯明細／合計／帳戶／帳號
       if(state.paid){
         h += `<div style="border:1.5px solid #86efac;background:#f0fdf4;border-radius:12px;padding:12px 14px;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -3000,12 +3000,12 @@
       if(!/^\d{5}$/.test(v)){ alert('請輸入匯款帳號後五碼（5 位數字）'); return; }
       const payload = JSON.stringify({ lineUid: currentLineUid, last5: v });
 
-      
+      // 🔒 防連點（後端要跑幾秒，客人會以為沒反應而重複點）
       const _lock = feLockSubmit('shipLast5', _btn, '送出中…');
       if(!_lock) return;
       let _ok = false;
 
-      
+      // 同時鎖住輸入框，避免送出過程中被改動
       const _origRO = el.readOnly;
       el.readOnly = true;
 
@@ -3028,8 +3028,8 @@
     };
 
 
-    
-    
+    // 🆕 訂單列表展開／收合
+    // 🆕 點主頁統計方塊 → 展開訂單列表並只顯示該狀態的卡片；再點同方塊 → 取消篩選
     window._ordFilter = null;
     window.filterOrdersByStatus = function(status){
       const wrap=document.getElementById('orderListWrap');
@@ -3037,7 +3037,7 @@
       const btn=document.getElementById('ordViewAllBtn');
       if(!wrap||!container)return;
 
-      
+      // 再點同一個 → 取消篩選並收合
       if(window._ordFilter===status){
         window._ordFilter=null;
         container.classList.remove('ofilter-on');
@@ -3049,14 +3049,14 @@
         return;
       }
 
-      
+      // 套用篩選
       window._ordFilter=status;
       container.classList.add('ofilter-on');
       container.setAttribute('data-show',status);
       wrap.style.display='block';
       if(btn){btn.style.display='block';btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起（目前篩選中）';}
       _syncStatHighlight();
-      
+      // 空狀態提示
       var _vis=container.querySelectorAll('.card-order[data-ostatus="'+status+'"]').length;
       var _old=document.getElementById('ordFilterEmpty');if(_old)_old.remove();
       if(_vis===0){
@@ -3075,7 +3075,7 @@
 
     window.toggleOrderList=function(){
       const wrap=document.getElementById('orderListWrap'),btn=document.getElementById('ordViewAllBtn');
-      
+      // 從「完整列表」按鈕進入時，清除狀態篩選
       window._ordFilter=null;
       const _c=document.getElementById('regularOrdersContainer');
       if(_c){_c.classList.remove('ofilter-on');_c.removeAttribute('data-show');}
@@ -3094,7 +3094,7 @@
       const btn=document.getElementById('ordViewAllBtn');
       if(!btn)return;
       btn.style.display = total>0 ? 'block' : 'none';
-      
+      // 預設保持折疊；如已展開則維持
       const wrap=document.getElementById('orderListWrap');
       if(wrap && wrap.style.display==='block'){
         btn.innerHTML='<i class="bi bi-chevron-up"></i> 收起訂單列表';
@@ -3103,13 +3103,13 @@
       }
     }
 
-    
-    
-    
+    // =============================================
+    // 🎯 預購卡片
+    // =============================================
     async function loadPreorderData(){try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'getMyPreorders',lineUid:currentLineUid})});const d=await r.json();if(d.status==="SUCCESS"){poData=d.data;pendingEdits={};pendingSweep={};submittingCards.clear();renderPoCards();}}catch(e){}}
     function renderPoCards(){const c=document.getElementById('preorderCardsContainer');let list=(poData.mergedPreorders&&poData.mergedPreorders.length>=0&&poData.mergedPreorders!==undefined)?poData.mergedPreorders:(poData.preorders||[]);if(poData.mergedPreorders===undefined)list=poData.preorders||[];if(!list||!list.length){c.innerHTML='';return;}c.innerHTML=list.map((po,i)=>buildPoCard(po,i)).join('');}
 
-    
+    // ===== 🆕 合併卡編輯輔助（跨主單路由） =====
     function poCurList(){ return (poData.mergedPreorders!==undefined) ? (poData.mergedPreorders||[]) : (poData.preorders||[]); }
     function poCardMids(po){ return (po.masterIds&&po.masterIds.length)?po.masterIds:[po.masterId]; }
     function poCardEdits(po){ let r=[]; poCardMids(po).forEach(m=>{(pendingEdits[m]||[]).forEach((e,idx)=>r.push(Object.assign({_mid:m,_idx:idx},e)));}); return r; }
@@ -3122,9 +3122,9 @@
     function _poSetSrc(src,newQty,prod){ let mid=src.masterId; if(!pendingEdits[mid])pendingEdits[mid]=[]; let a=pendingEdits[mid]; let di=a.findIndex(e=>e.type==='DELETE'&&e.recordId===src.recordId); if(di>-1)a.splice(di,1); let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId); if(newQty===src.reqQty){if(ex>-1)a.splice(ex,1);} else if(newQty<=0){if(ex>-1)a.splice(ex,1); if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:prod,oldQty:src.reqQty});} else {if(ex>-1)a[ex].newQty=newQty; else a.push({type:'MODIFY',recordId:src.recordId,product:prod,oldQty:src.reqQty,newQty:newQty});} }
     function poFindItem(cardIdx,repRid){ let po=poCurList()[cardIdx]; if(!po)return null; let it=(po.items||[]).find(x=>x.recordId===repRid); return it?{po:po,it:it}:null; }
     function poCardByMid(mid){ return poCurList().find(p=>poCardMids(p).includes(mid)); }
-    
+    // 改數量：加→加購(最新)、減→加購先扣再原單；底層各自路由到來源主單
     function poMergedQty(cardIdx,repRid,delta,maxQ){ let f=poFindItem(cardIdx,repRid); if(!f)return; let it=f.it; let srcs=poItemSrcs(it); let total=poItemEff(it); if(delta>0){ if(maxQ>0&&total+1>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;} let last=srcs[srcs.length-1]; _poSetSrc(last,poSrcEff(last)+1,it.product);} else { if(total<=1)return; for(let k=srcs.length-1;k>=0;k--){let eff=poSrcEff(srcs[k]); if(eff>0){_poSetSrc(srcs[k],eff-1,it.product);break;}} } renderPoCards(); }
-    
+    // 刪除整品項：底層兩筆一起刪
     function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length;
       function _doDel(){ srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
       if(activeCnt<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
@@ -3199,7 +3199,7 @@
           }
         });
       }
-      
+      // === 唯讀 ===
       else{po.items.filter(i=>!i.isSwapped).forEach(i=>{
         if(i.isCancelled){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">${escHTML(i.product)}</span><span style="font-size:10px;color:#888;">已取消</span></div>`;return;}
         if(i.isWaitlisted){ih+=`<div class="po-irow" style="opacity:.4;"><span style="color:#888;">⏳ ${escHTML(i.product)}</span><span style="font-size:10px;color:#856404;">已轉候補</span></div>`;return;}
@@ -3210,7 +3210,7 @@
         else if(s==='LOCKED'){if(i.allocQty>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#198754;">✅ ${escHTML(i.product)} x${i.allocQty}</span><span class="po-iprice">$${i.price}</span></div>`;if(sh>0)ih+=`<div class="po-irow"><span class="po-iname" style="color:#dc3545;">${i.allocQty>0?'⚠️':'❌'} ${escHTML(i.product)} x${sh}</span><span class="po-iprice" style="color:#a95a52;">等待處理</span></div>`;}
       });}
 
-      
+      // 預覽
       let pv='';
       if(s==='EDITING'&&ed.length>0){let pi=ed.map((e)=>{if(e.type==='DELETE')return`<div class="po-pv-item" style="background:#fdf3f2;color:#791f1f;"><span>🗑️ 刪除：${escHTML(e.product)} x${e.oldQty}</span><span class="po-pv-undo" style="color:#dc3545;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='MODIFY'&&e.newQty!==e.oldQty)return`<div class="po-pv-item" style="background:#e6f1fb;color:#0c447c;"><span>✏️ 修改：${escHTML(e.product)} ${e.oldQty}→${e.newQty}</span><span class="po-pv-undo" style="color:#185fa5;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;if(e.type==='ADD')return`<div class="po-pv-item" style="background:#eaf3de;color:#27500a;"><span>➕ 新增：${escHTML(e.product)} x${e.qty}</span><span class="po-pv-undo" style="color:#3b6d11;" onclick="poUndo('${e._mid}',${e._idx})">撤回</span></div>`;return'';}).filter(x=>x).join('');if(pi)pv=`<div class="po-preview"><div class="po-preview-title">📋 確認變更預覽：</div>${pi}<button class="po-submit-btn" onclick="submitEdits(${idx})">確認送出修改</button></div>`;}
       if(s==='SWEEP'&&dec.length>0){let pi=dec.map((d)=>{let bg=d.action==='CANCEL'?'background:#fdf3f2;color:#791f1f;':'background:#fff3cd;color:#633806;',ic=d.action==='CANCEL'?'🗑️ 取消':'⏳ 候補',uc=d.action==='CANCEL'?'color:#dc3545;':'color:#856404;';return`<div class="po-pv-item" style="${bg}"><span>${ic}：${escHTML(d.product)} x${d.reqQty-d.allocQty}</span><span class="po-pv-undo" style="${uc}" onclick="sweepUndo('${d._mid}',${d._idx})">撤回</span></div>`;}).join('');pv=`<div class="po-preview"><div class="po-preview-title">📋 確認預覽：</div>${pi}<button class="po-submit-btn" onclick="submitSweep(${idx})">確認送出</button></div>`;}
@@ -3223,7 +3223,7 @@
       return`<div class="${_cardCls}" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${_pvShow}${_updBar}${nt}${notes}</div></div>`;
     }
 
-    
+    // ===== 改單操作 =====
     function poEditQty(mid,rid,prod,orig,cur,d,maxQ){let nq=Math.max(1,cur+d);if(maxQ>0&&nq>maxQ){weToast(`此品項限購 ${maxQ} 件`,"error");return;}if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid],ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===rid);if(nq===orig){if(ex>-1)a.splice(ex,1);}else{if(ex>-1)a[ex].newQty=nq;else a.push({type:'MODIFY',recordId:rid,product:prod,oldQty:orig,newQty:nq});}renderPoCards();}
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;
       function _doDel(){ a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty}); renderPoCards(); }
@@ -3258,7 +3258,7 @@
         let mids = poCardMids(po);
         let hasAny = mids.some(m => (pendingEdits[m]||[]).length>0);
         if(!hasAny) return;
-        
+        // 組合變更摘要
         let _rows = "";
         mids.forEach(mid => { (pendingEdits[mid]||[]).forEach(function(e){
           if(e.type==='ADD') _rows+='<div style="background:#eaf3de;color:#27500a;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;margin-bottom:6px;">➕ 新增：'+escHTML(e.product)+' ×'+e.qty+'</div>';
@@ -3267,9 +3267,9 @@
         }); });
         weConfirm({ title:"確認送出修改？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">本次變更</div>'+_rows }).then(function(ok){
           if(!ok) return;
-          
-          mids.forEach(mid => submittingCards.add(mid)); 
-          renderPoCards();                                
+          // 🌟 樂觀更新：加鎖→立即顯opt狀→背景fetch→成功清pending+重拉 ／ 失敗還原
+          mids.forEach(mid => submittingCards.add(mid)); // 鎖定（防重複送出）
+          renderPoCards();                                // pending 暫不清，畫面呈現最終樣子+更新中
           let _jobs = [];
           mids.forEach(mid => {
             let ed = pendingEdits[mid];
@@ -3279,25 +3279,25 @@
               .then(r => r.json()).then(d => { if(d.status !== "SUCCESS"){ console.error("背景處理異常:", d.message); throw new Error(d.message||"FAIL"); } return true; }));
           });
           Promise.all(_jobs).then(function(){
-            
+            // ✅ 全數成功：清 pending、解鎖、重拉真實資料
             mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
             weToast("修改已完成","success");
             setTimeout(loadPreorderData, 600);
           }).catch(function(err){
-            
+            // ❌ 失敗：退回原狀（撤銷本次變更）+紅 Toast
             mids.forEach(mid => { delete pendingEdits[mid]; submittingCards.delete(mid); });
             renderPoCards();
             weToast("更新失敗，已還原，請再試一次","error");
-            setTimeout(loadPreorderData, 600); 
+            setTimeout(loadPreorderData, 600); // 以後端真實狀態為準
           });
         });
     }
 
-    
+    // ===== 二選一操作 =====
     function sweepSel(mid,rid,prod,brand,series,rq,aq,act){if(!pendingSweep[mid])pendingSweep[mid]=[];if(pendingSweep[mid].find(d=>d.recordId===rid))return;pendingSweep[mid].push({recordId:rid,product:prod,brand,series,reqQty:+rq,allocQty:+aq,action:act});renderPoCards();}
     function sweepUndo(mid,i){let a=pendingSweep[mid];if(a)a.splice(i,1);renderPoCards();}
     
-    
+    // 🌟 樂觀更新 (Optimistic UI)
     function submitSweep(cardIdx){
         let po = poCurList()[cardIdx]; if(!po) return;
         let mids = poCardMids(po);
@@ -3311,7 +3311,7 @@
         }); });
         weConfirm({ title:"確認送出決定？", okText:"確認送出", cancelText:"再檢查", bodyHtml:'<div style="font-size:11px;font-weight:700;color:#8a7a6a;margin-bottom:8px;">您的決定</div>'+_rows }).then(function(ok){
           if(!ok) return;
-          mids.forEach(mid => submittingCards.add(mid)); 
+          mids.forEach(mid => submittingCards.add(mid)); // 鎖定
           renderPoCards();
           let _jobs = [];
           mids.forEach(mid => {
@@ -3334,12 +3334,12 @@
         });
     }
 
-    
+    // ===== 候補頁面（V2 完整版） =====
     let wlCustomerData = null;
 
     async function loadWaitlistData(){
-      
-      
+      // 🔑 管理員檢視模式：不重打 API（會用 currentLineUid 變成管理員自己的資料），
+      //    改用 executeAdminSearch 已載入的目標客人候補資料重新渲染
       if (window._adminViewMode && wlInitialData) {
         renderWL(wlInitialData);
         return;
