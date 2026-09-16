@@ -715,6 +715,9 @@ function boot(d) {
       try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
 
       
+      friendPrefetchStart();
+
+      
       if (early === p.userId) return;
 
       meLoading = true;
@@ -1509,16 +1512,34 @@ var LINE_ADD_URL = 'https://lin.ee/mty4uxj';
 var friendState = null;
 var friendChecking = false;
 var friendTimers = [];
+var friendPrefetch = null;   
+
+
+
+function friendPrefetchStart() {
+  if (friendPrefetch || !(me && me.uid)) return;
+  friendPrefetch = friendCheck().then(function (ok) {
+    friendState = ok;
+    return ok;
+  });
+}
 
  
 function friendAskClient() {
   return new Promise(function (resolve) {
+    
+    
+    
+    
+    var done = false;
+    var fin = function (v) { if (!done) { done = true; resolve(v); } };
+    setTimeout(function () { fin(null); }, 4000);
     try {
-      if (typeof liff === 'undefined' || !liff.isLoggedIn()) { resolve(null); return; }
+      if (typeof liff === 'undefined' || !liff.isLoggedIn()) { fin(null); return; }
       liff.getFriendship()
-        .then(function (f) { resolve(f && typeof f.friendFlag === 'boolean' ? f.friendFlag : null); })
-        .catch(function () { resolve(null); });
-    } catch (e) { resolve(null); }
+        .then(function (f) { fin(f && typeof f.friendFlag === 'boolean' ? f.friendFlag : null); })
+        .catch(function () { fin(null); });
+    } catch (e) { fin(null); }
   });
 }
 
@@ -1746,19 +1767,19 @@ function submitOrder() {
 
 
 function friendGateThenSubmit() {
-  var btns = document.querySelectorAll('.bar button');
-  var sendBtn = btns.length ? btns[btns.length - 1] : null;
-  if (sendBtn) sendBtn.textContent = '確認中…';
+  
+  if (friendState === false) { friendShowGate(); return; }
+  if (friendState === true) { submitOrder_(); return; }
 
-  friendCheck().then(function (ok) {
-    friendState = ok;
-    if (ok === false) {
-      if (sendBtn) sendBtn.textContent = '送出訂單';
-      friendShowGate();
-      return;
-    }
-    submitOrder_();
-  });
+  
+  
+  
+  
+  
+  
+  
+  if (!friendPrefetch) friendPrefetchStart();
+  submitOrder_();
 }
 
 function submitOrder_() {
