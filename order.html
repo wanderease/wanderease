@@ -81,6 +81,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .chip{font-size:13px;padding:7px 14px;border-radius:99px;border:1px solid var(--line);
       background:var(--white);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .chip.on{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:700}
+ 
+.chip.out{color:#b0a69b;border-color:#efe9e2;text-decoration:line-through}
 .srow{display:flex;align-items:center;gap:10px;border:1px solid #e9e3db;border-radius:10px;
       padding:8px 9px 8px 14px;margin-top:6px}
 .srow.has{border-color:var(--brown);background:#faf6f2}
@@ -285,6 +287,11 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
             border-radius:9px;padding:8px 11px;margin-top:8px;text-align:center}
  
 .nosz-note{font-size:11.5px;color:var(--mute);margin-top:8px;text-align:center}
+ 
+.srow.out{background:#f7f5f3;border-color:#efe9e2}
+.srow.out .sl{color:#a79a8d;text-decoration:line-through}
+.srow .sold{font-size:12px;color:#9a6a62;font-weight:700;flex:0 0 auto}
+.sold-note{font-size:11.5px;color:var(--mute);margin-top:8px;text-align:center}
 .qty-off .srow{background:#f6f3f0}
 .srow .mine{font-size:11.5px;background:#eef3e9;color:var(--ok);border:1px solid #cfdcc2;
             padding:1px 8px;border-radius:99px;margin-left:6px;font-weight:700}
@@ -571,6 +578,108 @@ function sizeOK(c, size) {
   return c.sz.indexOf(String(size)) >= 0;
 }
 
+
+
+function offKey(cn, size) {
+  var c = String(cn == null ? '' : cn);
+  var s = (size === '-' || size == null) ? '' : String(size);
+  return (!c && !s) ? '*' : (c + '|' + s);
+}
+
+ 
+function isOff(p, cn, size) {
+  var o = (p && p.off) || [];
+  return o.length ? (o.indexOf(offKey(cn, size)) >= 0) : false;
+}
+
+ 
+function availOf(p, c) {
+  return (p.sizes || []).filter(function (s) { return sizeOK(c, s); });
+}
+
+
+
+function colorOut(p, c) {
+  if (!(p.sizes || []).length) return isOff(p, c ? c.n : '', '-');
+  var av = availOf(p, c);
+  if (!av.length) return true;
+  for (var i = 0; i < av.length; i++) {
+    if (!isOff(p, c ? c.n : '', av[i])) return false;
+  }
+  return true;
+}
+
+
+
+function pruneCart() {
+  if (!C || !C.products) return;
+  var changed = false;
+  Object.keys(cart).forEach(function (k) {
+    var a = k.split('|');
+    var p = C.products[Number(a[0])];
+    if (!p) { delete cart[k]; changed = true; return; }
+    var c = (p.colors || [])[Number(a[1])];
+    if (isOff(p, c ? c.n : '', a[2])) { delete cart[k]; changed = true; }
+  });
+  if (changed) saveCart();
+}
+
+
+
+function duePassed() {
+  if (!C || !C.due) return false;
+  var t = new Date(C.due).getTime();
+  if (isNaN(t)) return false;
+  return Date.now() >= t;
+}
+
+ 
+function isClosed() {
+  if (!C) return false;
+  return (C.state !== '開放收單') || duePassed();
+}
+
+ 
+var closedJustNow = false;
+var dueTimer = null;
+
+
+
+function armDueTimer() {
+  if (dueTimer) { clearTimeout(dueTimer); dueTimer = null; }
+  if (!C || !C.due) return;
+  var t = new Date(C.due).getTime();
+  if (isNaN(t)) return;
+
+  var ms = t - Date.now();
+  if (ms <= 0) return;
+  var MAX = 6 * 3600 * 1000;
+  var wait = (ms > MAX) ? MAX : (ms + 500);   
+
+  dueTimer = setTimeout(function () {
+    dueTimer = null;
+    if (isClosed()) dueReached();
+    else armDueTimer();
+  }, wait);
+}
+
+function dueReached() {
+  if (closedJustNow) return;
+  closedJustNow = true;
+  
+  
+  draw();
+}
+
+
+
+document.addEventListener('visibilitychange', function () {
+  if (document.hidden) return;
+  if (!C) return;
+  if (isClosed()) dueReached();
+  else armDueTimer();
+});
+
 function priceOf(pi, ci, size) {
   var p = C.products[pi] || {};
   var base = p.price || 0;
@@ -667,6 +776,8 @@ function boot(d) {
 
     loadCart();
     draw();
+    
+    armDueTimer();
 }
 
 
@@ -859,6 +970,9 @@ function draw(toTop) {
   var form = snapForm();
 
   
+  pruneCart();
+
+  
   
   
   document.getElementById('root').innerHTML =
@@ -927,6 +1041,22 @@ function orderedBar() {
 
 
 
+
+
+function closedBar() {
+  return '<div class="done-bar warn">' +
+    '<div class="t1"><i class="bi bi-clock-history"></i>' +
+    '<b>這一團已經截止收單</b></div>' +
+    '<div class="rows2"><div><span>截止時間</span><span>' +
+    esc(fmtDue(C.due)) + '</span></div>' +
+    '<div><span></span><span>' +
+    '剛好在你填單的時候到時間了，很抱歉。' +
+    '你選的東西還留在畫面上，如果想問還有沒有機會，可以跟我們說。' +
+    '</span></div></div>' +
+    '<div class="act"><a class="main" href="/c">看看其他開放中的團</a></div>' +
+    '</div>';
+}
+
 function failedBar() {
   return '<div class="done-bar warn">' +
     '<div class="t1"><i class="bi bi-exclamation-triangle-fill"></i>' +
@@ -971,7 +1101,7 @@ function orderedMap() {
 }
 
 function view1() {
-  var closed = (C.state !== '開放收單');
+  var closed = isClosed();
   var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
   
   
@@ -987,6 +1117,12 @@ function view1() {
        (closed ? '已於 ' + fmtDue(C.due) + ' 截止' : '收單至 ' + fmtDue(C.due)) +
        '</span></div>';
   if (C.about) h += '<div class="about">' + esc(C.about) + '</div>';
+
+  
+  
+  
+  
+  if (closedJustNow && !ordered) h += closedBar();
 
   
   if (ordered) h += orderedBar();
@@ -1090,7 +1226,10 @@ function view1() {
     if ((p.colors || []).length) {
       h += '<h3>' + esc(ow) + '</h3><div class="chips">';
       p.colors.forEach(function (cc, ci) {
+        
+        
         h += '<span class="chip' + (sel != null && ci === sel ? ' on' : '') +
+             (colorOut(p, cc) ? ' out' : '') +
              '" onclick="pick(' + pi + ',' + ci + ')">' + esc(cc.n) + '</span>';
       });
       h += '</div>';
@@ -1120,13 +1259,24 @@ function view1() {
 
       h += '<h3>' + esc(sw) + (c ? ' · ' + esc(c.n) : '') + '</h3>';
       if (lockQty) h += '<div class="qty-off">';
+      var offN = 0;
       avail.forEach(function (s) {
         var k = pi + '|' + si + '|' + s;
         var mine = om[cname + '|' + s] || 0;
         var q = mine || cart[k] || 0;
+        
+        
+        
+        
+        if (isOff(p, cname, s)) {
+          offN++;
+          h += soldRow(esc(s), mine);
+          return;
+        }
         h += stepRow(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
+      if (offN) h += '<div class="sold-note">' + SOLD_NOTE + '</div>';
 
       
       
@@ -1143,9 +1293,15 @@ function view1() {
       var mine0 = om[cname + '|'] || 0;
       var q0 = mine0 || cart[k0] || 0;
       h += '<h3>數量</h3>';
-      if (lockQty) h += '<div class="qty-off">';
-      h += stepRow(k0, cname || '數量', 0, q0, full, closed, pi, false, mine0);
-      if (lockQty) h += '</div>';
+      
+      if (isOff(p, cname, '-')) {
+        h += soldRow(esc(cname || '數量'), mine0) +
+             '<div class="sold-note">' + SOLD_NOTE + '</div>';
+      } else {
+        if (lockQty) h += '<div class="qty-off">';
+        h += stepRow(k0, cname || '數量', 0, q0, full, closed, pi, false, mine0);
+        if (lockQty) h += '</div>';
+      }
     }
 
     
@@ -1177,6 +1333,19 @@ function view1() {
          '</div>';
   }
   return h;
+}
+
+ 
+var SOLD_NOTE = '官方目前已售完，若有補貨會再開放';
+
+
+
+function soldRow(label, mine) {
+  return '<div class="srow out">' +
+    '<span class="sl">' + label +
+    (mine ? '<span class="mine">已訂 ' + mine + '</span>' : '') +
+    '</span>' +
+    '<span class="sold">官方已售完</span></div>';
 }
 
 
@@ -1369,13 +1538,15 @@ function view2() {
   }, 0);
 
   
+  
   var allConfirmed = cfs.every(function (x) { return !!confirmAt[x]; });
-  var ok = allConfirmed && (!C.notice || agreed) && !meLoading;
+  var shut = isClosed();
+  var ok = allConfirmed && (!C.notice || agreed) && !meLoading && !shut;
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
     '<div class="t">' + (official ? '應匯' : '總金額') +
     '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
     '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">' +
-    (meLoading ? '讀取中…' : '送出訂單') + '</button></div>';
+    (shut ? '已截止' : (meLoading ? '讀取中…' : '送出訂單')) + '</button></div>';
   return h;
 }
 
@@ -1477,6 +1648,21 @@ function pick(pi, ci) {
   draw();
 }
 function ch(k, d, pi) {
+  if (d > 0) {
+    
+    if (isClosed()) { alert('這一團已經截止收單了。'); dueReached(); return; }
+
+    
+    
+    var a = String(k).split('|');
+    var pp = C.products[Number(a[0])];
+    var cc = pp ? (pp.colors || [])[Number(a[1])] : null;
+    if (pp && isOff(pp, cc ? cc.n : '', a[2])) {
+      alert(SOLD_NOTE + '。');
+      draw();
+      return;
+    }
+  }
   if (d > 0 && pi != null) {
     var p = C.products[pi];
     if (p.limit > 0 && pQty(pi) >= p.limit) {
@@ -1696,6 +1882,14 @@ function editName() {
 
 
 function submitOrder() {
+  
+  
+  if (isClosed()) {
+    alert('這一團已經截止收單了。');
+    dueReached();
+    return;
+  }
+
   if (meLoading) {
     var b0 = document.querySelectorAll('.bar button');
     if (b0.length) b0[b0.length - 1].textContent = '準備中…';
@@ -1783,6 +1977,16 @@ function friendGateThenSubmit() {
 }
 
 function submitOrder_() {
+  
+  
+  
+  
+  if (isClosed()) {
+    alert('這一團已經截止收單了。');
+    dueReached();
+    return;
+  }
+
   
   
   
