@@ -576,6 +576,12 @@
   <script>
     const GAS_URL="https:\/\/script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
     const CORE_URL="https:\/\/wanderease-api.wanderease-th.workers.dev/";
+
+    
+
+    const MAIN_URL = GAS_URL;   
+    const REST_URL = GAS_URL;   
+
     const LIFF_ID="2009208139-8lZaYbbd";
     let currentLineUid="";
     let poData={preorders:[],cancelCount:0},pendingEdits={},pendingSweep={};
@@ -902,26 +908,70 @@
     }
     function hideBodyLoading(){ const el=document.getElementById('bodyLoadingArea'); if(el) el.style.display='none'; }
 
+    
+
     window.loadMemberBody = async function(){
       hideBodyError();
       showBodyLoading();
       try{
-        
-        
-        
-        
-        
-        
-        
         const d = await fetchJsonRetry(
-          GAS_URL, 3, 25000,
+          MAIN_URL, 3, 25000,
           function(n, total){ showBodyLoading('載入較慢，重新嘗試中（' + n + ' / ' + total + '）'); },
-          { action: 'getMemberData', lineUid: currentLineUid });
+          { action: 'getMemberMain', lineUid: currentLineUid });
         hideBodyLoading();
         if(d.status!=="BOUND"){ showBodyError(d.message||d.status); return; }
         renderMemberBody(d);
+        
+        loadMemberRest();
       }catch(e){ hideBodyLoading(); showBodyError(e.message); }
     };
+
+    
+
+    window.loadMemberRest = async function(){
+      restShowLoading();
+      try{
+        const d = await fetchJsonRetry(
+          REST_URL, 3, 25000, null,
+          { action: 'getMemberRest', lineUid: currentLineUid });
+        if(d.status!=="BOUND"){ restShowError(d.message||d.status); return; }
+        renderMemberRest(d);
+      }catch(e){ restShowError(e.message); }
+    };
+
+     
+    function restShowLoading(){
+      const wl = document.getElementById('waitlistContainer');
+      if(wl) wl.innerHTML = '<div class="wl-empty">候補資料載入中…</div>';
+      const se = document.getElementById('shipEmpty');
+      if(se){ se.style.display = 'block'; se.innerText = '出貨資料載入中…'; }
+    }
+
+    function restShowError(msg){
+      const retry = '<button onclick="loadMemberRest()" style="background:#795238;color:#fff;'
+        + 'border:0;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;'
+        + 'margin-top:8px">重新載入</button>';
+      const wl = document.getElementById('waitlistContainer');
+      if(wl) wl.innerHTML = '<div class="wl-empty">候補資料載入失敗<br>' + retry + '</div>';
+      const se = document.getElementById('shipEmpty');
+      if(se){
+        se.style.display = 'block';
+        se.innerHTML = '出貨資料載入失敗<br>' + retry;
+      }
+      try{ console.log('[第二批失敗] ' + msg); }catch(_e){}
+    }
+
+     
+    function renderMemberRest(d){
+      try{
+        const se = document.getElementById('shipEmpty');
+        if(se) se.innerText = '🚚 目前沒有需要下單的出貨內容';
+        wlInitialData = d.waitlistData || { groups:[], cancelled:[] };
+        renderWL(wlInitialData);
+        renderShipPage(d.shipData || null);
+        try{ console.log('[第二批] lap =', JSON.stringify(d.lap||{})); }catch(_e){}
+      }catch(e){ restShowError(e.message); }
+    }
 
     async function checkMemberStatus(){
       try{
@@ -943,7 +993,14 @@
       }
     }
 
-    function renderMemberBody(d){try{if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();wlInitialData=d.waitlistData||{groups:[],cancelled:[]};renderWL(wlInitialData);try{console.log('[部署檢查] feVersion =', d.feVersion, '| shipModule =', d.shipData&&d.shipData.shipModule);}catch(_e){}renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData||null);}else document.getElementById('bindArea').style.display='block';}catch(e){showBodyError(e.message);}}
+    function renderMemberBody(d){try{if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();
+      
+      
+      
+      if(d.waitlistData){ wlInitialData=d.waitlistData; renderWL(wlInitialData); }
+      try{console.log('[部署檢查] feVersion =', d.feVersion, '| lap =', JSON.stringify(d.lap||{}));}catch(_e){}
+      
+      renderHomeFrames(d.orders||[],d.preorderData||{},d.shipData);}else document.getElementById('bindArea').style.display='block';}catch(e){showBodyError(e.message);}}
     async function executeBind(){const ph=document.getElementById('bindPhone').value.trim(),em=document.getElementById('bindEmail').value.trim(),nm=document.getElementById('bindName').value.trim();if(!ph||!em||!nm)return alert("所有欄位皆為必填！");const btn=document.getElementById('btnBind');btn.innerText="資料寫入中...";btn.disabled=true;try{const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'bindUser',lineUid:currentLineUid,phone:ph,email:em,name:nm})});const d=await r.json();if(d.status==="SUCCESS"){document.getElementById('bindArea').style.display='none';document.getElementById('loadingArea').style.display='block';let lt=document.querySelector('#loadingArea p');if(lt)lt.innerText="✅ 綁定成功！";setTimeout(checkMemberStatus,1500);}else{alert("錯誤: "+d.message);btn.innerText="確認綁定";btn.disabled=false;}}catch(e){alert("網路錯誤");btn.innerText="確認綁定";btn.disabled=false;}}
     
     
@@ -1426,7 +1483,10 @@
         }
       }
       
-      renderShipPage(shipData);
+      
+      
+      
+      if(shipData !== undefined) renderShipPage(shipData);
     }
 
     function renderShipPage(shipData){
