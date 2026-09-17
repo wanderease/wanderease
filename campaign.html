@@ -236,6 +236,17 @@ function fmtDay(iso) {
   return (d.getMonth() + 1) + '/' + d.getDate();
 }
 
+
+
+function campClosed(c) {
+  if (!c) return true;
+  if (c.state !== '開放收單') return true;
+  if (!c.due) return false;
+  var t = new Date(c.due).getTime();
+  if (isNaN(t)) return false;
+  return Date.now() >= t;
+}
+
 function render() {
   var list = document.getElementById('list');
   document.getElementById('sk').style.display = 'none';
@@ -246,13 +257,13 @@ function render() {
     return;
   }
 
-  var open = CAMPS.filter(function (c) { return c.state === '開放收單'; }).length;
+  var open = CAMPS.filter(function (c) { return !campClosed(c); }).length;
   document.getElementById('sub').textContent =
     open ? (open + ' 團開放中') : '目前沒有開放中的團';
 
 
   list.innerHTML = CAMPS.map(function (c) {
-    var closed = (c.state !== '開放收單');
+    var closed = campClosed(c);
     var n = (c.products || []).length;
     return '<a class="card' + (closed ? ' closed' : '') + '" href="/o/' + encodeURIComponent(c.id) + '">' +
       (c.cover
