@@ -241,7 +241,20 @@ WE.loadCampaigns().then(function (d) {
     applyShopState(d.shop);
 
     if (!d.campaigns) return;
-    var open = d.campaigns.filter(function (c) { return c.state === '開放收單'; });
+    
+    
+    
+    
+    
+    
+    
+    var open = d.campaigns.filter(function (c) {
+      if (!c || c.state !== '開放收單') return false;
+      if (!c.due) return true;
+      var t = new Date(c.due).getTime();
+      if (isNaN(t)) return true;
+      return Date.now() < t;
+    });
     if (!open.length) {
       document.getElementById('cSub').textContent = '目前沒有開放中的團';
       return;
