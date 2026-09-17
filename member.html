@@ -827,7 +827,9 @@
     window.confirmFriendshipAdded=function(){let m=bootstrap.Modal.getInstance(document.getElementById('friendshipModal'));if(m)m.hide();document.getElementById('loadingArea').style.display='block';checkMemberStatus();};
 
     
-    async function fetchJsonRetry(url, tries, timeoutMs, onRetry){
+    
+
+    async function fetchJsonRetry(url, tries, timeoutMs, onRetry, postBody){
       tries = tries || 3; timeoutMs = timeoutMs || 25000;
       let last = null;
       for(let i=0;i<tries;i++){
@@ -840,7 +842,15 @@
         const ctrl = (typeof AbortController!=='undefined') ? new AbortController() : null;
         const timer = setTimeout(function(){ try{ if(ctrl) ctrl.abort(); }catch(e){} }, timeoutMs);
         try{
-          const r = await fetch(url, ctrl ? {signal:ctrl.signal} : undefined);
+          const opt = {};
+          if(ctrl) opt.signal = ctrl.signal;
+          if(postBody){
+            
+            opt.method = "POST";
+            opt.headers = {"Content-Type":"application/x-www-form-urlencoded"};
+            opt.body = new URLSearchParams(postBody);
+          }
+          const r = await fetch(url, opt);
           clearTimeout(timer);
           const txt = await r.text();
           return JSON.parse(txt);
@@ -896,10 +906,17 @@
       hideBodyError();
       showBodyLoading();
       try{
+        
+        
+        
+        
+        
+        
+        
         const d = await fetchJsonRetry(
-          `${GAS_URL}?action=getMemberData&lineUid=${currentLineUid}`,
-          3, 25000,
-          function(n, total){ showBodyLoading('載入較慢，重新嘗試中（' + n + ' / ' + total + '）'); });
+          GAS_URL, 3, 25000,
+          function(n, total){ showBodyLoading('載入較慢，重新嘗試中（' + n + ' / ' + total + '）'); },
+          { action: 'getMemberData', lineUid: currentLineUid });
         hideBodyLoading();
         if(d.status!=="BOUND"){ showBodyError(d.message||d.status); return; }
         renderMemberBody(d);
