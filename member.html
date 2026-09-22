@@ -2471,6 +2471,27 @@
     window._feBusy = {};   
 
     
+    
+    
+    
+    
+    
+    
+    
+    async function feReadShipBack(){
+      try{
+        const d = await fetchJsonRetry(REST_URL, 2, 20000, null,
+          { action: 'getMemberRest', lineUid: currentLineUid });
+        if(!d || d.status !== 'BOUND' || !d.shipData) return null;
+        return d;
+      }catch(e){ return null; }
+    }
+    function feShipStateOf(d){
+      const sm = (d && d.shipData && d.shipData.shipModule) ? d.shipData.shipModule : null;
+      return (sm && sm.state) ? sm.state : null;
+    }
+
+    
 
 
 
@@ -2671,7 +2692,33 @@
           alert(d.message||'送出失敗');
         }
       }catch(e){
-        alert('連線異常：'+e.message);
+        
+        const _back = await feReadShipBack();
+        const _st = feShipStateOf(_back);
+        if(_st && (_st.confirmed || _st.locked) && _st.shipChoice === choice){
+          _ok = true;
+          renderShipPage(_back.shipData);
+          if(choice === 'myship'){
+            const _murl2 = window._shipMyshipUrl || '';
+            if(_murl2){
+              setTimeout(function(){
+                try{
+                  if(window.liff && liff.isInClient && liff.isInClient()){
+                    liff.openWindow({ url:_murl2, external:true });
+                  } else {
+                    window.open(_murl2, '_blank');
+                  }
+                }catch(e3){ window.open(_murl2, '_blank'); }
+              }, 300);
+            } else {
+              await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
+            }
+          } else {
+            await feAlert('配送方式已送出成功，匯款資訊請見出貨頁。', {type:'success', title:'✅ 已送出'});
+          }
+        } else {
+          alert('送出時網路不穩，無法確認是否送出成功。\n請關閉會員中心重新開啟：若出貨頁已顯示確認內容就代表完成，不需要再送一次。\n（' + e.message + '）');
+        }
       }finally{
         
         
@@ -3172,7 +3219,16 @@
         }
         else alert(d.message||'送出失敗');
       }catch(e){
-        alert('連線異常：'+e.message);
+        // 同上：先重讀確認後五碼是否已經寫進去
+        const _back = await feReadShipBack();
+        const _st = feShipStateOf(_back);
+        if(_st && String(_st.last5 || '') === v){
+          _ok = true;
+          renderShipPage(_back.shipData);
+          alert('✅ 已送出後五碼');
+        } else {
+          alert('送出時網路不穩，無法確認是否送出成功。\n請關閉會員中心重新開啟，確認後五碼有沒有顯示，沒有的話再送一次。\n（' + e.message + '）');
+        }
       }finally{
         feUnlockSubmit(_lock, _ok);
         el.readOnly = _origRO;
