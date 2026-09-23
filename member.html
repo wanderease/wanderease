@@ -420,6 +420,23 @@
     <div id="step2-buttons" class="d-none flex-column gap-3 mt-4 pt-2"><button type="button" class="btn btn-success fw-bold" onclick="confirmFriendshipAdded()" style="padding:16px;font-size:16px;border-radius:12px;background:#198754;color:#fff;border:none;">✅ 我已經加好友了，進入系統</button></div>
   </div></div></div></div>
 
+  <div id="loginHelpArea" style="display:none;">
+    <div class="header-img"><h2 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color:#d1c8c1;">會員中心</p></div>
+    <div class="container">
+      <div class="card card-custom overlap-top" style="padding:22px 18px;">
+        <div style="font-size:15px;font-weight:800;color:#795238;margin-bottom:8px;">請改用 LINE 開啟會員中心</div>
+        <div style="font-size:13px;color:#5b5b5b;line-height:1.8;">
+          這個瀏覽器沒有辦法完成 LINE 登入，所以認不出您的身分。<br>
+          按下方按鈕就會在 LINE 裡面開啟，不需要登入也不用改任何設定。
+        </div>
+        <a id="loginHelpOpenLine" href="#" style="display:block;text-align:center;margin-top:16px;padding:12px;background:#06c755;color:#fff;font-weight:800;font-size:15px;border-radius:10px;text-decoration:none;">在 LINE 中開啟</a>
+        <a id="loginHelpRetry" href="#" style="display:block;text-align:center;margin-top:10px;padding:10px;background:#fff;color:#795238;border:1px solid #d8c9b6;font-weight:700;font-size:13.5px;border-radius:10px;text-decoration:none;">再試一次登入</a>
+        <div style="font-size:12px;color:#9a8f86;line-height:1.8;margin-top:14px;">
+          如果每次點連結都會跳出 LINE，是 LINE 設定裡開了「使用預設瀏覽器開啟連結」。關掉之後就會直接在 LINE 裡開啟。
+        </div>
+      </div>
+    </div>
+  </div>
   <div id="bindArea" style="display:none;"><div class="header-img"><h2 class="fw-bold m-0" style="letter-spacing:1px;">Wander Ease</h2><p class="small mt-2 mb-0" style="color:#d1c8c1;">會員中心</p></div><div class="container"><div class="card card-custom overlap-top">
     <h5 class="fw-bold mb-3 text-center">👋 歡迎加入！初次綁定</h5>
     <div class="text-danger fw-bold mb-3 text-center" style="font-size:.9rem;"><i class="bi bi-exclamation-circle-fill me-1"></i> 手機號碼與 Email 很重要，慢慢輸入不要急~</div>
@@ -785,6 +802,20 @@
     };
 
     
+
+    
+    function showLoginHelp(){
+      var el=document.getElementById('loadingArea');
+      if(el) el.style.display='none';
+      var box=document.getElementById('loginHelpArea');
+      if(!box) return;
+      var a=document.getElementById('loginHelpOpenLine');
+      if(a) a.href='https:\/\/liff.line.me/'+LIFF_ID;
+      var r=document.getElementById('loginHelpRetry');
+      if(r) r.href=location.origin+location.pathname;
+      box.style.display='block';
+    }
+
     var bootStep = "啟動";
     function bootTimeout(promise, ms, label){
       return Promise.race([
@@ -807,7 +838,23 @@
       try{
         bootStep="LINE 初始化";
         await bootTimeout(liff.init({liffId:LIFF_ID}), 8000, "LINE 初始化");
-        if(!liff.isLoggedIn()){ bootStep="導向登入"; liff.login(); return; }
+        if(!liff.isLoggedIn()){
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          if(location.search.indexOf('we_login=1') >= 0){ bootStep="登入未生效"; showLoginHelp(); return; }
+          bootStep="導向登入";
+          var _q = location.search ? location.search + '&we_login=1' : '?we_login=1';
+          liff.login({ redirectUri: location.origin + location.pathname + _q });
+          return;
+        }
         bootStep="取得個人資料";
         const p = await bootTimeout(liff.getProfile(), 8000, "取得個人資料");
         currentLineUid = p.userId;
