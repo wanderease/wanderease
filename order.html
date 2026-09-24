@@ -279,6 +279,21 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .done-bar .act .sub{background:#fff;color:var(--ok);border:1px solid #cfdbcb}
 .done-bar .hint{font-size:12px;color:#6d7a64;margin-top:9px;text-align:center}
 .done-bar.warn{background:#fdf6ec;border-color:#f0dcc0}
+ 
+.done-bar.pv{background:#eef2f8;border-color:#c9d4e6}
+.done-bar.pv .t1 i,.done-bar.pv .t1 b{color:#34507a}
+.done-bar.pv .rows2{color:#34507a}
+ 
+.due.soon{background:#34507a}
+.wait{margin:6px 18px 0;background:var(--white);border:1px solid var(--line);
+      border-radius:16px;padding:22px 18px;text-align:center}
+.wait .ic{font-size:30px;color:var(--brown)}
+.wait .t{font-size:15px;font-weight:800;margin-top:6px}
+.wait .cd{font-size:26px;font-weight:800;letter-spacing:.04em;margin:10px 0 4px;
+          font-variant-numeric:tabular-nums}
+.wait .s{font-size:12.5px;color:var(--mute)}
+.wait a{display:inline-block;margin-top:16px;font-size:13.5px;font-weight:700;color:#fff;
+        background:var(--brown);text-decoration:none;padding:9px 20px;border-radius:10px}
 .done-bar.warn .t1 i,.done-bar.warn .t1 b{color:#8a5a1e}
 
  
@@ -626,6 +641,112 @@ function pruneCart() {
 
 
 
+
+
+function startMs() {
+  if (!C || !C.start) return 0;
+  var t = new Date(C.start).getTime();
+  return isNaN(t) ? 0 : t;
+}
+
+ 
+function notStarted() {
+  var t = startMs();
+  return t > 0 && Date.now() < t;
+}
+
+
+
+var ADMIN_HASHES = [];
+var previewAdmin = false;
+
+function checkPreviewAdmin(uid) {
+  if (previewAdmin || !uid || !ADMIN_HASHES.length) return;
+  if (!window.crypto || !crypto.subtle || typeof TextEncoder === 'undefined') return;
+  crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid)).then(function (buf) {
+    var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+    if (ADMIN_HASHES.indexOf(hex) < 0) return;
+    previewAdmin = true;
+    try { sessionStorage.setItem('we_admin', '1'); } catch (e) {}
+    if (C && notStarted()) draw();
+  }).catch(function () {});
+}
+
+var startTimer = null;
+var cdTimer = null;
+
+
+
+function armStartTimer() {
+  if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+  if (!notStarted()) return;
+
+  var ms = startMs() - Date.now();
+  var MAX = 6 * 3600 * 1000;
+  var wait = (ms > MAX) ? MAX : (ms + 500);   
+
+  startTimer = setTimeout(function () {
+    startTimer = null;
+    if (notStarted()) armStartTimer();
+    else startReached();
+  }, wait);
+}
+
+function startReached() {
+  if (startTimer) { clearTimeout(startTimer); startTimer = null; }
+  if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+  draw(true);
+}
+
+ 
+function fmtLeft(ms) {
+  if (ms < 0) ms = 0;
+  var s = Math.floor(ms / 1000);
+  var d = Math.floor(s / 86400); s -= d * 86400;
+  var h = Math.floor(s / 3600);  s -= h * 3600;
+  var m = Math.floor(s / 60);    s -= m * 60;
+  var p = function (n) { return (n < 10 ? '0' : '') + n; };
+  if (d > 0) return d + ' 天 ' + h + ' 小時';
+  return p(h) + ':' + p(m) + ':' + p(s);
+}
+
+
+
+function tickCountdown() {
+  var el = document.getElementById('startCd');
+  if (!el) { if (cdTimer) { clearInterval(cdTimer); cdTimer = null; } return; }
+  if (!notStarted()) { startReached(); return; }
+  el.textContent = fmtLeft(startMs() - Date.now());
+}
+
+ 
+function waitView() {
+  var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
+  if (C.cover && !C.hideCover) {
+    h += '<img class="cover" src="' + esc(C.cover) + '" alt="">';
+  }
+  h += '<div class="hd"><div class="bd">' + esc(C.brand) + '</div>' +
+       '<h1>' + esc(C.name) + '</h1>' +
+       '<span class="due soon">' + esc(fmtDue(C.start)) + ' 開放</span></div>';
+  h += '<div class="wait"><div class="ic"><i class="bi bi-hourglass-split"></i></div>' +
+       '<div class="t">這一團還沒開放</div>' +
+       '<div class="cd" id="startCd">' + esc(fmtLeft(startMs() - Date.now())) + '</div>' +
+       '<div class="s">' + esc(fmtDue(C.start)) + ' 開放填單，時間到這一頁會自動打開</div>' +
+       '<a href="/c">看看其他開放中的團</a></div>';
+  return h;
+}
+
+ 
+function previewBar() {
+  return '<div class="done-bar pv">' +
+    '<div class="t1"><i class="bi bi-eye-fill"></i><b>管理員預覽・客人目前看不到</b></div>' +
+    '<div class="rows2"><div><span>開放時間</span><span>' + esc(fmtDue(C.start)) + '</span></div>' +
+    '<div><span></span><span>可以選購、進到確認頁檢查，但無法送出訂單。</span></div>' +
+    '</div></div>';
+}
+
 function duePassed() {
   if (!C || !C.due) return false;
   var t = new Date(C.due).getTime();
@@ -676,6 +797,11 @@ function dueReached() {
 document.addEventListener('visibilitychange', function () {
   if (document.hidden) return;
   if (!C) return;
+  
+  if (startTimer || cdTimer) {
+    if (notStarted()) armStartTimer();
+    else startReached();
+  }
   if (isClosed()) dueReached();
   else armDueTimer();
 });
@@ -744,6 +870,10 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
 
  
 function boot(d) {
+    
+    
+    ADMIN_HASHES = (d && d.admins) ||
+                   (d && d.maintenance && d.maintenance.admins) || [];
     var list = (d && d.campaigns) || [];
     C = list.filter(function (x) { return x.id === CODE; })[0] || null;
     if (!C) {
@@ -774,10 +904,27 @@ function boot(d) {
       }
     } catch (e) {}
 
+    
+    
+    
+    
+    
+    if (notStarted()) {
+      try { if (sessionStorage.getItem('we_admin') === '1') previewAdmin = true; } catch (e) {}
+      if (!previewAdmin) {
+        var u0 = null;
+        try { u0 = localStorage.getItem('we_uid'); } catch (e) {}
+        checkPreviewAdmin(u0);
+        if (me && me.uid) checkPreviewAdmin(me.uid);
+      }
+    }
+
     loadCart();
     draw();
     
     armDueTimer();
+    
+    armStartTimer();
 }
 
 
@@ -827,6 +974,9 @@ function boot(d) {
 
       
       friendPrefetchStart();
+
+      
+      if (C && notStarted()) checkPreviewAdmin(p.userId);
 
       
       if (early === p.userId) return;
@@ -975,6 +1125,15 @@ function draw(toTop) {
   
   
   
+  
+  if (C && notStarted() && !previewAdmin) {
+    document.getElementById('root').innerHTML = waitView();
+    if (!cdTimer) cdTimer = setInterval(tickCountdown, 1000);
+    if (toTop) window.scrollTo(0, 0);
+    return;
+  }
+  if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+
   document.getElementById('root').innerHTML =
     (ordered && step === 2) ? view1()
       : (step === 1 ? view1() : (step === 2 ? view2() : view3()));
@@ -1123,6 +1282,9 @@ function view1() {
   
   
   if (closedJustNow && !ordered) h += closedBar();
+
+  
+  if (notStarted()) h += previewBar();
 
   
   if (ordered) h += orderedBar();
@@ -1541,12 +1703,15 @@ function view2() {
   
   var allConfirmed = cfs.every(function (x) { return !!confirmAt[x]; });
   var shut = isClosed();
-  var ok = allConfirmed && (!C.notice || agreed) && !meLoading && !shut;
+  
+  var wait = notStarted();
+  var ok = allConfirmed && (!C.notice || agreed) && !meLoading && !shut && !wait;
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
     '<div class="t">' + (official ? '應匯' : '總金額') +
     '<b>NT$' + (official ? t.pay : t.sum).toLocaleString() + '</b></div>' +
     '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">' +
-    (shut ? '已截止' : (meLoading ? '讀取中…' : '送出訂單')) + '</button></div>';
+    (shut ? '已截止' : (wait ? '預覽中・尚未開放' : (meLoading ? '讀取中…' : '送出訂單'))) +
+    '</button></div>';
   return h;
 }
 
@@ -1889,6 +2054,11 @@ function submitOrder() {
     dueReached();
     return;
   }
+  
+  if (notStarted()) {
+    alert('這一團 ' + fmtDue(C.start) + ' 才開放填單。');
+    return;
+  }
 
   if (meLoading) {
     var b0 = document.querySelectorAll('.bar button');
@@ -1984,6 +2154,10 @@ function submitOrder_() {
   if (isClosed()) {
     alert('這一團已經截止收單了。');
     dueReached();
+    return;
+  }
+  if (notStarted()) {
+    alert('這一團 ' + fmtDue(C.start) + ' 才開放填單。');
     return;
   }
 
