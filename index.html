@@ -241,30 +241,58 @@ WE.loadCampaigns().then(function (d) {
     applyShopState(d.shop);
 
     if (!d.campaigns) return;
+    LOBBY_CAMPS = d.campaigns;
+    paintCount();
     
-    
-    
-    
-    
-    
-    
-    var open = d.campaigns.filter(function (c) {
-      if (!c || c.state !== '開放收單') return false;
-      if (!c.due) return true;
-      var t = new Date(c.due).getTime();
-      if (isNaN(t)) return true;
-      return Date.now() < t;
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) paintCount();
     });
-    if (!open.length) {
-      document.getElementById('cSub').textContent = '目前沒有開放中的團';
-      return;
-    }
-    var el = document.getElementById('cCnt');
-    el.textContent = open.length;
-    el.className = 'cnt on';
-    document.getElementById('cSub').textContent = open.length + ' 團開放中';
   });
 });
+
+var LOBBY_CAMPS = [];
+var lobbyTimer = null;
+
+
+
+function lobbyTime(v) {
+  if (!v) return 0;
+  var t = new Date(v).getTime();
+  return isNaN(t) ? 0 : t;
+}
+
+function paintCount() {
+  var now = Date.now();
+  var next = 0;
+  var open = LOBBY_CAMPS.filter(function (c) {
+    if (!c || c.state !== '開放收單') return false;
+    var s = lobbyTime(c.start), e = lobbyTime(c.due);
+    
+    [s, e].forEach(function (t) { if (t > now && (!next || t < next)) next = t; });
+    if (s && now < s) return false;
+    if (e && now >= e) return false;
+    return true;
+  });
+
+  var el = document.getElementById('cCnt');
+  var sub = document.getElementById('cSub');
+  if (!open.length) {
+    el.textContent = '0';
+    el.className = 'cnt';
+    sub.textContent = '目前沒有開放中的團';
+  } else {
+    el.textContent = open.length;
+    el.className = 'cnt on';
+    sub.textContent = open.length + ' 團開放中';
+  }
+
+  
+  if (lobbyTimer) { clearTimeout(lobbyTimer); lobbyTimer = null; }
+  if (next) {
+    var ms = next - now, MAX = 6 * 3600 * 1000;
+    lobbyTimer = setTimeout(paintCount, (ms > MAX) ? MAX : (ms + 500));
+  }
+}
 
 
 
