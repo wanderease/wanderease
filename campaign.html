@@ -50,6 +50,8 @@ body{
 .tag.open{background:#eef3e9;border-color:#cfdcc2;color:#4a6132}
 .tag.close{background:#f2ece6;border-color:#ddd2c6;color:#8a7360}
 .tag.mine{background:#fdf1e2;border-color:#f0d7b6;color:#96560a}
+ 
+.tag.soon{background:#eef2f8;border-color:#c9d4e6;color:#34507a}
 
 .empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
 .sk{padding:8px 18px 0;display:grid;gap:13px}
@@ -247,23 +249,90 @@ function campClosed(c) {
   return Date.now() >= t;
 }
 
+
+
+function startAt(c) {
+  if (!c || !c.start) return 0;
+  var t = new Date(c.start).getTime();
+  return isNaN(t) ? 0 : t;
+}
+function campWaiting(c) {
+  var t = startAt(c);
+  return t > 0 && Date.now() < t && !campClosed(c);
+}
+
+
+
+var ADMIN_HASHES = [];
+var previewAdmin = false;
+try { if (sessionStorage.getItem('we_admin') === '1') previewAdmin = true; } catch (e) {}
+
+function checkPreviewAdmin(uid) {
+  if (previewAdmin || !uid || !ADMIN_HASHES.length) return;
+  if (!window.crypto || !crypto.subtle || typeof TextEncoder === 'undefined') return;
+  crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid)).then(function (buf) {
+    var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+    if (ADMIN_HASHES.indexOf(hex) < 0) return;
+    previewAdmin = true;
+    try { sessionStorage.setItem('we_admin', '1'); } catch (e) {}
+    if (CAMPS.length) render();
+  }).catch(function () {});
+}
+
+
+
+var edgeTimer = null;
+function armEdgeTimer() {
+  if (edgeTimer) { clearTimeout(edgeTimer); edgeTimer = null; }
+  var now = Date.now(), next = 0;
+  CAMPS.forEach(function (c) {
+    [startAt(c), (c && c.due) ? new Date(c.due).getTime() : 0].forEach(function (t) {
+      if (t && !isNaN(t) && t > now && (!next || t < next)) next = t;
+    });
+  });
+  if (!next) return;
+  var MAX = 6 * 3600 * 1000;
+  var ms = next - now;
+  edgeTimer = setTimeout(function () {
+    edgeTimer = null;
+    render();
+  }, (ms > MAX) ? MAX : (ms + 500));
+}
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && CAMPS.length) render();
+});
+
 function render() {
   var list = document.getElementById('list');
   document.getElementById('sk').style.display = 'none';
+  armEdgeTimer();
 
-  if (!CAMPS.length) {
+  
+  
+  var rank = function (c) { return campWaiting(c) ? 1 : (campClosed(c) ? 2 : 0); };
+  var shown = CAMPS
+    .filter(function (c) { return previewAdmin || !campWaiting(c); })
+    .map(function (c, i) { return { c: c, i: i }; })
+    .sort(function (a, b) { return (rank(a.c) - rank(b.c)) || (a.i - b.i); })
+    .map(function (x) { return x.c; });
+
+  if (!shown.length) {
     list.innerHTML = '<div class="empty">目前沒有開放中的團。<br>新的團開放時會在社群通知你。</div>';
     document.getElementById('sub').textContent = '';
     return;
   }
 
-  var open = CAMPS.filter(function (c) { return !campClosed(c); }).length;
+  var open = shown.filter(function (c) { return !campClosed(c) && !campWaiting(c); }).length;
   document.getElementById('sub').textContent =
     open ? (open + ' 團開放中') : '目前沒有開放中的團';
 
 
-  list.innerHTML = CAMPS.map(function (c) {
+  list.innerHTML = shown.map(function (c) {
     var closed = campClosed(c);
+    var waiting = campWaiting(c);
     var n = (c.products || []).length;
     return '<a class="card' + (closed ? ' closed' : '') + '" href="/o/' + encodeURIComponent(c.id) + '">' +
       (c.cover
@@ -272,9 +341,11 @@ function render() {
       '<div class="b"><b>' + esc(c.name) + '</b>' +
       '<s>' + esc(c.brand) + ' · ' + n + ' 個商品</s>' +
       '<div class="tags">' +
-        (closed
-          ? '<span class="tag close">' + esc(fmtDay(c.due)) + ' 已截止</span>'
-          : '<span class="tag open">收單至 ' + esc(fmtDue(c.due)) + '</span>') +
+        (waiting
+          ? '<span class="tag soon">預覽・' + esc(fmtDue(c.start)) + ' 開放</span>'
+          : closed
+            ? '<span class="tag close">' + esc(fmtDay(c.due)) + ' 已截止</span>'
+            : '<span class="tag open">收單至 ' + esc(fmtDue(c.due)) + '</span>') +
         (MINE[c.id] ? '<span class="tag mine">已填單</span>' : '') +
       '</div></div></a>';
   }).join('');
@@ -287,6 +358,10 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
     guardMaintenance(d && d.maintenance, function () {
       applyShopState(d && d.shop);
       CAMPS = (d && d.campaigns) ? d.campaigns : [];
+      
+      ADMIN_HASHES = (d && d.admins) ||
+                     (d && d.maintenance && d.maintenance.admins) || [];
+      try { checkPreviewAdmin(localStorage.getItem('we_uid')); } catch (e) {}
       render();
     });
   })
@@ -356,6 +431,8 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {}
       
       try { localStorage.setItem('we_uid', p.userId); } catch (e) {}
+      
+      checkPreviewAdmin(p.userId);
       if (early === p.userId) return;   
       setTimeout(function () { loadMine(me.uid); }, 400);
     });
