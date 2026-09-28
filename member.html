@@ -599,6 +599,14 @@
     
     
     const MAIN_URL = CORE_URL;   
+
+    
+    
+    const LAST5_TARGET = CORE_URL;   
+    
+    
+    
+    const LAST5_URL = (MAIN_URL === GAS_URL) ? GAS_URL : LAST5_TARGET;
     
     
     const REST_URL = CORE_URL;   
@@ -1177,7 +1185,7 @@
       if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
       showLoaderModal('更新匯款資訊中', '請稍候，不要關閉視窗');
       try{
-        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
+        const r=await fetch(LAST5_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5',orderId:oid,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
         if(d.status==="SUCCESS"){
           optimisticUpdateLast5OnDom(v);
@@ -1201,7 +1209,7 @@
       if(v.length!==5||isNaN(v))return alert("請輸入 5 位數字！");
       showLoaderModal('更新匯款資訊中', '請稍候，不要關閉視窗');
       try{
-        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
+        const r=await fetch(LAST5_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'updateLast5Bulk',brand:brand,series:series,newLast5:v,lineUid:currentLineUid})});
         const d=await r.json();
         if(d.status==="SUCCESS"){
           optimisticUpdateLast5OnDom(v);
