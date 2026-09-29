@@ -651,6 +651,17 @@ function startMs() {
 
  
 function notStarted() {
+  
+  
+  
+  
+  
+  if (earlyOk) return false;
+  return notStartedRaw();
+}
+
+ 
+function notStartedRaw() {
   var t = startMs();
   return t > 0 && Date.now() < t;
 }
@@ -659,6 +670,15 @@ function notStarted() {
 
 var ADMIN_HASHES = [];
 var previewAdmin = false;
+
+
+
+
+
+
+
+
+var earlyOk = false;
 
 function checkPreviewAdmin(uid) {
   if (previewAdmin || !uid || !ADMIN_HASHES.length) return;
@@ -671,6 +691,22 @@ function checkPreviewAdmin(uid) {
     previewAdmin = true;
     try { sessionStorage.setItem('we_admin', '1'); } catch (e) {}
     if (C && notStarted()) draw();
+  }).catch(function () {});
+}
+
+
+
+function checkEarlyAccess(uid) {
+  if (earlyOk || !uid || !C || !(C.early || []).length) return;
+  if (!window.crypto || !crypto.subtle || typeof TextEncoder === 'undefined') return;
+  crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid)).then(function (buf) {
+    var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+    if (C.early.indexOf(hex) < 0) return;
+    earlyOk = true;
+    
+    draw(true);
   }).catch(function () {});
 }
 
@@ -736,6 +772,16 @@ function waitView() {
        '<div class="s">' + esc(fmtDue(C.start)) + ' 開放填單，時間到這一頁會自動打開</div>' +
        '<a href="/c">看看其他開放中的團</a></div>';
   return h;
+}
+
+
+
+function earlyBar() {
+  return '<div class="done-bar pv">' +
+    '<div class="t1"><i class="bi bi-unlock-fill"></i><b>你可以提前填單</b></div>' +
+    '<div class="rows2"><div><span>正式開放</span><span>' + esc(fmtDue(C.start)) + '</span></div>' +
+    '<div><span></span><span>這一團開放給你提前下單，現在就可以送出。</span></div>' +
+    '</div></div>';
 }
 
  
@@ -976,7 +1022,10 @@ function boot(d) {
       friendPrefetchStart();
 
       
-      if (C && notStarted()) checkPreviewAdmin(p.userId);
+      if (C && notStarted()) {
+        checkPreviewAdmin(p.userId);
+        checkEarlyAccess(p.userId);
+      }
 
       
       if (early === p.userId) return;
@@ -1285,6 +1334,7 @@ function view1() {
 
   
   if (notStarted()) h += previewBar();
+  else if (earlyOk && notStartedRaw()) h += earlyBar();
 
   
   if (ordered) h += orderedBar();
