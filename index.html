@@ -243,6 +243,7 @@ WE.loadCampaigns().then(function (d) {
     if (!d.campaigns) return;
     LOBBY_CAMPS = d.campaigns;
     paintCount();
+    lobbyCheckEarly();
     
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) paintCount();
@@ -252,6 +253,42 @@ WE.loadCampaigns().then(function (d) {
 
 var LOBBY_CAMPS = [];
 var lobbyTimer = null;
+
+
+
+var lobbyHash = '';
+
+function lobbyEarly(c) {
+  return !!(lobbyHash && c && (c.early || []).indexOf(lobbyHash) >= 0);
+}
+
+
+
+function lobbyCheckEarly() {
+  if (lobbyHash) return;
+  var any = LOBBY_CAMPS.some(function (c) { return c && (c.early || []).length; });
+  if (!any) return;
+  if (typeof liff === 'undefined' || !window.crypto || !crypto.subtle) return;
+
+  var uid = '';
+  try { uid = localStorage.getItem('we_uid') || ''; } catch (e) {}
+
+  var go = function (u) {
+    if (!u) return;
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(u)).then(function (buf) {
+      lobbyHash = Array.prototype.map.call(new Uint8Array(buf), function (b) {
+        return ('0' + b.toString(16)).slice(-2);
+      }).join('');
+      paintCount();
+    }).catch(function () {});
+  };
+
+  if (uid) { go(uid); return; }
+  liff.init({ liffId: LIFF_ID }).then(function () {
+    if (!liff.isLoggedIn()) return;
+    return liff.getProfile().then(function (p) { go(p.userId); });
+  }).catch(function () {});
+}
 
 
 
@@ -269,7 +306,10 @@ function paintCount() {
     var s = lobbyTime(c.start), e = lobbyTime(c.due);
     
     [s, e].forEach(function (t) { if (t > now && (!next || t < next)) next = t; });
-    if (s && now < s) return false;
+    
+    
+    
+    if (s && now < s && !lobbyEarly(c)) return false;
     if (e && now >= e) return false;
     return true;
   });
