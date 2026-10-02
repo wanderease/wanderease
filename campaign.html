@@ -256,27 +256,48 @@ function startAt(c) {
   var t = new Date(c.start).getTime();
   return isNaN(t) ? 0 : t;
 }
-function campWaiting(c) {
+function campWaitingRaw(c) {
   var t = startAt(c);
   return t > 0 && Date.now() < t && !campClosed(c);
+}
+
+ 
+function campEarly(c) {
+  return !!(myHash && c && (c.early || []).indexOf(myHash) >= 0);
+}
+
+
+
+function campWaiting(c) {
+  if (campEarly(c)) return false;
+  return campWaitingRaw(c);
 }
 
 
 
 var ADMIN_HASHES = [];
 var previewAdmin = false;
+
+
+
+
+var myHash = '';
 try { if (sessionStorage.getItem('we_admin') === '1') previewAdmin = true; } catch (e) {}
 
 function checkPreviewAdmin(uid) {
-  if (previewAdmin || !uid || !ADMIN_HASHES.length) return;
+  
+  if (myHash || !uid) return;
   if (!window.crypto || !crypto.subtle || typeof TextEncoder === 'undefined') return;
   crypto.subtle.digest('SHA-256', new TextEncoder().encode(uid)).then(function (buf) {
     var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) {
       return ('0' + b.toString(16)).slice(-2);
     }).join('');
-    if (ADMIN_HASHES.indexOf(hex) < 0) return;
-    previewAdmin = true;
-    try { sessionStorage.setItem('we_admin', '1'); } catch (e) {}
+    myHash = hex;
+    if (ADMIN_HASHES.indexOf(hex) >= 0) {
+      previewAdmin = true;
+      try { sessionStorage.setItem('we_admin', '1'); } catch (e) {}
+    }
+    
     if (CAMPS.length) render();
   }).catch(function () {});
 }
@@ -341,7 +362,9 @@ function render() {
       '<div class="b"><b>' + esc(c.name) + '</b>' +
       '<s>' + esc(c.brand) + ' · ' + n + ' 個商品</s>' +
       '<div class="tags">' +
-        (waiting
+        (campEarly(c) && campWaitingRaw(c)
+          ? '<span class="tag soon">提前開放給你・' + esc(fmtDue(c.start)) + ' 正式開放</span>'
+          : waiting
           ? '<span class="tag soon">預覽・' + esc(fmtDue(c.start)) + ' 開放</span>'
           : closed
             ? '<span class="tag close">' + esc(fmtDay(c.due)) + ' 已截止</span>'
