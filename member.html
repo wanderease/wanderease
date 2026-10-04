@@ -5020,6 +5020,7 @@
     .nt-row small{display:block;font-size:12px;color:#6b625b;margin-top:1px;line-height:1.45;}
     .nt-row.mem{padding-left:28px;}
     .nt-tag{font-size:11px;font-weight:700;color:#795238;background:#f6ece3;border-radius:6px;padding:2px 7px;margin-left:6px;}
+    .nt-new{font-size:10.5px;font-weight:800;color:#fff;background:#c2410c;border-radius:6px;padding:1px 6px;margin-left:6px;letter-spacing:.5px;vertical-align:1px;}
     .nt-fold{width:100%;display:flex;justify-content:space-between;align-items:center;background:#f6f3ef;border:0;border-radius:10px;padding:11px 12px;margin-top:8px;font-size:14px;font-weight:700;color:#2c2c2f;min-height:44px;cursor:pointer;}
     .nt-fold span{font-size:12.5px;color:#795238;font-weight:700;}
     .nt-chips{display:flex;flex-wrap:wrap;gap:8px;}
@@ -5046,7 +5047,8 @@
   (function(){
     var NT_BELL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
     var KINDS = ['companies','groups','artists','cats','brands'];
-    var S = { data:null, loading:false, failed:'', sel:null, orig:'', open:{other:false, co:false, allBrands:false}, q:'', brandShown:{}, saving:false, err:'', wantOpen:false };
+    var S = { data:null, loading:false, failed:'', sel:null, orig:'', open:{other:false, co:false, allBrands:false}, q:'', brandShown:{}, saving:false, err:'', wantOpen:false,
+              news:{}, seenSent:false };
     window.NT_STATE = S;
 
     function E(s){ return (typeof escHTML === 'function') ? escHTML(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -5080,6 +5082,10 @@
       KINDS.forEach(function(k){ f[k] = {}; (d.follows[k] || []).forEach(function(id){ f[k][id] = true; }); });
       S.sel = { mode: d.mode, instock: !!d.instock, picks: !!d.picks, f: f };
       S.brandShown = {}; (d.follows.brands || []).forEach(function(id){ S.brandShown[id] = true; });
+      
+      S.news = {};
+      KINDS.forEach(function(k){ S.news[k] = {}; ((d.news || {})[k] || []).forEach(function(id){ S.news[k][id] = true; }); });
+      Object.keys(S.news.brands).forEach(function(id){ S.brandShown[id] = true; });
       S.orig = ntSnap(); S.err = '';
     }
     function ntSnap(){
@@ -5092,7 +5098,8 @@
      
     function ntPaint(){
       var b = el('ntEntry'), unset = !!(S.data && !S.data.configured);
-      if (b) b.classList.toggle('unset', unset);
+      
+      if (b) b.classList.toggle('unset', unset || !!(S.data && S.data.hasNew));
       var slot = el('ntRemind');
       if (slot) {
         if (unset) {
@@ -5112,8 +5119,17 @@
       document.body.style.overflow = 'hidden';
       el('ntOverlay').scrollTop = 0;
       if (!S.data && !S.loading) ntLoad();
+      ntMarkSeen();
       ntRender();
     };
+     
+    function ntMarkSeen(){
+      if (!S.data || !S.data.configured || !S.data.hasNew || S.seenSent) return;
+      S.seenSent = true; S.data.hasNew = false;
+      var b = el('ntEntry'); if (b) b.classList.remove('unset');
+      fetchJsonRetry(CORE_URL, 1, 15000, null, { action: 'markNotifySeen', lineUid: currentLineUid }).catch(function(){});
+    }
+    function isNew(k, id){ return !!(S.news[k] && S.news[k][id]); }
     window.ntClose = function(force){
       if (!force && S.sel && S.data && ntSnap() !== S.orig) {
         var go = function(ok){ if (ok) { ntReset(); window.ntClose(true); } };
@@ -5166,6 +5182,7 @@
     function row(k, id, on, title, sub, cls){
       return '<label class="nt-row' + (cls ? ' ' + cls : '') + '"><input type="checkbox"' + (on ? ' checked' : '') +
         ' onchange="ntTick(\'' + k + '\',\'' + id + '\',this.checked)"><span class="nt-t"><b>' + title + '</b>' +
+        (isNew(k, id) ? '<span class="nt-new">NEW</span>' : '') +
         (sub ? '<small>' + sub + '</small>' : '') + '</span></label>';
     }
 
@@ -5254,7 +5271,8 @@
 
       if (s.mode === '只收追蹤') {
         
-        var units = ntUnits(), top = units.filter(unitOn), rest = units.filter(function(u){ return !unitOn(u); });
+        var unitTop = function(u){ return unitOn(u) || (u.g ? isNew('groups', u.g.id) || u.members.some(function(a){ return isNew('artists', a.id); }) : isNew('artists', u.a.id)); };
+        var units = ntUnits(), top = units.filter(unitTop), rest = units.filter(function(u){ return !unitTop(u); });
         
         var aSel = picked('groups').map(function(id){ var g = byId(o.groups)[id]; return g && g.name; })
           .concat(picked('artists').filter(function(id){ var a = byId(o.artists)[id]; return a && !(a.group && S.sel.f.groups[a.group]); })
@@ -5287,7 +5305,7 @@
           if (S.open.other) h += '<div style="margin-top:4px">' + rest.map(unitHtml).join('') + '</div>';
         }
         if (o.companies.length) {
-          var coOpen = S.open.co || picked('companies').length > 0;
+          var coOpen = S.open.co || picked('companies').length > 0 || Object.keys(S.news.companies || {}).length > 0;
           h += '<button type="button" class="nt-fold" aria-expanded="' + coOpen + '" onclick="ntFold(\'co\')">經紀公司官方周邊<span>' +
             E(o.companies.map(function(c){ return c.name; }).join('、')) + '　' + (coOpen ? '▴' : '▾') + '</span></button>';
           if (coOpen) h += '<div style="margin-top:4px">' + o.companies.map(function(c){
