@@ -459,7 +459,10 @@
     </div>
     
     <div class="home-header-bar">
-      <div class="hhb-name" id="welcomeMsg"></div>
+      <div class="hhb-top">
+        <div class="hhb-name" id="welcomeMsg"></div>
+        <button type="button" class="nt-entry" id="ntEntry" onclick="ntOpen()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>通知設定<span class="nt-dot"></span></button>
+      </div>
       <div class="hhb-nav-row">
         <button class="hhb-nav-item" onclick="goCampaign()"><span class="hhb-ic"><i class="bi bi-fire"></i></span><span class="hhb-l">開團</span></button>
         <button class="hhb-nav-item" id="navShopBtn" onclick="goShop()"><span class="hhb-ic"><i class="bi bi-bag-heart"></i></span><span class="hhb-l">現貨</span></button>
@@ -494,6 +497,8 @@
         
         <div class="swipe-page" id="swipePage0">
           <div class="swipe-page-inner">
+            
+            <div id="ntRemind" style="display:none;"></div>
             
             <div id="preFrameWrap" class="big-frame frame-preorder" style="display:none;">
               <div class="watermark"><i class="bi bi-cart3"></i></div>
@@ -1049,6 +1054,8 @@
         document.getElementById('homeArea').style.display='block';
         document.getElementById('welcomeMsg').innerText='嗨嗨～ '+(core.userData["最新社群名稱"]||"");
         loadMemberBody();
+        
+        try{ if(window.ntBoot) ntBoot(); }catch(e){}
       }catch(e){
         document.getElementById('loadingArea').style.display='none';
         showBodyError(e.message);
@@ -4968,6 +4975,406 @@
   };
 })();
 </script>
+
+
+  
+  <style>
+    .hhb-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .nt-entry{position:relative;display:none;align-items:center;gap:6px;background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:18px;padding:6px 12px 6px 9px;font-size:12px;font-weight:700;min-height:36px;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    .nt-entry:active{background:rgba(255,255,255,.32);}
+    .nt-entry .nt-dot{position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#ef4444;border:2px solid #6f5644;display:none;}
+    .nt-entry.unset .nt-dot{display:block;}
+    .nt-remind{background:#fff;border:1.5px solid #e2c9b3;border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;margin-bottom:11px;}
+    .nt-remind .nt-ic{width:36px;height:36px;border-radius:10px;background:#f6ece3;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#795238;}
+    .nt-remind b{font-size:14px;color:#2c2c2f;}
+    .nt-remind p{font-size:12.5px;color:#5e5650;line-height:1.55;margin:2px 0 0;}
+    .nt-btn{background:#795238;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:700;min-height:44px;cursor:pointer;}
+    .nt-btn:disabled{opacity:.6;}
+    .nt-btn.wide{width:100%;padding:14px;font-size:16px;border-radius:12px;}
+    #ntOverlay{display:none;position:fixed;inset:0;background:#efe8df;z-index:1600;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+    #ntOverlay .nt-bar{position:sticky;top:0;z-index:2;background:#fff;border-bottom:1px solid #e0d8d0;display:flex;align-items:center;gap:6px;padding:8px 10px;}
+    #ntOverlay .nt-bar button{background:none;border:0;font-size:26px;line-height:1;color:#795238;width:44px;height:44px;cursor:pointer;}
+    #ntOverlay .nt-bar h5{margin:0;font-size:17px;font-weight:800;color:#2c2c2f;}
+    #ntOverlay .nt-wrap{max-width:600px;margin:0 auto;padding:14px 14px 30px;display:flex;flex-direction:column;gap:12px;}
+    .nt-card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(44,44,47,.04);}
+    .nt-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px;}
+    .nt-h h6{margin:0;font-size:15px;font-weight:800;color:#2c2c2f;}
+    .nt-h span{font-size:12px;color:#795238;font-weight:700;}
+    .nt-sub{font-size:12.5px;color:#6b625b;line-height:1.55;margin:0 0 10px;}
+    .nt-note{font-size:12.5px;line-height:1.6;border-radius:10px;padding:10px 12px;}
+    .nt-note.info{background:#f6ece3;color:#5e3f2b;}
+    .nt-note.warn{background:#fdecea;color:#7a1f1f;}
+    .nt-note.plain{background:#f6f3ef;color:#5e5650;}
+    .nt-mode{display:flex;flex-direction:column;gap:8px;}
+    .nt-mode label{display:flex;gap:10px;align-items:flex-start;border:1.5px solid #e0d8d0;border-radius:12px;padding:12px;cursor:pointer;}
+    .nt-mode label.on{border-color:#795238;background:#fbf6f1;}
+    .nt-mode input{margin-top:2px;width:18px;height:18px;accent-color:#795238;flex-shrink:0;}
+    .nt-mode b{display:block;font-size:14.5px;color:#2c2c2f;}
+    .nt-mode small{display:block;font-size:12px;color:#6b625b;margin-top:2px;}
+    .nt-row{display:flex;gap:10px;align-items:flex-start;padding:10px 2px;border-top:1px solid #f0ebe5;cursor:pointer;}
+    .nt-row:first-child{border-top:0;}
+    .nt-row input{margin-top:2px;width:18px;height:18px;accent-color:#795238;flex-shrink:0;}
+    .nt-row input:disabled{accent-color:#b8a89a;}
+    .nt-row .nt-t{flex:1;min-width:0;}
+    .nt-row b{font-size:14.5px;color:#2c2c2f;}
+    .nt-row small{display:block;font-size:12px;color:#6b625b;margin-top:1px;line-height:1.45;}
+    .nt-row.mem{padding-left:28px;}
+    .nt-tag{font-size:11px;font-weight:700;color:#795238;background:#f6ece3;border-radius:6px;padding:2px 7px;margin-left:6px;}
+    .nt-fold{width:100%;display:flex;justify-content:space-between;align-items:center;background:#f6f3ef;border:0;border-radius:10px;padding:11px 12px;margin-top:8px;font-size:14px;font-weight:700;color:#2c2c2f;min-height:44px;cursor:pointer;}
+    .nt-fold span{font-size:12.5px;color:#795238;font-weight:700;}
+    .nt-chips{display:flex;flex-wrap:wrap;gap:8px;}
+    .nt-chip{border:1.5px solid #e0d8d0;background:#fff;color:#2c2c2f;border-radius:20px;padding:8px 14px;font-size:14px;min-height:40px;cursor:pointer;}
+    .nt-chip[aria-pressed="true"]{border-color:#795238;background:#795238;color:#fff;font-weight:700;}
+    .nt-search{width:100%;border:1.5px solid #e0d8d0;border-radius:10px;padding:10px 12px;font-size:15px;margin:10px 0 4px;}
+    .nt-cat{font-size:12px;font-weight:800;color:#8a7d72;margin:12px 0 2px;}
+    .nt-sw{display:flex;gap:12px;align-items:center;padding:10px 2px;border-top:1px solid #f0ebe5;}
+    .nt-sw:first-of-type{border-top:0;}
+    .nt-sw .nt-t{flex:1;}
+    .nt-sw b{font-size:14.5px;color:#2c2c2f;}
+    .nt-sw small{display:block;font-size:12px;color:#6b625b;margin-top:1px;}
+    .nt-sw input{width:46px;height:26px;accent-color:#795238;}
+    .nt-foot{text-align:center;font-size:12.5px;color:#6b625b;margin:4px 0 8px;}
+    .nt-err{color:#b42318;font-size:13px;font-weight:700;text-align:center;margin-bottom:8px;}
+  </style>
+
+  <div id="ntOverlay" role="dialog" aria-modal="true" aria-labelledby="ntTitle">
+    <div class="nt-bar"><button type="button" aria-label="返回" onclick="ntClose()">‹</button><h5 id="ntTitle">通知設定</h5></div>
+    <div class="nt-wrap" id="ntBody"></div>
+  </div>
+
+  <script>
+  (function(){
+    var NT_BELL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15L6 16Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
+    var KINDS = ['companies','groups','artists','cats','brands'];
+    var S = { data:null, loading:false, failed:'', sel:null, orig:'', open:{other:false, co:false, allBrands:false}, q:'', brandShown:{}, saving:false, err:'', wantOpen:false };
+    window.NT_STATE = S;
+
+    function E(s){ return (typeof escHTML === 'function') ? escHTML(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function el(id){ return document.getElementById(id); }
+    function byId(list){ var m = {}; (list || []).forEach(function(x){ m[x.id] = x; }); return m; }
+
+     
+    window.ntBoot = function(){
+      var b = el('ntEntry'); if (b) b.style.display = 'inline-flex';
+      if (/[?&]page=notify\b/.test(location.search) || location.hash === '#notify') S.wantOpen = true;
+      ntLoad();
+    };
+
+    function ntLoad(){
+      if (S.loading || typeof currentLineUid === 'undefined' || !currentLineUid) return;
+      S.loading = true; S.failed = '';
+      fetchJsonRetry(CORE_URL + '?action=memberSettings&lineUid=' + encodeURIComponent(currentLineUid), 2, 15000)
+        .then(function(r){
+          S.loading = false;
+          if (!r || r.status !== 'SUCCESS') { S.failed = (r && r.message) || '讀不到通知設定'; ntPaint(); return; }
+          S.data = r.data; ntReset(); ntPaint();
+          if (S.wantOpen) { S.wantOpen = false; ntOpen(); }
+        })
+        .catch(function(e){ S.loading = false; S.failed = (e && e.message) || '連線失敗'; ntPaint(); });
+    }
+    window.ntLoad = ntLoad;
+
+     
+    function ntReset(){
+      var d = S.data, f = {};
+      KINDS.forEach(function(k){ f[k] = {}; (d.follows[k] || []).forEach(function(id){ f[k][id] = true; }); });
+      S.sel = { mode: d.mode, instock: !!d.instock, picks: !!d.picks, f: f };
+      S.brandShown = {}; (d.follows.brands || []).forEach(function(id){ S.brandShown[id] = true; });
+      S.orig = ntSnap(); S.err = '';
+    }
+    function ntSnap(){
+      var s = S.sel, o = [s.mode, s.instock, s.picks];
+      KINDS.forEach(function(k){ o.push(Object.keys(s.f[k]).filter(function(id){ return s.f[k][id]; }).sort().join(',')); });
+      return JSON.stringify(o);
+    }
+    function picked(k){ return Object.keys(S.sel.f[k]).filter(function(id){ return S.sel.f[k][id]; }); }
+
+     
+    function ntPaint(){
+      var b = el('ntEntry'), unset = !!(S.data && !S.data.configured);
+      if (b) b.classList.toggle('unset', unset);
+      var slot = el('ntRemind');
+      if (slot) {
+        if (unset) {
+          var pre = picked('brands').length + picked('groups').length + picked('artists').length;
+          slot.innerHTML = '<div class="nt-remind"><div class="nt-ic">' + NT_BELL + '</div><div style="flex:1;min-width:0">' +
+            '<b>開團通知還沒設定</b><p>' + (pre ? '我們照你買過的東西先幫你勾好了，看一下對不對、按確認才會開始通知。'
+                                                 : '選你想收的開團通知，之後有新團就用 LINE 告訴你。') + '</p>' +
+            '<button type="button" class="nt-btn" style="margin-top:9px" onclick="ntOpen()">' + (pre ? '看一下並確認' : '去設定') + '</button></div></div>';
+          slot.style.display = '';
+        } else { slot.innerHTML = ''; slot.style.display = 'none'; }
+      }
+      if (el('ntOverlay') && el('ntOverlay').style.display === 'block') ntRender();
+    }
+
+    window.ntOpen = function(){
+      el('ntOverlay').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      el('ntOverlay').scrollTop = 0;
+      if (!S.data && !S.loading) ntLoad();
+      ntRender();
+    };
+    window.ntClose = function(force){
+      if (!force && S.sel && S.data && ntSnap() !== S.orig) {
+        var go = function(ok){ if (ok) { ntReset(); window.ntClose(true); } };
+        if (typeof feConfirm === 'function') feConfirm('改過的設定還沒儲存，確定離開？', { okText: '不存，離開', cancelText: '繼續設定' }).then(go);
+        else go(confirm('改過的設定還沒儲存，確定離開？'));
+        return;
+      }
+      el('ntOverlay').style.display = 'none';
+      document.body.style.overflow = '';
+    };
+
+     
+    window.ntMode = function(m){ S.sel.mode = m; S.err = ''; ntRender(); };
+    window.ntTick = function(k, id, on){
+      S.sel.f[k][id] = !!on; S.err = '';
+      if (k === 'brands' && on) S.brandShown[id] = true;
+      ntRender();
+    };
+    window.ntChip = function(id){ S.sel.f.cats[id] = !S.sel.f.cats[id]; S.err = ''; ntRender(); };
+    window.ntFold = function(k){ S.open[k] = !S.open[k]; ntRender(); };
+    window.ntSw = function(k, on){ S.sel[k] = !!on; };
+    window.ntSearch = function(v){ S.q = v; var box = el('ntBrandAll'); if (box) box.innerHTML = ntBrandAll(); };
+
+     
+    function ntUnits(){
+      var o = S.data.options, gid = byId(o.groups), units = [];
+      o.groups.forEach(function(g){
+        units.push({ g: g, members: o.artists.filter(function(a){ return a.group === g.id; }) });
+      });
+      o.artists.forEach(function(a){ if (!a.group || !gid[a.group]) units.push({ a: a }); });
+      return units;
+    }
+    function unitOn(u){
+      var f = S.sel.f;
+      if (u.g) return !!f.groups[u.g.id] || u.members.some(function(a){ return f.artists[a.id]; });
+      return !!f.artists[u.a.id];
+    }
+    function unitHtml(u){
+      var f = S.sel.f;
+      if (!u.g) return row('artists', u.a.id, f.artists[u.a.id], E(u.a.name), '');
+      var gOn = !!f.groups[u.g.id];
+      var names = u.members.map(function(a){ return a.name; }).join('、');
+      var h = row('groups', u.g.id, gOn, E(u.g.name), names ? '合體的團，加上 ' + E(names) + ' 各自的團' : '這一組的團');
+      u.members.forEach(function(a){
+        if (gOn) h += '<label class="nt-row mem"><input type="checkbox" checked disabled><span class="nt-t"><b>' + E(a.name) + '</b><span class="nt-tag">已包含</span></span></label>';
+        else h += row('artists', a.id, f.artists[a.id], E(a.name), '只收 ' + E(a.name) + ' 單人的團，不含 ' + E(u.g.name) + ' 合體', 'mem');
+      });
+      return h;
+    }
+    function row(k, id, on, title, sub, cls){
+      return '<label class="nt-row' + (cls ? ' ' + cls : '') + '"><input type="checkbox"' + (on ? ' checked' : '') +
+        ' onchange="ntTick(\'' + k + '\',\'' + id + '\',this.checked)"><span class="nt-t"><b>' + title + '</b>' +
+        (sub ? '<small>' + sub + '</small>' : '') + '</span></label>';
+    }
+
+     
+    function ntBrandAll(){
+      var o = S.data.options, cats = byId(o.cats), q = (S.q || '').trim().toLowerCase();
+      var list = o.brands.filter(function(b){ return !q || b.name.toLowerCase().indexOf(q) >= 0; });
+      if (!list.length) return '<div class="nt-sub" style="margin-top:8px">找不到「' + E(S.q) + '」</div>';
+      var groups = {}, order = [];
+      list.forEach(function(b){
+        var c = (b.cats || []).filter(function(id){ return cats[id]; })[0] || '';
+        if (!groups[c]) { groups[c] = []; order.push(c); }
+        groups[c].push(b);
+      });
+      order.sort(function(a, b){
+        if (!a) return 1; if (!b) return -1;
+        return o.cats.indexOf(cats[a]) - o.cats.indexOf(cats[b]);
+      });
+      return order.map(function(c){
+        return '<div class="nt-cat">' + E(c ? cats[c].name : '其他') + '</div>' +
+          groups[c].map(function(b){ return row('brands', b.id, S.sel.f.brands[b.id], E(b.name), ''); }).join('');
+      }).join('');
+    }
+    function catNames(b){
+      var cats = byId(S.data.options.cats);
+      return (b.cats || []).map(function(id){ return cats[id] ? cats[id].name : ''; }).filter(Boolean).join('、');
+    }
+
+     
+    function ntSummary(){
+      var o = S.data.options, f = S.sel.f, out = [];
+      var g = byId(o.groups), a = byId(o.artists), c = byId(o.companies), b = byId(o.brands), k = byId(o.cats);
+      picked('groups').forEach(function(id){ if (g[id]) out.push(g[id].name + '（含成員各自的團）'); });
+      picked('artists').forEach(function(id){
+        var x = a[id]; if (!x) return;
+        if (x.group && f.groups[x.group]) return;   
+        out.push(x.name + (x.group && g[x.group] ? ' 單人的團' : ''));
+      });
+      picked('companies').forEach(function(id){ if (c[id]) out.push(c[id].name + ' 官方'); });
+      picked('brands').forEach(function(id){ if (b[id]) out.push(b[id].name); });
+      picked('cats').forEach(function(id){ if (k[id]) out.push('所有「' + k[id].name + '」'); });
+      return out;
+    }
+    function followCount(){
+      return KINDS.reduce(function(s, k){ return s + picked(k).length; }, 0);
+    }
+
+    function ntRender(){
+      var box = el('ntBody'); if (!box) return;
+      if (!S.data) {
+        box.innerHTML = S.failed
+          ? '<div class="nt-card"><div class="nt-note warn">讀不到你的通知設定：' + E(S.failed) + '</div>' +
+            '<button type="button" class="nt-btn" style="margin-top:10px" onclick="ntLoad()">再試一次</button></div>'
+          : '<div class="nt-card" style="text-align:center;color:#6b625b">讀取中…</div>';
+        return;
+      }
+      var d = S.data, s = S.sel, o = d.options, h = '';
+
+      
+      if (d.blocked || d.notFriend) {
+        h += '<div class="nt-card"><div class="nt-h"><h6>你目前收不到任何通知</h6></div>' +
+          '<p class="nt-sub">你的設定都存著，但我們推不到你的 LINE —— 你還沒加官方帳號好友，或是把它封鎖了。加回好友之後，下面的設定就會立刻生效，不必重設。</p>' +
+          '<button type="button" class="nt-btn" onclick="openLineContact()">加入官方帳號好友</button></div>';
+      }
+      if (d.preselected) {
+        var pre = picked('brands').length + picked('groups').length + picked('artists').length;
+        h += '<div class="nt-card"><div class="nt-h"><h6>你還沒設定過通知</h6></div><p class="nt-sub" style="margin:0">' +
+          (pre ? '我們照你<b>買過的東西</b>先幫你勾好了。看一下對不對，按最下面的「確認」才會開始通知你。'
+               : '選你想收的開團通知，按最下面的「確認」才會開始通知你。') + '</p></div>';
+      } else if (s.mode === '只收追蹤' && !d.blocked && !d.notFriend) {
+        var sum = ntSummary();
+        h += '<div class="nt-card"><div class="nt-h"><h6>你會收到這些開團</h6></div><p class="nt-sub" style="margin:0">' +
+          (sum.length ? E(sum.join('　·　')) : '還沒選任何一項') + '</p>' +
+          (sum.length ? '<p class="nt-sub" style="margin:6px 0 0">同一團符合好幾項，只會收到一則。</p>' : '') + '</div>';
+      }
+
+      
+      var modes = [['全部', '每一團都通知我', '不管是誰、什麼品牌，開團就收到'],
+                   ['只收追蹤', '只收我追蹤的', '在下面選藝人、品牌、品類，隨時可以改'],
+                   ['關閉', '不要收開團通知', '']];
+      h += '<div class="nt-card"><div class="nt-h"><h6>開團通知</h6></div><div class="nt-mode">' + modes.map(function(m){
+        var on = s.mode === m[0];
+        return '<label class="' + (on ? 'on' : '') + '"><input type="radio" name="ntMode"' + (on ? ' checked' : '') +
+          ' onchange="ntMode(\'' + m[0] + '\')"><span><b>' + m[1] + '</b>' + (m[2] ? '<small>' + m[2] + '</small>' : '') + '</span></label>';
+      }).join('') + '</div></div>';
+
+      if (s.mode === '只收追蹤') {
+        
+        var units = ntUnits(), top = units.filter(unitOn), rest = units.filter(function(u){ return !unitOn(u); });
+        
+        var aSel = picked('groups').map(function(id){ var g = byId(o.groups)[id]; return g && g.name; })
+          .concat(picked('artists').filter(function(id){ var a = byId(o.artists)[id]; return a && !(a.group && S.sel.f.groups[a.group]); })
+            .map(function(id){ return byId(o.artists)[id].name; })).filter(Boolean);
+        h += '<div class="nt-card"><div class="nt-h"><h6>藝人</h6>' + (aSel.length ? '<span>已選 ' + E(aSel.join('、')) + '</span>' : '') + '</div>' +
+          '<p class="nt-sub">勾了就會收到跟他有關的開團——官方品牌、代言、同款都算</p>';
+        h += top.map(unitHtml).join('');
+        var why = d.preselected && d.why ? d.why : null;
+        if (why) {
+          var whyBrands = {}, whyPicks = [];
+          ['groups', 'artists', 'companies'].forEach(function(k){
+            var m = byId(o[k]);
+            Object.keys(why[k] || {}).forEach(function(id){
+              if (!S.sel.f[k][id] || !m[id]) return;
+              if (k === 'artists' && m[id].group && S.sel.f.groups[m[id].group]) { why[k][id].forEach(function(n){ whyBrands[n] = 1; }); return; }
+              whyPicks.push(m[id].name);
+              why[k][id].forEach(function(n){ whyBrands[n] = 1; });
+            });
+          });
+          if (whyPicks.length) {
+            var hasGroup = Object.keys(why.groups || {}).some(function(id){ return S.sel.f.groups[id]; });
+            h += '<div class="nt-note info" style="margin-top:8px">你買過 ' + E(Object.keys(whyBrands).join('、')) +
+              '，所以先幫你勾了 ' + E(whyPicks.join('、')) + '。' +
+              (hasGroup ? '只想追其中一位的話，取消組合再單獨勾。' : '') + '</div>';
+          }
+        }
+        if (rest.length) {
+          h += '<button type="button" class="nt-fold" aria-expanded="' + S.open.other + '" onclick="ntFold(\'other\')">' +
+            (top.length ? '其他藝人' : '選藝人') + '<span>' + rest.length + ' 組　' + (S.open.other ? '▴' : '▾') + '</span></button>';
+          if (S.open.other) h += '<div style="margin-top:4px">' + rest.map(unitHtml).join('') + '</div>';
+        }
+        if (o.companies.length) {
+          var coOpen = S.open.co || picked('companies').length > 0;
+          h += '<button type="button" class="nt-fold" aria-expanded="' + coOpen + '" onclick="ntFold(\'co\')">經紀公司官方周邊<span>' +
+            E(o.companies.map(function(c){ return c.name; }).join('、')) + '　' + (coOpen ? '▴' : '▾') + '</span></button>';
+          if (coOpen) h += '<div style="margin-top:4px">' + o.companies.map(function(c){
+            return row('companies', c.id, S.sel.f.companies[c.id], E(c.name) + ' 官方', '只收 ' + E(c.name) + ' 官方的團（不是旗下每一位藝人的團）');
+          }).join('') + '</div>';
+        }
+        h += '</div>';
+
+        
+        var shown = o.brands.filter(function(b){ return S.brandShown[b.id]; });
+        h += '<div class="nt-card"><div class="nt-h"><h6>品牌</h6>' + (picked('brands').length ? '<span>已選 ' + picked('brands').length + ' 個</span>' : '') + '</div>';
+        if (d.preselected && (d.bought || []).length) h += '<p class="nt-sub">打勾的是你買過的</p>';
+        h += shown.map(function(b){ return row('brands', b.id, S.sel.f.brands[b.id], E(b.name), E(catNames(b))); }).join('');
+        h += '<button type="button" class="nt-fold" aria-expanded="' + S.open.allBrands + '" onclick="ntFold(\'allBrands\')">依品類看全部品牌<span>' +
+          o.brands.length + ' 個　' + (S.open.allBrands ? '▴' : '▾') + '</span></button>';
+        if (S.open.allBrands) {
+          h += '<input type="search" class="nt-search" placeholder="搜尋品牌" aria-label="搜尋品牌" value="' + E(S.q) + '" oninput="ntSearch(this.value)">' +
+            '<div id="ntBrandAll">' + ntBrandAll() + '</div>';
+        }
+        h += '</div>';
+
+        
+        h += '<div class="nt-card"><div class="nt-h"><h6>品類</h6>' + (picked('cats').length ? '<span>已選 ' + picked('cats').length + ' 個</span>' : '') + '</div>' +
+          '<p class="nt-sub">沒有特定追誰，但想知道某一類東西開團</p>' + o.cats.map(function(c){
+            
+            return row('cats', c.id, S.sel.f.cats[c.id], E(c.name), E(c.sub || ''));
+          }).join('') + '</div>';
+      } else {
+        var n = followCount();
+        h += '<div class="nt-card"><div class="nt-h"><h6>追蹤的藝人、品牌、品類</h6><span>已選 ' + n + ' 項</span></div><p class="nt-sub" style="margin:0">' +
+          (s.mode === '全部' ? '選「每一團都通知」時用不到，但你的選擇留著——改回「只收我追蹤的」就會回來。'
+                             : '關閉期間用不到，你的選擇留著。') + '</p></div>';
+      }
+
+      
+      h += '<div class="nt-card"><div class="nt-h"><h6>其他通知</h6></div>' +
+        (s.mode === '關閉' ? '<p class="nt-sub">這兩項是獨立的，關掉開團通知之後還是會收到</p>' : '') +
+        '<label class="nt-sw"><span class="nt-t"><b>現貨上架</b><small>有新的現貨開賣時通知我</small></span>' +
+          '<input type="checkbox" role="switch"' + (s.instock ? ' checked' : '') + ' onchange="ntSw(\'instock\',this.checked)"></label>' +
+        '<label class="nt-sw"><span class="nt-t"><b>精選推薦</b><small>每個月最多 2 則</small></span>' +
+          '<input type="checkbox" role="switch"' + (s.picks ? ' checked' : '') + ' onchange="ntSw(\'picks\',this.checked)"></label>' +
+        (s.mode === '關閉' ? '<div class="nt-note plain" style="margin-top:8px">三項全部關掉之後，你就只會收到跟自己訂單有關的通知（配貨、匯款、出貨）。那一類不能關。</div>' : '') +
+        '</div>';
+
+      
+      if (S.err) h += '<div class="nt-err" role="alert">' + E(S.err) + '</div>';
+      h += d.preselected
+        ? '<div class="nt-foot">按了才會生效，之後隨時可以回來改</div>'
+        : (d.savedAt ? '<div class="nt-foot">最後更新　' + E(ntFmt(d.savedAt)) + '</div>' : '');
+      h += '<button type="button" class="nt-btn wide" id="ntSaveBtn" onclick="ntSave()"' + (S.saving ? ' disabled' : '') + '>' +
+        (S.saving ? '儲存中…' : (d.preselected ? '確認，開始通知我' : '儲存設定')) + '</button>';
+      box.innerHTML = h;
+    }
+
+    function ntFmt(iso){
+      var t = new Date(iso); if (isNaN(t)) return '';
+      var p = function(n){ return (n < 10 ? '0' : '') + n; };
+      return t.getFullYear() + '/' + p(t.getMonth() + 1) + '/' + p(t.getDate()) + ' ' + p(t.getHours()) + ':' + p(t.getMinutes());
+    }
+
+    window.ntSave = function(){
+      if (S.saving || !S.data) return;
+      var s = S.sel;
+      var total = picked('companies').length + picked('groups').length + picked('artists').length + picked('cats').length + picked('brands').length;
+      if (s.mode === '只收追蹤' && total === 0) { S.err = '「只收我追蹤的」至少要選一項；不想收的話選「不要收開團通知」'; ntRender(); return; }
+      var follows = {}; KINDS.forEach(function(k){ follows[k] = picked(k); });
+      S.saving = true; S.err = ''; ntRender();
+      fetchJsonRetry(CORE_URL, 1, 20000, null, {
+        action: 'updateMemberSettings', lineUid: currentLineUid, mode: s.mode,
+        instock: s.instock ? 'true' : 'false', picks: s.picks ? 'true' : 'false', follows: JSON.stringify(follows)
+      }).then(function(r){
+        S.saving = false;
+        if (!r || r.status !== 'SUCCESS') { S.err = (r && r.message) || '儲存失敗，請再按一次'; ntRender(); return; }
+        var first = S.data.preselected;
+        S.data.configured = true; S.data.preselected = false; S.data.why = null; S.data.bought = [];
+        S.data.savedAt = (r.data && r.data.savedAt) || new Date().toISOString();
+        S.data.mode = s.mode; S.data.instock = s.instock; S.data.picks = s.picks; S.data.follows = follows;
+        S.orig = ntSnap();
+        ntPaint();
+        window.ntClose(true);
+        if (typeof weToast === 'function') weToast(first ? '設定好了，開始通知你' : '已儲存');
+      }).catch(function(e){
+        S.saving = false; S.err = '儲存失敗：' + ((e && e.message) || '連線失敗') + '，請再按一次'; ntRender();
+      });
+    };
+  })();
+  </script>
 
 </body>
 </html>
