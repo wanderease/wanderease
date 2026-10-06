@@ -3405,7 +3405,7 @@
     function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length;
       function _doDel(){ srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
       if(activeCnt<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
-        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"標記為取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div><div style="margin-top:10px;font-size:13px;color:#2c2c2f;line-height:1.7;"><b>按下後請再按卡片下方的「確認送出修改」，送出後才算完成取消。</b></div>' }).then(function(ok){ if(ok) _doDel(); });
         return;
       }
       _doDel();
@@ -3505,7 +3505,7 @@
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;
       function _doDel(){ a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty}); renderPoCards(); }
       if(ac<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
-        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"標記為取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div><div style="margin-top:10px;font-size:13px;color:#2c2c2f;line-height:1.7;"><b>按下後請再按卡片下方的「確認送出修改」，送出後才算完成取消。</b></div>' }).then(function(ok){ if(ok) _doDel(); });
         return;
       }
       _doDel();
