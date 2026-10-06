@@ -4100,7 +4100,7 @@
           cascadeHtml = `
             <div class="wl-affected-list">
               <strong style="color:#856404;">🗑 將一併取消的其他候補（${cascaded.length} 件）：</strong>
-              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）'}</li>`).join('')}</ul>
+              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已確認') > -1 ? '（已確認）' : (i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）')}</li>`).join('')}</ul>
             </div>`;
         }
 
