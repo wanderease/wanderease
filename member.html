@@ -654,6 +654,28 @@
       });
     }
 
+    // 🆕 賣貨便送出後：彈窗放「前往賣貨便下單」連結，由客人自己點開
+    
+    function feMyshipGo(url){
+      return new Promise(function(resolve){
+        const bg = document.createElement('div');
+        bg.className = 'wl-modal-bg';
+        bg.style.zIndex = 3000;
+        bg.innerHTML = `
+          <div class="wl-modal-card" style="max-width:360px;">
+            <div class="wl-modal-head" style="background:#16a34a;color:#fff;">✅ 已送出</div>
+            <div class="wl-modal-body" style="white-space:pre-wrap;text-align:center;">請點下方按鈕前往賣貨便賣場，選擇取件門市並完成下單。</div>
+            <div class="wl-modal-actions" style="flex-direction:column;gap:8px;">
+              <a data-act="go" href="${escHTML(url)}" target="_blank" rel="noopener" class="wl-modal-btn" style="display:block;text-align:center;background:#16a34a;color:#fff;text-decoration:none;">🛒 前往賣貨便下單</a>
+              <button data-act="later" class="wl-modal-btn wl-modal-btn-secondary">稍後再去</button>
+            </div>
+          </div>`;
+        bg.querySelector('[data-act="go"]').onclick = function(){ setTimeout(function(){ bg.remove(); resolve(true); }, 300); };
+        bg.querySelector('[data-act="later"]').onclick = function(){ bg.remove(); resolve(false); };
+        document.body.appendChild(bg);
+      });
+    }
+
     function feConfirm(message, opts){
       opts = opts || {};
       const type = opts.type || 'warning';
@@ -2744,18 +2766,11 @@
           _ok = true;
           renderShipModule(mod);   
           
+          
           if(window.__pendingMyshipUrl){
             const _openUrl = window.__pendingMyshipUrl;
             window.__pendingMyshipUrl = null;
-            setTimeout(function(){
-              try{
-                if(window.liff && liff.isInClient && liff.isInClient()){
-                  liff.openWindow({ url:_openUrl, external:true });
-                } else {
-                  window.open(_openUrl, '_blank');
-                }
-              }catch(e){ console.error('[賣貨便下單] 開窗失敗', e); window.open(_openUrl, '_blank'); }
-            }, 300);
+            feMyshipGo(_openUrl);
           }
         } else {
           alert(d.message||'送出失敗');
@@ -2770,15 +2785,7 @@
           if(choice === 'myship'){
             const _murl2 = window._shipMyshipUrl || '';
             if(_murl2){
-              setTimeout(function(){
-                try{
-                  if(window.liff && liff.isInClient && liff.isInClient()){
-                    liff.openWindow({ url:_murl2, external:true });
-                  } else {
-                    window.open(_murl2, '_blank');
-                  }
-                }catch(e3){ window.open(_murl2, '_blank'); }
-              }, 300);
+              feMyshipGo(_murl2);
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
