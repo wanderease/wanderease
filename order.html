@@ -1160,7 +1160,8 @@ function snapForm() {
 function restoreForm(o) {
   Object.keys(o || {}).forEach(function (id) {
     var el = document.getElementById(id);
-    if (el && !el.value) el.value = o[id];
+    if (el && (touched[id] || !el.value)) el.value = o[id];
+    if (el && (touched[id] || !el.value)) el.value = o[id];
   });
 }
 
