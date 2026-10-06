@@ -2542,7 +2542,7 @@
           </label>
           <div id="shipf-unavail-dates-${choice}" style="display:none;margin-top:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
-              從 <input type="date" class="shipf-inp" id="shipf-from-${choice}" style="flex:1;"> 到 <input type="date" class="shipf-inp" id="shipf-to-${choice}" style="flex:1;">
+              從 <input type="date" class="shipf-inp" id="shipf-from-${choice}" style="flex:1;" onchange="var t=document.getElementById('shipf-to-${choice}');t.min=this.value;if(t.value&&t.value<this.value)t.value='';"> 到 <input type="date" class="shipf-inp" id="shipf-to-${choice}" style="flex:1;">
             </div>
           </div>
           <label class="shipf-agree">
@@ -2670,6 +2670,7 @@
       if(uav && uav.checked){
         const from=val(`shipf-from-${choice}`), to=val(`shipf-to-${choice}`);
         if(!from||!to){ await feAlert('已勾選無法收貨期間，請填寫起訖日期', {type:'warning'}); return; }
+        if(to < from){ await feAlert('無法收貨期間的結束日期不能早於開始日期', {type:'warning'}); return; }
         unavailable = { from:from, to:to };
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
