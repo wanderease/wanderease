@@ -1503,6 +1503,30 @@ function payBy() {
 
  
 
+var ordersPayAsked = false;
+
+
+
+function ordersPayBlock() {
+  var note = '<div class="paynote">訂單成立後約 <b>1～2 分鐘</b>會轉為正式訂單，轉好後就不會顯示在這裡，' +
+    '請改到<b>會員中心的「我的訂單」</b>查詢訂單與匯款資訊。</div>';
+  var body;
+  if (payInfo) {
+    var lines = String(payInfo).split(/\r?\n/)
+      .map(function (x) { return x.trim(); }).filter(Boolean);
+    body = '<div class="accbox">' + lines.map(function (x) {
+      return '<div class="accline">' + esc(x) + '</div>';
+    }).join('') + '</div>';
+  } else if (payDone) {
+    body = '<div class="r"><span>請至會員中心查看匯款帳戶</span></div>';
+  } else {
+    body = '<div class="r"><span class="ld"></span>' +
+      '<span style="flex:1;text-align:right">讀取收款資訊中…</span></div>';
+  }
+  return '<div class="sec" style="padding-top:0"><div class="pay"><h4>請匯款至以下帳戶</h4>' +
+    body + note + '</div></div>';
+}
+
 function viewOrders() {
   var h = hdrBack('我的訂單');
 
@@ -1517,6 +1541,10 @@ function viewOrders() {
       '<div style="margin-top:14px"><button class="tab" onclick="goList()">' +
       '去逛逛</button></div></div>';
   }
+
+  
+  if (!payInfo && !payDone && !ordersPayAsked) { ordersPayAsked = true; setTimeout(loadPayInfo, 0); }
+  h += ordersPayBlock();
 
   
   
