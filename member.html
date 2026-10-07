@@ -1568,6 +1568,12 @@
           `;
           
           renderOrdViewAllBtn(total);
+          
+          
+          if(unpaid > 0 && !window._ordAutoUnpaidDone && window._ordFilter == null){
+            window._ordAutoUnpaidDone = true;
+            filterOrdersByStatus('unpaid');
+          }
         } else {
           ordW.style.display = 'none';
           renderOrdViewAllBtn(0);
