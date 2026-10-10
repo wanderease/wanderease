@@ -596,7 +596,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const GAS_URL="https:\/\/script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj4A-5BdiflcfSng-dFv34Vpa1SXkXHgQQLKiuuEnVza/exec";
+    const GAS_URL="https:\/\/wanderease-api.wanderease-th.workers.dev/gas";
     const CORE_URL="https:\/\/wanderease-api.wanderease-th.workers.dev/";
 
     
@@ -650,6 +650,28 @@
             </div>
           </div>`;
         bg.querySelector('button').onclick = function(){ bg.remove(); resolve(true); };
+        document.body.appendChild(bg);
+      });
+    }
+
+    // 🆕 賣貨便送出後：彈窗放「前往賣貨便下單」連結，由客人自己點開
+    
+    function feMyshipGo(url){
+      return new Promise(function(resolve){
+        const bg = document.createElement('div');
+        bg.className = 'wl-modal-bg';
+        bg.style.zIndex = 3000;
+        bg.innerHTML = `
+          <div class="wl-modal-card" style="max-width:360px;">
+            <div class="wl-modal-head" style="background:#16a34a;color:#fff;">✅ 已送出</div>
+            <div class="wl-modal-body" style="white-space:pre-wrap;text-align:center;">請點下方按鈕前往賣貨便賣場，選擇取件門市並完成下單。</div>
+            <div class="wl-modal-actions" style="flex-direction:column;gap:8px;">
+              <a data-act="go" href="${escHTML(url)}" target="_blank" rel="noopener" class="wl-modal-btn" style="display:block;text-align:center;background:#16a34a;color:#fff;text-decoration:none;">🛒 前往賣貨便下單</a>
+              <button data-act="later" class="wl-modal-btn wl-modal-btn-secondary">稍後再去</button>
+            </div>
+          </div>`;
+        bg.querySelector('[data-act="go"]').onclick = function(){ setTimeout(function(){ bg.remove(); resolve(true); }, 300); };
+        bg.querySelector('[data-act="later"]').onclick = function(){ bg.remove(); resolve(false); };
         document.body.appendChild(bg);
       });
     }
@@ -1114,9 +1136,7 @@
       if(!kw)return alert("請輸入關鍵字！");
       showLoaderModal('調閱客人資料中', '請稍候...');
       try{
-        
-        
-        const r=await fetch(CORE_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminViewCustomer',lineUid:currentLineUid,searchType:ty,keyword:kw})});
+        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminViewCustomer',lineUid:currentLineUid,searchType:ty,keyword:kw})});
         const d=await r.json();
         hideLoaderModal();
         if(d.status==="BOUND"){
@@ -1548,6 +1568,12 @@
           `;
           
           renderOrdViewAllBtn(total);
+          
+          
+          if(unpaid > 0 && !window._ordAutoUnpaidDone && window._ordFilter == null){
+            window._ordAutoUnpaidDone = true;
+            filterOrdersByStatus('unpaid');
+          }
         } else {
           ordW.style.display = 'none';
           renderOrdViewAllBtn(0);
@@ -2144,9 +2170,7 @@
       }
       const area = document.getElementById('shipModuleArea');
       if (area) area.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280;font-size:13px;">處理中...</div>';
-      
-      
-      fetch(CORE_URL, {
+      fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ action: 'customerSkipBatch', payload: JSON.stringify({ lineUid: currentLineUid, skip: skip }) })
@@ -2531,7 +2555,7 @@
           </label>
           <div id="shipf-unavail-dates-${choice}" style="display:none;margin-top:6px;">
             <div style="display:flex;gap:8px;align-items:center;font-size:12px;">
-              從 <input type="date" class="shipf-inp" id="shipf-from-${choice}" style="flex:1;"> 到 <input type="date" class="shipf-inp" id="shipf-to-${choice}" style="flex:1;">
+              從 <input type="date" class="shipf-inp" id="shipf-from-${choice}" style="flex:1;" onchange="var t=document.getElementById('shipf-to-${choice}');t.min=this.value;if(t.value&&t.value<this.value)t.value='';"> 到 <input type="date" class="shipf-inp" id="shipf-to-${choice}" style="flex:1;">
             </div>
           </div>
           <label class="shipf-agree">
@@ -2659,6 +2683,7 @@
       if(uav && uav.checked){
         const from=val(`shipf-from-${choice}`), to=val(`shipf-to-${choice}`);
         if(!from||!to){ await feAlert('已勾選無法收貨期間，請填寫起訖日期', {type:'warning'}); return; }
+        if(to < from){ await feAlert('無法收貨期間的結束日期不能早於開始日期', {type:'warning'}); return; }
         unavailable = { from:from, to:to };
       }
       const _decl = (window._shipModuleData && window._shipModuleData.rates && window._shipModuleData.rates.declaredValue != null) ? window._shipModuleData.rates.declaredValue : 0;
@@ -2712,8 +2737,7 @@
       let _ok = false;
 
       try{
-        
-        const r = await fetch(CORE_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
+        const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
           const dd = d.data || {};
@@ -2756,18 +2780,11 @@
           _ok = true;
           renderShipModule(mod);   
           
+          
           if(window.__pendingMyshipUrl){
             const _openUrl = window.__pendingMyshipUrl;
             window.__pendingMyshipUrl = null;
-            setTimeout(function(){
-              try{
-                if(window.liff && liff.isInClient && liff.isInClient()){
-                  liff.openWindow({ url:_openUrl, external:true });
-                } else {
-                  window.open(_openUrl, '_blank');
-                }
-              }catch(e){ console.error('[賣貨便下單] 開窗失敗', e); window.open(_openUrl, '_blank'); }
-            }, 300);
+            feMyshipGo(_openUrl);
           }
         } else {
           alert(d.message||'送出失敗');
@@ -2782,15 +2799,7 @@
           if(choice === 'myship'){
             const _murl2 = window._shipMyshipUrl || '';
             if(_murl2){
-              setTimeout(function(){
-                try{
-                  if(window.liff && liff.isInClient && liff.isInClient()){
-                    liff.openWindow({ url:_murl2, external:true });
-                  } else {
-                    window.open(_murl2, '_blank');
-                  }
-                }catch(e3){ window.open(_murl2, '_blank'); }
-              }, 300);
+              feMyshipGo(_murl2);
             } else {
               await feAlert('賣貨便下單連結尚未提供，我們會盡快通知您。', {type:'success', title:'✅ 已送出'});
             }
@@ -3290,8 +3299,7 @@
       el.readOnly = true;
 
       try{
-        // 2026-10-11 改走 Worker（見 customerSkipBatch 那段說明）。要退回就改回 GAS_URL
-        const r = await fetch(CORE_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipLast5',payload:payload})});
+        const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipLast5',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
           _ok = true;
@@ -3418,13 +3426,13 @@
     function poMergedDel(cardIdx,repRid){ let f=poFindItem(cardIdx,repRid); if(!f)return; let po=f.po,it=f.it; let srcs=poItemSrcs(it); let activeCnt=(po.items||[]).filter(x=>!x.isCancelled&&!poItemFullyDeleted(x)&&poItemEff(x)>0).length;
       function _doDel(){ srcs.forEach(src=>{let mid=src.masterId;if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];let ex=a.findIndex(e=>e.type==='MODIFY'&&e.recordId===src.recordId);if(ex>-1)a.splice(ex,1);if(!a.find(e=>e.type==='DELETE'&&e.recordId===src.recordId))a.push({type:'DELETE',recordId:src.recordId,product:it.product,oldQty:src.reqQty});}); renderPoCards(); }
       if(activeCnt<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
-        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"標記為取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div><div style="margin-top:10px;font-size:13px;color:#2c2c2f;line-height:1.7;"><b>按下後請再按卡片下方的「確認送出修改」，送出後才算完成取消。</b></div>' }).then(function(ok){ if(ok) _doDel(); });
         return;
       }
       _doDel();
     }
     function getCountdown(ds){if(!ds)return'';let t=new Date(ds.replace(/-/g,'/')).getTime()-Date.now();if(t<=0)return'已截止';let d=Math.floor(t/864e5),h=Math.floor(t%864e5/36e5),m=Math.floor(t%36e5/6e4);return d>0?`剩餘 ${d} 天 ${h} 小時`:`剩餘 ${h} 小時 ${m} 分`;}
-    function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()).map(l=>{let s=escHTML(l);s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] /,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
+    function fmtPoNote(raw){if(!raw)return'';return raw.split('\n').filter(l=>l.trim()&&!/\| ⚠️ SYS_/.test(l)).map(l=>{let s=escHTML(l);s=s.replace(/ \| ⚠️ ACT_CUST_FULLCANCEL\] .*$/,'] 取消全單，預購期間棄單累計 +1');s=s.replace(/ \| ACT_CUST_RESTORE\] .*?（目前第 (\d+) 次）.*$/,'] 重新加回品項，棄單次數取消（目前 $1 次）');s=s.replace(/ \(獨立拆分排序\)/,'');s=s.replace(/ \| ACT_CUST_EDIT\] /,'] 您已');s=s.replace(/ \| ACT_CUST_DEL\] /,'] 您已');s=s.replace(/ \| ACT_CUST_ADD\] /,'] 您已');s=s.replace(/ \| ACT_CUST_CANCEL\] (您已)?/,'] 您已');s=s.replace(/ \| ACT_CUST_WAIT\] (您已將)?/,'] 您已將');s=s.replace(/ \| ACT_CUST_CANCEL_ALL\] /,'] ⚠️ 您已');s=s.replace(/ \| ACT_ADMIN_\w+\] /g,'] 系統已');s=s.replace(/ \| ACT_SYS_\w+\] /g,'] 系統已自動');return`<div>${s}</div>`;}).join('');}
 
     function buildPoCard(po,idx){
       let _mids=poCardMids(po);
@@ -3518,7 +3526,7 @@
     function poDelItem(mid,rid,prod,qty){if(!pendingEdits[mid])pendingEdits[mid]=[];let a=pendingEdits[mid];if(a.find(e=>e.type==='DELETE'&&e.recordId===rid))return;let po=poData.preorders.find(p=>p.masterId===mid);if(!po)return;let ac=po.items.filter(i=>i.reqQty>0&&!i.isCancelled&&!a.find(e=>e.type==='DELETE'&&e.recordId===i.recordId)).length;
       function _doDel(){ a.push({type:'DELETE',recordId:rid,product:prod,oldQty:qty}); renderPoCards(); }
       if(ac<=1){ let c=poData.cancelCount||0; if(c>=3){ weToast("取消次數已達上限，請聯繫客服。","error"); return; }
-        weConfirm({ title:"取消全數品項？", danger:true, okText:"確定取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div>' }).then(function(ok){ if(ok) _doDel(); });
+        weConfirm({ title:"取消全數品項？", danger:true, okText:"標記為取消", cancelText:"再想想", bodyHtml:'<div style="font-size:13px;color:#2c2c2f;line-height:1.7;">您即將取消此預購單的<b>全數品項</b>。</div><div style="margin-top:10px;background:#fdf3f2;color:#791f1f;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:700;line-height:1.6;">⚠ 累積 3 次取消後，下次將要求先匯款。<br>目前已累積：'+c+' 次</div><div style="margin-top:10px;font-size:13px;color:#2c2c2f;line-height:1.7;"><b>按下後請再按卡片下方的「確認送出修改」，送出後才算完成取消。</b></div>' }).then(function(ok){ if(ok) _doDel(); });
         return;
       }
       _doDel();
@@ -4113,7 +4121,7 @@
           cascadeHtml = `
             <div class="wl-affected-list">
               <strong style="color:#856404;">🗑 將一併取消的其他候補（${cascaded.length} 件）：</strong>
-              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）'}</li>`).join('')}</ul>
+              <ul>${cascaded.map(i => `<li>【${escHTML(i.brand)}】${escHTML(i.product)}${i.status.indexOf('已確認') > -1 ? '（已確認）' : (i.status.indexOf('已配貨') > -1 ? '（配到貨）' : '（排隊中）')}</li>`).join('')}</ul>
             </div>`;
         }
 
@@ -4134,7 +4142,7 @@
                 </div>
                 ${cascadeHtml}
                 <div style="font-size:12px;color:#666;line-height:1.5;">
-                  如您只是暫時不需要這件商品，但仍希望保留其他候補，請點「返回」選「✓ 確認保留」。
+                  放棄後這件商品會讓給下一位排隊的客人，此決定不可復原。如果您仍要購買這件商品，請點「返回」改按「✓ 確認保留」。
                 </div>
                 <div class="wl-rule-check">
                   <input type="checkbox" id="wlChkAbandon" onchange="document.getElementById('wlBtnAbandonOk').disabled = !this.checked;">
