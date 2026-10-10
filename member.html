@@ -2144,7 +2144,9 @@
       }
       const area = document.getElementById('shipModuleArea');
       if (area) area.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280;font-size:13px;">處理中...</div>';
-      fetch(GAS_URL, {
+      
+      
+      fetch(CORE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ action: 'customerSkipBatch', payload: JSON.stringify({ lineUid: currentLineUid, skip: skip }) })
@@ -2710,7 +2712,8 @@
       let _ok = false;
 
       try{
-        const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
+        
+        const r = await fetch(CORE_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipChoice',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
           const dd = d.data || {};
@@ -3287,7 +3290,8 @@
       el.readOnly = true;
 
       try{
-        const r = await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipLast5',payload:payload})});
+        // 2026-10-11 改走 Worker（見 customerSkipBatch 那段說明）。要退回就改回 GAS_URL
+        const r = await fetch(CORE_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({action:'customerSubmitShipLast5',payload:payload})});
         const d = await r.json();
         if(d.status==='SUCCESS'){
           _ok = true;
