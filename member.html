@@ -1114,7 +1114,9 @@
       if(!kw)return alert("請輸入關鍵字！");
       showLoaderModal('調閱客人資料中', '請稍候...');
       try{
-        const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminViewCustomer',lineUid:currentLineUid,searchType:ty,keyword:kw})});
+        
+        
+        const r=await fetch(CORE_URL,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:'adminViewCustomer',lineUid:currentLineUid,searchType:ty,keyword:kw})});
         const d=await r.json();
         hideLoaderModal();
         if(d.status==="BOUND"){
