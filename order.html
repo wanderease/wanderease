@@ -1708,7 +1708,7 @@ function view2() {
     
     '<div class="fld"><label>' +
       (official ? '匯款帳號後五碼' : '預計匯款帳戶後五碼') + ' <b>*</b></label>' +
-    '<input id="fLast5"' + dis + ' inputmode="numeric" maxlength="5" ' +
+    '<input id="fLast5"' + dis + ' maxlength="20" ' +
       'placeholder="' + (official ? '' : '請先提供預計匯款的帳戶') + '">' +
     (official ? ''
       : '<div class="hint">之後實際匯款時若換了帳戶，到會員中心修改即可。</div>') +
@@ -2236,7 +2236,8 @@ function submitOrder_() {
   if (!name) { alert('請填社群暱稱。'); return; }
   if (!/^09\d{8}$/.test(phone)) { alert('手機號碼要 09 開頭共 10 碼。'); return; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { alert('請填正確的電子信箱。'); return; }
-  if (!/^\d{4,5}$/.test(last5)) { alert('請填匯款帳號後五碼。'); return; }
+  if (!last5 || (/^\d+$/.test(last5) && !/^\d{4,5}$/.test(last5))) { alert('請填匯款帳號後五碼。'); return; }
+  if (/[<>"'`]/.test(last5)) { alert('匯款帳號後五碼不能有 < > " \' ` 這些符號。'); return; }
 
   
   
