@@ -922,6 +922,11 @@ function boot(d) {
                    (d && d.maintenance && d.maintenance.admins) || [];
     var list = (d && d.campaigns) || [];
     C = list.filter(function (x) { return x.id === CODE; })[0] || null;
+    
+    if (C && C.myship && /^https:\/\//.test(C.myship)) {
+      location.replace(C.myship);
+      return;
+    }
     if (!C) {
       document.getElementById('root').innerHTML =
         '<div class="empty"><i class="bi bi-search" style="font-size:30px;display:block;margin-bottom:10px"></i>' +

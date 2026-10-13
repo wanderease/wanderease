@@ -51,6 +51,7 @@ body{
 .tag.close{background:#f2ece6;border-color:#ddd2c6;color:#8a7360}
 .tag.mine{background:#fdf1e2;border-color:#f0d7b6;color:#96560a}
  
+.tag.myship{background:#fff4e5;border-color:#f3d2a2;color:#a35a00}
 .tag.soon{background:#eef2f8;border-color:#c9d4e6;color:#34507a}
 
 .empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
@@ -355,13 +356,17 @@ function render() {
     var closed = campClosed(c);
     var waiting = campWaiting(c);
     var n = (c.products || []).length;
-    return '<a class="card' + (closed ? ' closed' : '') + '" href="/o/' + encodeURIComponent(c.id) + '">' +
+    
+    var my = !!c.myship;
+    var href = my ? (closed ? '' : ' href="' + esc(c.myship) + '"') : ' href="/o/' + encodeURIComponent(c.id) + '"';
+    return '<a class="card' + (closed ? ' closed' : '') + '"' + href + '>' +
       (c.cover
         ? '<img src="' + esc(c.cover) + '" alt="" loading="lazy">'
         : '<div class="noimg"><i class="bi bi-bag"></i></div>') +
       '<div class="b"><b>' + esc(c.name) + '</b>' +
-      '<s>' + esc(c.brand) + ' · ' + n + ' 個商品</s>' +
+      '<s>' + esc(c.brand) + (my ? '' : ' · ' + n + ' 個商品') + '</s>' +
       '<div class="tags">' +
+        (my ? '<span class="tag myship">賣貨便下單</span>' : '') +
         (campEarly(c) && campWaitingRaw(c)
           ? '<span class="tag soon">提前開放給你・' + esc(fmtDue(c.start)) + ' 正式開放</span>'
           : waiting
