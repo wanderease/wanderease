@@ -148,6 +148,9 @@
     .po-sum{border-top:1.5px solid #e0d8d0;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:900;}
     .po-sum span:last-child{color:#dc3545;}
     .po-notice{margin:8px 0;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:700;text-align:center;}
+    .fe-extras{background:#f7f4f0;border:1px solid #e6ddd3;border-radius:10px;padding:9px 12px;margin:10px 0;font-size:13px;line-height:1.7;text-align:left;}
+    .fe-extras .t{font-size:11.5px;color:#8a7a6d;font-weight:700;margin-bottom:2px;}
+    .fe-extras .k{color:#8a7a6d;margin-right:6px;}
     .po-notes{padding:8px 0;border-top:.5px dashed #e0d8d0;margin-top:8px;font-size:11px;color:#888;}
     .po-notes div{padding:2px 0;line-height:1.5;}
     .qty-ctrl{display:flex;align-items:center;gap:4px;flex-shrink:0;}
@@ -627,6 +630,8 @@
     let wlInitialData={groups:[],cancelled:[]};
 
     function escHTML(s){return String(s||'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
+    
+    function feGiftTag(t){return t?'<span style="display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:#fff4e5;border:1px solid #f3d2a2;color:#a35a00;margin-left:6px;vertical-align:middle;white-space:nowrap;">🎁 '+escHTML(t)+'</span>':'';}
 
     
     
@@ -1353,7 +1358,7 @@
               const itemsHtml = g.items.map(i => {
                 
                 const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
+                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span>${feGiftTag(i.giftType)}<span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
               }).join('');
               return `<div class="wl-grp"><div class="wl-grp-head"><span class="wl-grp-dot"></span>${escHTML(g.brand)}${seriesLabel}</div>${flowHtml}${itemsHtml}<div class="wl-grp-subtotal"><span>此系列小計</span><span>$${g.subtotal}</span></div></div>`;
             }).join('');
@@ -1480,7 +1485,7 @@
                 const head = `<div class="instk-grp-head" style="font-size:13px;font-weight:700;color:#7a6a78;margin:8px 0 3px;">${escHTML(parts[0])}${parts[1] ? ` <span style="color:#aaa;font-weight:normal;">/ ${escHTML(parts[1])}</span>` : ''}</div>`;
                 const rows = grp[k].map(i => {
                   const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-                  return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
+                  return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span>${feGiftTag(i.giftType)}<span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
                 }).join('');
                 return head + rows;
               }).join('');
@@ -1488,7 +1493,7 @@
               ih = o.items.map(i => {
                 // 🆕 部分出貨情境才標「尚未出貨」；順序：品項名 → 數量 → 尚未出貨
                 const usTag = (o.hasAnyShipped && i.isShipped === false) ? `<span class="unshipped-tag">尚未出貨</span>` : '';
-                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span><span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
+                return `<div class="item-row"><div><span class="item-name">${escHTML(i.name)}</span>${feGiftTag(i.giftType)}<span class="item-qty">x${i.qty}</span>${usTag}</div><div class="fw-bold">$${i.amount}</div></div>`;
               }).join('');
             }
             const eb = !ip ? (
@@ -1514,7 +1519,7 @@
             bh = `<div class="bank-info shadow-sm"><div class="bank-title"><span class="bank-title-text"><i class="bi bi-credit-card-2-front-fill me-1"></i> 專屬匯款資訊</span>${dl}</div><div class="bank-text">${escHTML(o.groupBankInfo)}</div><div class="bank-warning">(請不要寫備註訊息，會對不到後五碼~)</div></div>`;
           }
 
-          return `<div class="card-order mb-4 ${isWL?'is-waitlist':''}" data-ostatus="${ostatus}"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${bh}</div></div>`;
+          return `<div class="card-order mb-4 ${isWL?'is-waitlist':''}" data-ostatus="${ostatus}"><div class="order-header" onclick="toggleOrderCard('${ci}')">${th}<div class="badge-status ${bc}">${escHTML(o.payStatus)}</div></div><div id="${ci}" class="order-content">${nh}${ph}${db}${feExtrasHtml(o.extras)}${bh}</div></div>`;
         }).join('');
         oc.innerHTML = `<div class="text-start">${tt}${cards}</div>`;
       }
@@ -1647,7 +1652,7 @@
         })();
         document.getElementById('shipSeriesList').innerHTML = series.map(s => {
           const itemsHtml = (Array.isArray(s.items) ? s.items : []).map(it =>
-            `<div class="sc-item-row" style="display:flex;justify-content:space-between;gap:8px;"><span>• ${escHTML(it.name||'')} ×${it.qty||1}</span>${(it.amount!=null&&it.amount>0)?`<span style="color:#6b7280;white-space:nowrap;">$${it.amount}</span>`:''}</div>`
+            `<div class="sc-item-row" style="display:flex;justify-content:space-between;gap:8px;"><span>• ${escHTML(it.name||'')}${feGiftTag(it.giftType)} ×${it.qty||1}</span>${(it.amount!=null&&it.amount>0)?`<span style="color:#6b7280;white-space:nowrap;">$${it.amount}</span>`:''}</div>`
           ).join('');
           return `
           <div class="ship-series-card">
@@ -1730,7 +1735,7 @@
                   }
                   return `
                   <div class="unship-row-item">
-                    <span class="unship-row-name">${escHTML(it.name||'')} ×${it.qty||1}</span>
+                    <span class="unship-row-name">${escHTML(it.name||'')}${feGiftTag(it.giftType)} ×${it.qty||1}</span>
                     ${tagHtml}
                   </div>`;
                 }).join('')}
@@ -3518,7 +3523,14 @@
       let _cardCls="po-card"+(isSubmitting?" po-submitting":"");
       let _pvShow=isSubmitting?"":pv;
       let _updBar=isSubmitting?`<div class="po-updating-bar"><span class="po-updating-spin"></span>更新中，請稍候…</div>`:"";
-      return`<div class="${_cardCls}" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${_pvShow}${_updBar}${nt}${notes}</div></div>`;
+      return`<div class="${_cardCls}" id="po-card-${idx}" style="border:2px solid ${bc};"><div class="po-header" style="background:${hbg};"><div><div class="po-title">${lbh}</div><div class="po-sub" style="color:${bc};">${sub}</div></div>${badge}</div><div class="po-body">${ih}${_pvShow}${_updBar}${nt}${feExtrasHtml(po.extras)}${notes}</div></div>`;
+    }
+
+    // 🆕 2026-10-26 客人下單時填的資料（開團的客人填寫欄位），只顯示不能改
+    function feExtrasHtml(t){
+      t=String(t||'').trim(); if(!t) return '';
+      const rows=t.split('\n').map(ln=>{const i=ln.indexOf('：');return i>0?`<div><span class="k">${escHTML(ln.slice(0,i))}</span>${escHTML(ln.slice(i+1))}</div>`:`<div>${escHTML(ln)}</div>`;}).join('');
+      return `<div class="fe-extras"><div class="t"><i class="bi bi-pencil-square me-1"></i>你填寫的資料</div>${rows}<div class="text-muted" style="font-size:11px;margin-top:2px;">需要修改請聯繫客服</div></div>`;
     }
 
     // ===== 改單操作 =====
