@@ -148,6 +148,9 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
            border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;background:#fbfaf9}
 .fld input:focus{outline:none;border-color:var(--brown);background:#fff}
 .fld .hint{font-size:11.5px;color:var(--mute);margin-top:4px}
+.fld select{width:100%;font-family:inherit;font-size:15.5px;color:var(--ink);
+           border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;background:#fbfaf9}
+.fld select:focus{outline:none;border-color:var(--brown);background:#fff}
 .agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;margin-bottom:16px;cursor:pointer}
 .agree input{width:20px;height:20px;margin-top:1px;flex:0 0 auto;accent-color:var(--brown)}
  
@@ -405,6 +408,7 @@ var agreed = false;
 
 
 var confirmAt = {};
+var askVal = {};   
 var me = null;
 var ordered = null;      
 
@@ -866,8 +870,11 @@ function tot() {
   Object.keys(cart).forEach(function (k) {
     var q = cart[k];
     if (!q) return;
-    n += q;
     var a = k.split('|');
+    
+    var pp = C.products[Number(a[0])] || {};
+    var cc = (pp.colors || [])[Number(a[1])];
+    n += q * unitsOf(pp, cc ? cc.n : '', a[2]);
     s += q * priceOf(Number(a[0]), Number(a[1]), a[2]);
   });
   return { n: n, sum: s, dep: n * DEPOSIT, pay: s - n * DEPOSIT };
@@ -1491,7 +1498,7 @@ function view1() {
           h += soldRow(esc(s), mine);
           return;
         }
-        h += stepRow(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
+        h += (p.bundle ? bundleRow : stepRow)(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
       if (offN) h += '<div class="sold-note">' + SOLD_NOTE + '</div>';
@@ -1510,14 +1517,14 @@ function view1() {
       var k0 = pi + '|' + si + '|-';
       var mine0 = om[cname + '|'] || 0;
       var q0 = mine0 || cart[k0] || 0;
-      h += '<h3>數量</h3>';
+      h += '<h3>' + (p.bundle ? '已選' : '數量') + '</h3>';
       
       if (isOff(p, cname, '-')) {
         h += soldRow(esc(cname || '數量'), mine0) +
              '<div class="sold-note">' + SOLD_NOTE + '</div>';
       } else {
         if (lockQty) h += '<div class="qty-off">';
-        h += stepRow(k0, cname || '數量', 0, q0, full, closed, pi, false, mine0);
+        h += (p.bundle ? bundleRow : stepRow)(k0, esc(cname || '一份'), priceOf(pi, si, '-'), q0, full, closed, pi, !!p.bundle, mine0);
         if (lockQty) h += '</div>';
       }
     }
@@ -1581,6 +1588,39 @@ function stepRow(k, label, price, q, full, closed, pi, showPrice, mine) {
     '</span></div>';
 }
 
+
+function bundleRow(k, label, price, q, full, closed, pi, showPrice, mine) {
+  var a = String(k).split('|'), p = C.products[pi] || {};
+  var cc = (p.colors || [])[Number(a[1])];
+  var u = unitsOf(p, cc ? cc.n : '', a[2]);
+  return '<div class="srow' + (q ? ' has' : '') + '">' +
+    '<span class="sl">' + label +
+    (mine ? '<span class="mine">已訂 ' + mine + ' 份</span>' : '') +
+    (showPrice ? '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span>' : '') +
+    '</span>' +
+    '<span class="stp"><button style="width:auto;padding:0 12px;font-size:13px"' +
+    ((closed && !q) ? ' disabled' : '') + ' onclick="bpick(\'' + k + '\',' + pi + ')">' +
+    (q ? '✓ 已選' : '選這組') + '</button></span></div>';
+}
+function bpick(k, pi) {
+  if (cart[k]) { delete cart[k]; saveCart(); draw(); return; }
+  if (isClosed()) { alert('這一團已經截止收單了。'); dueReached(); return; }
+  var a = String(k).split('|'), p = C.products[pi];
+  var cc = p ? (p.colors || [])[Number(a[1])] : null;
+  if (p && isOff(p, cc ? cc.n : '', a[2])) { alert(SOLD_NOTE + '。'); draw(); return; }
+  Object.keys(cart).forEach(function (x) { if (Number(x.split('|')[0]) === pi) delete cart[x]; });
+  cart[k] = 1;
+  saveCart();
+  draw();
+}
+
+
+function unitsOf(p, opt, size) {
+  if (!p || !p.bundle) return 1;
+  var pick = function (s) { var m = String(s == null || s === '-' ? '' : s).match(/(\d+)/); return m ? Number(m[1]) : 0; };
+  return Math.max(1, Math.min(99, pick(opt) || pick(size) || 1));
+}
+
 function view2() {
   var t = tot();
   var official = (C.mode === '直接成立正式訂單');
@@ -1596,7 +1636,9 @@ function view2() {
          (c ? '－' + esc(c.n) : '') + '</b>' +
          '<s>' + (a[2] !== '-' ? '尺寸 ' + esc(a[2]) + ' · ' : '') +
          'NT$' + up.toLocaleString() + '</s>' +
-         '</div><span class="q">×' + q + '</span>' +
+         '</div><span class="q">×' + q +
+         (p.bundle && unitsOf(p, c ? c.n : '', a[2]) > 1 ? '<br><small style="color:#a0907a">共 ' + (q * unitsOf(p, c ? c.n : '', a[2])) + ' 件</small>' : '') +
+         '</span>' +
          '<span class="a">' + (up * q).toLocaleString() + '</span></div>';
   });
   h += '</div><div class="sums">';
@@ -1720,6 +1762,30 @@ function view2() {
     '</div></div>';
 
   
+  var asks = askFields();
+  if (asks.length) {
+    h += '<div class="idbox"><h4>這一團需要你提供</h4>' +
+      '<div class="lead">送出後可以在會員中心看到你填的內容</div>';
+    asks.forEach(function (f, i) {
+      var v = askVal[f.label] || '';
+      h += '<div class="fld"><label>' + esc(f.label) + (f.required ? ' <b>*</b>' : '') + '</label>';
+      if (f.type === 'select') {
+        h += '<select id="fAsk' + i + '"' + dis + ' onchange="setAsk(' + i + ',this.value)">' +
+          '<option value="">請選擇</option>' +
+          (f.options || []).map(function (o) {
+            return '<option value="' + esc(o) + '"' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>';
+          }).join('') + '</select>';
+      } else {
+        h += '<input id="fAsk' + i + '"' + dis + ' maxlength="200" value="' + esc(v) + '"' +
+          ' placeholder="' + esc(f.hint || (f.required ? '必填' : '選填')) + '"' +
+          ' oninput="setAsk(' + i + ',this.value)">';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+
+  
   
   var cfs = (C.confirms || []).filter(Boolean);
   if (cfs.length) {
@@ -1803,6 +1869,9 @@ function view3() {
                    esc(r.orderNo) + '</span></div>' : '') +
       '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' +
       (r.summary ? '<div><span>訂購內容</span><span>' + esc(r.summary) + '</span></div>' : '') +
+      (r.extras || []).map(function (x) {
+        return '<div><span>' + esc(x.label) + '</span><span>' + esc(x.value) + '</span></div>';
+      }).join('') +
       '<div><span>訂單金額</span><span>NT$' +
         (r.sum || 0).toLocaleString() + '</span></div>' +
     '</div></div>';
@@ -1865,6 +1934,16 @@ function goSlide(pi, gi) {
  
 function pick(pi, ci) {
   colorSel[pi] = ci;
+  
+  var p = C.products[pi];
+  if (p && p.bundle && !(p.sizes || []).length && !ordered && !orderFailed) {
+    var k = pi + '|' + ci + '|-';
+    var cc = (p.colors || [])[ci];
+    if (!cart[k] && !isOff(p, cc ? cc.n : '', '-') && !isClosed()) {
+      Object.keys(cart).forEach(function (x) { if (Number(x.split('|')[0]) === pi) delete cart[x]; });
+      cart[k] = 1;
+    }
+  }
   saveCart();
   draw();
 }
@@ -1897,6 +1976,21 @@ function ch(k, d, pi) {
   draw();
 }
 function setAgree(v) { agreed = v; draw(); }
+
+
+function askFields() {
+  return ((C && C.ask) || []).filter(function (f) { return f && f.label; });
+}
+function setAsk(i, v) {
+  var f = askFields()[i];
+  if (f) askVal[f.label] = v;   
+}
+
+function askClean(v) {
+  return String(v == null ? '' : v).replace(/[\r\n\t]+/g, ' ').trim()
+    .replace(/</g, '＜').replace(/>/g, '＞').replace(/"/g, '＂').replace(/'/g, '＇').replace(/`/g, '｀')
+    .slice(0, 200);
+}
 
 
 
@@ -2265,6 +2359,17 @@ function submitOrder_() {
   }
   if (C.notice && !agreed) { alert('請先勾選同意代購規則。'); return; }
 
+  
+  var extras = [];
+  var askMiss = [];
+  askFields().forEach(function (f) {
+    var v = askClean(askVal[f.label]);
+    if (f.type === 'select' && v && (f.options || []).indexOf(askVal[f.label]) < 0) v = '';
+    if (!v) { if (f.required) askMiss.push(f.label); return; }
+    extras.push({ label: f.label, value: v });
+  });
+  if (askMiss.length) { alert('請填寫：' + askMiss.join('、')); return; }
+
   var items = [];
   Object.keys(cart).forEach(function (k) {
     var q = cart[k];
@@ -2301,7 +2406,8 @@ function submitOrder_() {
     items: items,
     sum: t.sum,
     pay: t.pay,
-    summary: itemsSummary(items)
+    summary: itemsSummary(items),
+    extras: extras
   };
 
   var payload = {
@@ -2311,6 +2417,7 @@ function submitOrder_() {
     agreedAt: new Date().toISOString(),
     
     confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
+    extras: extras,
     items: items,
     subtotal: t.sum,
     deposit: t.dep,
