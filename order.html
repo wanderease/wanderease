@@ -903,6 +903,13 @@ function priceRange(pi) {
   Object.keys(p.px).forEach(function (k) { vals.push(p.px[k]); });
   return { min: Math.min.apply(null, vals), max: Math.max.apply(null, vals) };
 }
+
+function skuFull(p, k) {
+  return !!p && p.limit > 0 && (cart[k] || 0) >= p.limit;
+}
+function multiSku(p) {
+  return ((p.colors || []).length || 0) * Math.max(1, (p.sizes || []).length) > 1 || (p.sizes || []).length > 1;
+}
 function pQty(pi) {
   var n = 0;
   Object.keys(cart).forEach(function (k) {
@@ -1415,7 +1422,8 @@ function view1() {
          '<div class="px">NT$' + shown.toLocaleString() +
          (showFrom ? '<em>起</em>' : '') +
          '</div></div>' +
-         (p.limit ? '<span class="lim">每人限購 ' + p.limit + ' 件，已選 ' + pQty(pi) + ' 件</span>' : '') +
+         
+         (p.limit ? '<span class="lim">' + (multiSku(p) ? '每個規格各限購 ' : '每人限購 ') + p.limit + ' 件</span>' : '') +
          '</div><div class="pbody">';
 
     if (p.copy) h += '<div class="copy">' + esc(p.copy) + '</div>';
@@ -1460,7 +1468,7 @@ function view1() {
       h += '</div>';
     }
 
-    var full = (p.limit > 0 && pQty(pi) >= p.limit);
+    var full = false;   
     var om = orderedMap();
     
     
@@ -1498,7 +1506,7 @@ function view1() {
           h += soldRow(esc(s), mine);
           return;
         }
-        h += (p.bundle ? bundleRow : stepRow)(k, esc(s), priceOf(pi, si, s), q, full, closed, pi, varies, mine);
+        h += (p.bundle ? bundleRow : stepRow)(k, esc(s), priceOf(pi, si, s), q, skuFull(p, k), closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
       if (offN) h += '<div class="sold-note">' + SOLD_NOTE + '</div>';
@@ -1524,7 +1532,7 @@ function view1() {
              '<div class="sold-note">' + SOLD_NOTE + '</div>';
       } else {
         if (lockQty) h += '<div class="qty-off">';
-        h += (p.bundle ? bundleRow : stepRow)(k0, esc(cname || '一份'), priceOf(pi, si, '-'), q0, full, closed, pi, !!p.bundle, mine0);
+        h += (p.bundle ? bundleRow : stepRow)(k0, esc(cname || '一份'), priceOf(pi, si, '-'), q0, skuFull(p, k0), closed, pi, !!p.bundle, mine0);
         if (lockQty) h += '</div>';
       }
     }
@@ -1965,8 +1973,8 @@ function ch(k, d, pi) {
   }
   if (d > 0 && pi != null) {
     var p = C.products[pi];
-    if (p.limit > 0 && pQty(pi) >= p.limit) {
-      alert('「' + p.name + '」每人限購 ' + p.limit + ' 件。');
+    if (skuFull(p, k)) {
+      alert('「' + p.name + '」' + (multiSku(p) ? '每個規格各限購 ' : '每人限購 ') + p.limit + ' 件。');
       return;
     }
   }
