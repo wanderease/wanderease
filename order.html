@@ -270,6 +270,10 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .rows2 > div > span:last-child{text-align:right;flex:1;min-width:0;word-break:break-word}
 .rows2 .no{font-weight:800;letter-spacing:.03em;white-space:nowrap}
  
+.rows2 > div.ex{display:block !important}
+.rows2 > div.ex > span{display:block !important;text-align:left !important;white-space:normal !important;word-break:break-word}
+.rows2 > div.ex > span:last-child{color:var(--ink);font-weight:600;margin-top:2px}
+ 
 .pay .red{color:#c0392b;font-weight:800}
  
 .itemlines{line-height:1.7}
@@ -1532,7 +1536,9 @@ function view1() {
              '<div class="sold-note">' + SOLD_NOTE + '</div>';
       } else {
         if (lockQty) h += '<div class="qty-off">';
-        h += (p.bundle ? bundleRow : stepRow)(k0, esc(cname || '一份'), priceOf(pi, si, '-'), q0, skuFull(p, k0), closed, pi, !!p.bundle, mine0);
+        
+        if (p.bundle) h += bundleRow(k0, esc(cname || '一份'), priceOf(pi, si, '-'), q0, skuFull(p, k0), closed, pi, true, mine0);
+        else h += stepRow(k0, esc(cname || '數量'), 0, q0, skuFull(p, k0), closed, pi, false, mine0);
         if (lockQty) h += '</div>';
       }
     }
@@ -1878,7 +1884,7 @@ function view3() {
       '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' +
       (r.summary ? '<div><span>訂購內容</span><span>' + esc(r.summary) + '</span></div>' : '') +
       (r.extras || []).map(function (x) {
-        return '<div><span>' + esc(x.label) + '</span><span>' + esc(x.value) + '</span></div>';
+        return '<div class="ex"><span>' + esc(x.label) + '</span><span>' + esc(x.value) + '</span></div>';
       }).join('') +
       '<div><span>訂單金額</span><span>NT$' +
         (r.sum || 0).toLocaleString() + '</span></div>' +
