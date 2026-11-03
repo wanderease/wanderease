@@ -3785,6 +3785,7 @@
       const hasQueue = data.queueItems && data.queueItems.length > 0;
       const hasTransferred = data.transferredCount > 0;
       const hasCancelled = data.cancelledItems && data.cancelledItems.length > 0;
+      const hasClosed = data.closedItems && data.closedItems.length > 0;
 
       // 🎯 已配到貨待確認
       if (hasWaiting) {
@@ -3985,12 +3986,70 @@
         html += `</div>`;
       }
 
+      // 📁 結束候補（官方不再販售，紀錄保留；唯讀）
+      if (hasClosed) {
+        html += `
+          <div class="wl-collapse-head" onclick="wlToggleClosed()">
+            <span>📁 結束候補</span>
+            <span id="wlClosedToggle">${data.closedItems.length} 件 ▾</span>
+          </div>
+          <div id="wlClosedList" style="display:none;">
+            <div style="font-size:12px;color:#888;margin:4px 4px 8px;">以下商品官方已不再販售，候補已結束，紀錄為您保留。</div>`;
+        const groups = wlGroupByBrandSeries(data.closedItems);
+        groups.forEach(g => {
+          const c = wlGetBrandColor(g.brand);
+          let itemsHtml = g.items.map(i => {
+            const qTime = wlFmtDate(i.queueTime);
+            const endTime = wlFmtYmd(i.closeTime);
+            return `
+            <div class="wl-v2-item" style="opacity:0.6;">
+              <div class="wl-v2-info">
+                <div class="wl-v2-name">${escHTML(i.product)}</div>
+                <div class="wl-v2-meta">
+                  <span>x${Number(i.reqQty) || 0}</span>
+                  ${qTime ? `<span style="margin-left:8px;">${escHTML(qTime)} 排隊</span>` : ''}
+                  ${endTime ? `<span style="margin-left:8px;">${escHTML(endTime)} 結束</span>` : ''}
+                </div>
+              </div>
+            </div>`;
+          }).join('');
+          html += `
+            <div class="wl-v2-card" style="opacity:0.85;">
+              <div class="wl-v2-cardhead" style="background:${c.bg};">
+                <span class="wl-v2-brand" style="background:${c.text};">${escHTML(g.brand)}</span>
+                <span class="wl-v2-series">${escHTML(g.series)}</span>
+              </div>
+              <div class="wl-v2-body">${itemsHtml}</div>
+            </div>`;
+        });
+        html += `</div>`;
+      }
+
       // 空狀態
-      if (!hasWaiting && !hasConfirmed && !hasQueue && !hasTransferred && !hasCancelled) {
+      if (!hasWaiting && !hasConfirmed && !hasQueue && !hasTransferred && !hasCancelled && !hasClosed) {
         html += `<div class="wl-empty">🎈 您目前沒有候補中的商品</div>`;
       }
 
       c.innerHTML = html;
+    }
+
+    function wlToggleClosed() {
+      const el = document.getElementById('wlClosedList');
+      const toggle = document.getElementById('wlClosedToggle');
+      if (!el || !toggle) return;
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        toggle.innerHTML = toggle.innerHTML.replace('▾', '▴');
+      } else {
+        el.style.display = 'none';
+        toggle.innerHTML = toggle.innerHTML.replace('▴', '▾');
+      }
+    }
+
+    // "yyyy-MM-dd HH:mm" → "M/D"（不靠 Date 解析，iOS Safari 不吃空白格式）
+    function wlFmtYmd(s) {
+      const m = String(s || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+      return m ? `${parseInt(m[2], 10)}/${parseInt(m[3], 10)}` : '';
     }
 
     function wlToggleCancelled() {
