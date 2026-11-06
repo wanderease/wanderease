@@ -103,6 +103,15 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .pset .one .d{flex:1;color:#5b4a3c}
 .pset .one button{border:0;background:none;color:#b54708;font-size:13px}
 .pset .err{font-size:12.5px;color:#b54708;margin-top:6px}
+.pset .pcs{display:flex;flex-wrap:wrap;gap:8px}
+.pset .pcd{width:86px;border:1px solid var(--line);border-radius:10px;padding:4px;text-align:center;font-size:12px;
+  cursor:pointer;background:#fff;-webkit-tap-highlight-color:transparent}
+.pset .pcd img,.pset .pcd i{width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;background:#f3efea;display:block}
+.pset .pcd span{display:block;line-height:1.3;margin-top:4px;word-break:break-word}
+.pset .pcd.on{border-color:var(--brown);box-shadow:0 0 0 1.5px var(--brown);font-weight:700}
+.pset .pcd.out{opacity:.45;cursor:default}
+.pset .slot .st{display:flex;align-items:center;gap:8px}
+.pset .slot .st img{width:56px;height:56px;border-radius:8px;object-fit:cover;background:#f3efea}
 .pset-note{margin-top:10px;font-size:13px;color:var(--brown);background:#faf6f2;border-radius:9px;padding:8px 10px}
 .srow{display:flex;align-items:center;gap:10px;border:1px solid #e9e3db;border-radius:10px;
       padding:8px 9px 8px 14px;margin-top:6px}
@@ -789,6 +798,17 @@ function psDrop(i) {
   saveCart();
   draw();
 }
+ 
+function psImg(pi, ci) {
+  if (pi == null) return '';
+  var p = C.products[pi];
+  if (!p) return '';
+  var c = ci != null ? (p.colors || [])[ci] : null;
+  if (c && (c.img || []).length) return c.img[0];
+  if ((p.images || []).length) return p.images[0];
+  var withImg = (p.colors || []).filter(function (x) { return (x.img || []).length; })[0];
+  return withImg ? withImg.img[0] : '';
+}
 function psLabel(k) {
   var a = String(k).split('|'), p = C.products[Number(a[0])] || {};
   var c = (p.colors || [])[Number(a[1])];
@@ -817,17 +837,22 @@ function psView(closed) {
 
   for (var i = 0; i < r.n; i++) {
     var s = psSlot(i), k = psKeyOf(i);
-    h += '<div class="slot' + (k ? ' ok' : '') + '"><div class="st">第 ' + (i + 1) + ' 件' +
-      (k ? '：' + esc(psLabel(k)) : '') + '</div>';
-    h += '<h3>款式</h3><div class="chips">';
+    var sImg = psImg(s.pi, s.ci);
+    h += '<div class="slot' + (k ? ' ok' : '') + '"><div class="st">' +
+      (sImg ? '<img src="' + esc(sImg) + '" alt="">' : '') +
+      '<span>第 ' + (i + 1) + ' 件' + (k ? '：' + esc(psLabel(k)) : '') + '</span></div>';
+    h += '<h3>款式</h3><div class="pcs">';
     Object.keys(mem).forEach(function (pi) {
       pi = Number(pi);
       var p = C.products[pi];
       var allOut = (p.colors || []).length
         ? p.colors.every(function (cc) { return colorOut(p, cc); })
         : colorOut(p, null);
-      h += '<span class="chip' + (s.pi === pi ? ' on' : '') + (allOut ? ' out' : '') + '"' +
-        (allOut ? '' : ' onclick="psPick(' + i + ',\'pi\',' + pi + ')"') + '>' + esc(p.name) + '</span>';
+      var im = psImg(pi, null);
+      h += '<span class="pcd' + (s.pi === pi ? ' on' : '') + (allOut ? ' out' : '') + '"' +
+        (allOut ? '' : ' onclick="psPick(' + i + ',\'pi\',' + pi + ')"') + '>' +
+        (im ? '<img src="' + esc(im) + '" alt="" loading="lazy">' : '<i></i>') +
+        '<span>' + esc(p.name) + (allOut ? '（售完）' : '') + '</span></span>';
     });
     h += '</div>';
     if (s.pi != null) {
@@ -836,11 +861,20 @@ function psView(closed) {
       var ow = (lb[0] || '').trim() || '顏色', sw = (lb[1] || '').trim() || '尺寸';
       var c = null;
       if ((p.colors || []).length) {
-        h += '<h3>' + esc(ow) + '</h3><div class="chips">';
+        
+        var cImg = p.colors.some(function (x) { return (x.img || []).length; });
+        h += '<h3>' + esc(ow) + '</h3><div class="' + (cImg ? 'pcs' : 'chips') + '">';
         p.colors.forEach(function (cc, ci) {
           var out = colorOut(p, cc);
-          h += '<span class="chip' + (s.ci === ci ? ' on' : '') + (out ? ' out' : '') + '"' +
-            (out ? '' : ' onclick="psPick(' + i + ',\'ci\',' + ci + ')"') + '>' + esc(cc.n) + '</span>';
+          var ci0 = (cc.img || [])[0];
+          var act = out ? '' : ' onclick="psPick(' + i + ',\'ci\',' + ci + ')"';
+          if (cImg) {
+            h += '<span class="pcd' + (s.ci === ci ? ' on' : '') + (out ? ' out' : '') + '"' + act + '>' +
+              (ci0 ? '<img src="' + esc(ci0) + '" alt="" loading="lazy">' : '<i></i>') +
+              '<span>' + esc(cc.n) + (out ? '（售完）' : '') + '</span></span>';
+          } else {
+            h += '<span class="chip' + (s.ci === ci ? ' on' : '') + (out ? ' out' : '') + '"' + act + '>' + esc(cc.n) + '</span>';
+          }
         });
         h += '</div>';
         c = s.ci != null ? p.colors[s.ci] : null;
