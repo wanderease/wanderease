@@ -401,7 +401,7 @@ function applyShopState(shop) {
         try {
           sessionStorage.setItem('we_ordered_idx', JSON.stringify({
             at: Date.now(), uid: uid,
-            codes: d.codes || [], failed: !!d.failed
+            codes: d.codes || [], adminCodes: d.adminCodes || [], failed: !!d.failed
           }));
         } catch (e) {}
       })
