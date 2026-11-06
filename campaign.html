@@ -50,6 +50,7 @@ body{
 .tag.open{background:#eef3e9;border-color:#cfdcc2;color:#4a6132}
 .tag.close{background:#f2ece6;border-color:#ddd2c6;color:#8a7360}
 .tag.mine{background:#fdf1e2;border-color:#f0d7b6;color:#96560a}
+.tag.adm{background:#fdf6ec;border-color:#f0dcc0;color:#8a5a1c}
  
 .tag.myship{background:#fff4e5;border-color:#f3d2a2;color:#a35a00}
 .tag.soon{background:#eef2f8;border-color:#c9d4e6;color:#34507a}
@@ -139,6 +140,7 @@ var GAS_URL = "https://script.google.com/macros/s/AKfycbxokzn1g38p3jcYpT5K-6bXyj
 var MYORD_URL = "https://wanderease-api.wanderease-th.workers.dev/";
 var CAMPS = [];
 var MINE = {};   
+var ADMN = {};   
 
 
 
@@ -374,7 +376,8 @@ function render() {
           : closed
             ? '<span class="tag close">' + esc(fmtDay(c.due)) + ' 已截止</span>'
             : '<span class="tag open">收單至 ' + esc(fmtDue(c.due)) + '</span>') +
-        (MINE[c.id] ? '<span class="tag mine">已填單</span>' : '') +
+        (MINE[c.id] ? '<span class="tag mine">已填單</span>'
+          : ADMN[c.id] ? '<span class="tag adm">已有小幫手代加的品項</span>' : '') +
       '</div></div></a>';
   }).join('');
 }
@@ -440,6 +443,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       var idx0 = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
       if (idx0 && idx0.uid === early && Date.now() - idx0.at < 300000) {
         (idx0.codes || []).forEach(function (c) { MINE[c] = 1; });
+        (idx0.adminCodes || []).forEach(function (c) { ADMN[c] = 1; });
       }
     } catch (e) {}
     setTimeout(function () { loadMine(early); }, 400);
@@ -475,6 +479,7 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       var idx = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
       if (idx && idx.uid === uid && Date.now() - idx.at < 300000) {
         (idx.codes || []).forEach(function (c) { MINE[c] = 1; });
+        (idx.adminCodes || []).forEach(function (c) { ADMN[c] = 1; });
         if (CAMPS.length) render();
       }
     } catch (e) {}
@@ -485,10 +490,12 @@ fetch('/data/campaigns.json', { cache: 'no-cache' })
       .then(function (d) {
         if (!d || !d.codes) return;
         d.codes.forEach(function (c) { MINE[c] = 1; });
+        ADMN = {};
+        (d.adminCodes || []).forEach(function (c) { ADMN[c] = 1; });
         try {
           sessionStorage.setItem('we_ordered', JSON.stringify(d.codes));
           sessionStorage.setItem('we_ordered_idx', JSON.stringify({
-            at: Date.now(), uid: uid, codes: d.codes, failed: !!d.failed
+            at: Date.now(), uid: uid, codes: d.codes, adminCodes: d.adminCodes || [], failed: !!d.failed
           }));
         } catch (e) {}
         if (CAMPS.length) render();

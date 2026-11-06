@@ -295,6 +295,10 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .done-bar .act .sub{background:#fff;color:var(--ok);border:1px solid #cfdbcb}
 .done-bar .hint{font-size:12px;color:#6d7a64;margin-top:9px;text-align:center}
 .done-bar.warn{background:#fdf6ec;border-color:#f0dcc0}
+.done-bar.adm{background:#fdf6ec;border-color:#f0dcc0}
+.done-bar.adm .t1 i,.done-bar.adm .t1 b{color:#8a5a1c}
+.done-bar.adm .rows2{color:#5b4630}
+.done-bar.adm .hint{color:#7a6650;text-align:left;line-height:1.7}
  
 .done-bar.pv{background:#eef2f8;border-color:#c9d4e6}
 .done-bar.pv .t1 i,.done-bar.pv .t1 b{color:#34507a}
@@ -424,6 +428,7 @@ var confirmAt = {};
 var askVal = {};   
 var me = null;
 var ordered = null;      
+var adminAdded = null;    
 
 
 
@@ -1129,8 +1134,9 @@ function boot(d) {
         
         
         
-        if (d.ordered) ordered = d.ordered;
-        else if (!d.orderFailed) ordered = null;
+        if (d.ordered && d.ordered.adminOnly) { adminAdded = d.ordered; ordered = null; }
+        else if (d.ordered) { ordered = d.ordered; adminAdded = null; }
+        else if (!d.orderFailed) { ordered = null; adminAdded = null; }
         orderFailed = !!d.orderFailed;
 
         
@@ -1284,6 +1290,31 @@ function orderedBar() {
 
 
 
+ 
+function adminBar() {
+  var a = adminAdded || {};
+  var its = a.items || [];
+  var rows = '';
+  if (its.length) {
+    rows += '<div><span>代加品項</span><span class="itemlines">' +
+      its.map(function (it) {
+        var nm = it.product + (it.color ? ' ' + it.color : '') + (it.size ? ' ' + it.size : '');
+        return '<i>' + esc(nm + ' ×' + it.qty) + '</i>';
+      }).join('') + '</span></div>';
+  }
+  if (a.orderNo) rows += '<div><span>訂單編號</span><span class="no">' + esc(a.orderNo) + '</span></div>';
+  var when = fmtWhen(a.at);
+  if (when) rows += '<div><span>代加時間</span><span>' + esc(when) + '</span></div>';
+  var paid = a.payStatus && a.payStatus !== '待匯款';
+  return '<div class="done-bar adm">' +
+    '<div class="t1"><i class="bi bi-person-check-fill"></i><b>這一團已經有小幫手幫你加的品項</b></div>' +
+    (rows ? '<div class="rows2">' + rows + '</div>' : '') +
+    '<div class="hint">這些品項不用再填一次。下面還可以繼續填其他想買的，' +
+      (paid ? '這次填的會是另一張新訂單。' : '送出後會加進同一張訂單，匯款一次就好。') +
+      '要改代加的品項請<a href="' + esc(SERVICE_URL) + '" style="color:#8a5a1c">聯繫客服</a>。</div>' +
+    '</div>';
+}
+
 function closedBar() {
   return '<div class="done-bar warn">' +
     '<div class="t1"><i class="bi bi-clock-history"></i>' +
@@ -1372,6 +1403,7 @@ function view1() {
   
   if (ordered) h += orderedBar();
   else if (orderFailed) h += failedBar();
+  else if (adminAdded) h += adminBar();
 
   if (pending && !ordered) {
     h += '<div class="resume"><div class="t">' +
@@ -2508,7 +2540,7 @@ function submitOrder_() {
           '&campaign=' + encodeURIComponent(CODE))
       .then(function (r) { return r.json(); })
       .then(function (res) {
-        if (res && res.ordered) {
+        if (res && res.ordered && !res.adminOnly) {
           
           if (lastOrder) lastOrder.orderNo = res.orderNo || '';
           clearCart();
