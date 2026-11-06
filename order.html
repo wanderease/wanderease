@@ -83,6 +83,27 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .chip.on{background:var(--brown);border-color:var(--brown);color:#fff;font-weight:700}
  
 .chip.out{color:#b0a69b;border-color:#efe9e2;text-decoration:line-through}
+ 
+.pset{margin:0 18px 14px;background:var(--white);border:1.5px solid var(--brown);border-radius:14px;padding:14px 14px 12px}
+.pset .ph{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pset .ph b{font-size:16px;font-weight:800;color:var(--brown)}
+.pset .ph .pp{margin-left:auto;font-size:15px;font-weight:800}
+.pset .ph .pp em{font-style:normal;font-size:12px;color:var(--mute);font-weight:400}
+.pset .sub{font-size:12.5px;color:var(--mute);margin-top:2px}
+.pset .slot{border:1px solid #e9e3db;border-radius:10px;padding:8px 10px 10px;margin-top:10px}
+.pset .slot.ok{border-color:var(--brown);background:#faf6f2}
+.pset .slot .st{font-size:13px;font-weight:700}
+.pset .slot h3{margin:8px 0 6px}
+.pset .chip.dis{color:#c9c0b6;border-color:#efe9e2;cursor:default}
+.pset .add{width:100%;margin-top:10px;padding:11px;border-radius:10px;border:0;background:var(--brown);color:#fff;font-size:14.5px;font-weight:700}
+.pset .add[disabled]{background:#cbbfb3}
+.pset .sets{margin-top:10px}
+.pset .one{display:flex;align-items:flex-start;gap:8px;border-top:1px dashed #e9e3db;padding:8px 0 2px;font-size:13.5px}
+.pset .one .n{font-weight:700;white-space:nowrap}
+.pset .one .d{flex:1;color:#5b4a3c}
+.pset .one button{border:0;background:none;color:#b54708;font-size:13px}
+.pset .err{font-size:12.5px;color:#b54708;margin-top:6px}
+.pset-note{margin-top:10px;font-size:13px;color:var(--brown);background:#faf6f2;border-radius:9px;padding:8px 10px}
 .srow{display:flex;align-items:center;gap:10px;border:1px solid #e9e3db;border-radius:10px;
       padding:8px 9px 8px 14px;margin-top:6px}
 .srow.has{border-color:var(--brown);background:#faf6f2}
@@ -421,6 +442,11 @@ var C = null;
 var step = 1;
 var colorSel = {};
 var cart = {};
+
+
+var pSets = [];
+var pSel = [];
+var pErr = '';
 var agreed = false;
 
 
@@ -428,6 +454,7 @@ var confirmAt = {};
 var askVal = {};   
 var me = null;
 var ordered = null;      
+var cancelBlocked = false;    
 var adminAdded = null;    
 
 
@@ -556,7 +583,7 @@ var pending = null;
 function saveCart() {
   try {
     localStorage.setItem(CART_KEY,
-      JSON.stringify({ cart: cart, sel: colorSel, at: Date.now() }));
+      JSON.stringify({ cart: cart, sel: colorSel, pick: pSets, at: Date.now() }));
   } catch (e) {}
 }
 
@@ -579,9 +606,10 @@ function loadCart() {
       localStorage.removeItem(RESUME_KEY);
       cart = o.cart || {};
       colorSel = o.sel || {};
+      pSets = o.pick || [];
       return;
     }
-    pending = { cart: o.cart || {}, sel: o.sel || {}, n: n };
+    pending = { cart: o.cart || {}, sel: o.sel || {}, pick: o.pick || [], n: n };
   } catch (e) {}
 }
 
@@ -590,6 +618,7 @@ function resumeCart() {
   if (!pending) return;
   cart = pending.cart;
   colorSel = pending.sel;
+  pSets = pending.pick || [];
   pending = null;
   draw(true);
 }
@@ -658,7 +687,190 @@ function pruneCart() {
     var c = (p.colors || [])[Number(a[1])];
     if (isOff(p, c ? c.n : '', a[2])) { delete cart[k]; changed = true; }
   });
+  if (psSync()) changed = true;
   if (changed) saveCart();
+}
+
+ 
+function psRule() {
+  var r = C && C.pick;
+  return (r && r.n >= 2 && (r.products || []).length) ? r : null;
+}
+ 
+function psMem() {
+  var r = psRule(), m = {};
+  if (!r) return m;
+  (C.products || []).forEach(function (p, pi) { if (r.products.indexOf(p.name) >= 0) m[pi] = true; });
+  return m;
+}
+function psKeyOk(k) {
+  var a = String(k).split('|'), p = C.products[Number(a[0])];
+  if (!p || !psMem()[Number(a[0])]) return false;
+  var c = (p.colors || [])[Number(a[1])];
+  if ((p.colors || []).length && !c) return false;
+  return !isOff(p, c ? c.n : '', a[2]);
+}
+ 
+function psSync() {
+  var r = psRule();
+  var before = JSON.stringify(cart) + JSON.stringify(pSets);
+  if (!r) { pSets = []; return false; }
+  var mem = psMem();
+  pSets = (pSets || []).filter(function (set) {
+    return Array.isArray(set) && set.length === r.n && set.every(psKeyOk);
+  });
+  Object.keys(cart).forEach(function (k) { if (mem[Number(k.split('|')[0])]) delete cart[k]; });
+  pSets.forEach(function (set) { set.forEach(function (k) { cart[k] = (cart[k] || 0) + 1; }); });
+  return before !== JSON.stringify(cart) + JSON.stringify(pSets);
+}
+function psCount() {
+  var mem = psMem(), n = 0;
+  Object.keys(cart).forEach(function (k) { if (mem[Number(k.split('|')[0])]) n += cart[k] || 0; });
+  return n;
+}
+function psSlot(i) {
+  if (!pSel[i]) pSel[i] = { pi: null, ci: null, sz: null };
+  return pSel[i];
+}
+ 
+function psKeyOf(i) {
+  var s = psSlot(i);
+  if (s.pi == null) return '';
+  var p = C.products[s.pi];
+  if (!p) return '';
+  var hasC = (p.colors || []).length > 0, hasS = (p.sizes || []).length > 0;
+  if (hasC && s.ci == null) return '';
+  if (hasS && !s.sz) return '';
+  return s.pi + '|' + (hasC ? s.ci : 0) + '|' + (hasS ? s.sz : '-');
+}
+function psPick(i, f, v) {
+  var s = psSlot(i);
+  if (f === 'pi') { if (s.pi !== v) { s.pi = v; s.ci = null; s.sz = null; } }
+  else if (f === 'ci') { if (s.ci !== v) { s.ci = v; s.sz = null; } }
+  else s.sz = v;
+  pErr = '';
+  draw();
+}
+ 
+function psOver(k, extra) {
+  var p = C.products[Number(String(k).split('|')[0])];
+  return !!p && p.limit > 0 && (cart[k] || 0) + extra > p.limit;
+}
+function psAdd() {
+  var r = psRule();
+  if (!r) return;
+  if (isClosed()) { alert('這一團已經截止收單了。'); dueReached(); return; }
+  var keys = [];
+  for (var i = 0; i < r.n; i++) {
+    var k = psKeyOf(i);
+    if (!k) { pErr = '第 ' + (i + 1) + ' 件還沒選完'; draw(); return; }
+    if (!psKeyOk(k)) { pErr = '第 ' + (i + 1) + ' 件目前官方缺貨，請換一件'; draw(); return; }
+    keys.push(k);
+  }
+  for (var j = 0; j < keys.length; j++) {
+    var same = keys.filter(function (x) { return x === keys[j]; }).length;
+    if (psOver(keys[j], same)) {
+      var p = C.products[Number(keys[j].split('|')[0])];
+      pErr = '「' + p.name + '」每個規格各限購 ' + p.limit + ' 件';
+      draw();
+      return;
+    }
+  }
+  pSets.push(keys);
+  pSel = [];
+  pErr = '';
+  psSync();
+  saveCart();
+  draw();
+}
+function psDrop(i) {
+  pSets.splice(i, 1);
+  psSync();
+  saveCart();
+  draw();
+}
+function psLabel(k) {
+  var a = String(k).split('|'), p = C.products[Number(a[0])] || {};
+  var c = (p.colors || [])[Number(a[1])];
+  return (p.name || '') + (c ? '－' + c.n : '') + (a[2] && a[2] !== '-' ? ' ' + a[2] : '');
+}
+ 
+function psView(closed) {
+  var r = psRule();
+  if (!r) return '';
+  var mem = psMem();
+  var h = '<div class="pset"><div class="ph"><b>' + esc(r.name) + '</b>' +
+    '<span class="pp">NT$' + Number(r.price).toLocaleString() + '<em>／' + r.n + ' 件一組</em></span></div>' +
+    '<div class="sub">下面的商品任選 ' + r.n + ' 件為一組，款式、' + '尺寸可以混搭；只能整組購買</div>';
+
+  
+  if (ordered || orderFailed) {
+    var its = ((ordered && ordered.items) || []).filter(function (it) { return r.products.indexOf(it.product) >= 0; });
+    if (its.length) {
+      h += '<div class="sets">' + its.map(function (it) {
+        return '<div class="one"><span class="d">' + esc(it.product + (it.color ? '－' + it.color : '') + (it.size ? ' ' + it.size : '')) +
+          '</span><span>×' + (Number(it.qty) || 0) + '</span></div>';
+      }).join('') + '</div>';
+    }
+    return h + '</div>';
+  }
+
+  for (var i = 0; i < r.n; i++) {
+    var s = psSlot(i), k = psKeyOf(i);
+    h += '<div class="slot' + (k ? ' ok' : '') + '"><div class="st">第 ' + (i + 1) + ' 件' +
+      (k ? '：' + esc(psLabel(k)) : '') + '</div>';
+    h += '<h3>款式</h3><div class="chips">';
+    Object.keys(mem).forEach(function (pi) {
+      pi = Number(pi);
+      var p = C.products[pi];
+      var allOut = (p.colors || []).length
+        ? p.colors.every(function (cc) { return colorOut(p, cc); })
+        : colorOut(p, null);
+      h += '<span class="chip' + (s.pi === pi ? ' on' : '') + (allOut ? ' out' : '') + '"' +
+        (allOut ? '' : ' onclick="psPick(' + i + ',\'pi\',' + pi + ')"') + '>' + esc(p.name) + '</span>';
+    });
+    h += '</div>';
+    if (s.pi != null) {
+      var p = C.products[s.pi];
+      var lb = String(p.optLabel || '').split('|');
+      var ow = (lb[0] || '').trim() || '顏色', sw = (lb[1] || '').trim() || '尺寸';
+      var c = null;
+      if ((p.colors || []).length) {
+        h += '<h3>' + esc(ow) + '</h3><div class="chips">';
+        p.colors.forEach(function (cc, ci) {
+          var out = colorOut(p, cc);
+          h += '<span class="chip' + (s.ci === ci ? ' on' : '') + (out ? ' out' : '') + '"' +
+            (out ? '' : ' onclick="psPick(' + i + ',\'ci\',' + ci + ')"') + '>' + esc(cc.n) + '</span>';
+        });
+        h += '</div>';
+        c = s.ci != null ? p.colors[s.ci] : null;
+      }
+      if ((p.sizes || []).length && (!(p.colors || []).length || c)) {
+        h += '<h3>' + esc(sw) + '</h3><div class="chips">';
+        availOf(p, c).forEach(function (sz) {
+          var kk = s.pi + '|' + ((p.colors || []).length ? s.ci : 0) + '|' + sz;
+          var dis = isOff(p, c ? c.n : '', sz) || psOver(kk, 1);
+          h += '<span class="chip' + (s.sz === sz ? ' on' : '') + (dis ? ' dis' : '') + '"' +
+            (dis ? '' : ' onclick="psPick(' + i + ',\'sz\',' + esc(JSON.stringify(String(sz))).replace(/"/g, '&quot;') + ')"') + '>' + esc(sz) + '</span>';
+        });
+        h += '</div>';
+      }
+    }
+    h += '</div>';
+  }
+  if (pErr) h += '<div class="err">' + esc(pErr) + '</div>';
+  h += '<button class="add"' + (closed ? ' disabled' : '') + ' onclick="psAdd()">' +
+    (closed ? '已截止' : '加入這一組') + '</button>';
+  if (pSets.length) {
+    h += '<div class="sets">';
+    pSets.forEach(function (set, si) {
+      h += '<div class="one"><span class="n">第 ' + (si + 1) + ' 組</span><span class="d">' +
+        set.map(function (k) { return esc(psLabel(k)); }).join('<br>') + '</span>' +
+        '<button onclick="psDrop(' + si + ')">移除</button></div>';
+    });
+    h += '</div>';
+  }
+  return h + '</div>';
 }
 
 
@@ -1115,6 +1327,7 @@ function boot(d) {
 
         meLoading = false;
 
+        cancelBlocked = !!(d.me && d.me.blocked);
         if (d.me && d.me.bound) {
           me.bound = true;
           if (d.me.name) me.name = d.me.name;
@@ -1329,6 +1542,16 @@ function closedBar() {
     '</div>';
 }
 
+function blockedBar() {
+  return '<div class="done-bar warn">' +
+    '<div class="t1"><i class="bi bi-exclamation-triangle-fill"></i>' +
+    '<b>目前無法自動填單</b></div>' +
+    '<div class="rows2"><div><span></span><span>' +
+    '礙於過去填單取消達3次，無法自動填單，請聯繫客服。</span></div></div>' +
+    '<div class="act"><a class="main" href="' + esc(SERVICE_URL) + '">聯繫客服</a></div>' +
+    '</div>';
+}
+
 function failedBar() {
   return '<div class="done-bar warn">' +
     '<div class="t1"><i class="bi bi-exclamation-triangle-fill"></i>' +
@@ -1404,6 +1627,7 @@ function view1() {
   if (ordered) h += orderedBar();
   else if (orderFailed) h += failedBar();
   else if (adminAdded) h += adminBar();
+  if (!ordered && !orderFailed && cancelBlocked) h += blockedBar();
 
   if (pending && !ordered) {
     h += '<div class="resume"><div class="t">' +
@@ -1411,6 +1635,10 @@ function view1() {
       '<button class="no" onclick="dropCart()">重新選</button>' +
       '<button class="yes" onclick="resumeCart()">繼續</button></div>';
   }
+
+  
+  var psM = psMem();
+  h += psView(closed);
 
   (C.products || []).forEach(function (p, pi) {
     
@@ -1462,11 +1690,13 @@ function view1() {
     var selPx = selPrice(pi);
     var shown = (selPx != null) ? selPx : rg.min;
     var showFrom = (selPx == null && rg.max > rg.min);
+    var inPs = !!psM[pi];
     h += '<div class="pinfo"><div class="row1">' +
          '<h2>' + esc(p.name) + '</h2>' +
-         '<div class="px">NT$' + shown.toLocaleString() +
-         (showFrom ? '<em>起</em>' : '') +
-         '</div></div>' +
+         (inPs
+           ? '<div class="px" style="font-size:13px">' + esc(psRule().name) + '</div>'
+           : '<div class="px">NT$' + shown.toLocaleString() + (showFrom ? '<em>起</em>' : '') + '</div>') +
+         '</div>' +
          
          (p.limit ? '<span class="lim">' + (multiSku(p) ? '每個規格各限購 ' : '每人限購 ') + p.limit + ' 件</span>' : '') +
          '</div><div class="pbody">';
@@ -1522,7 +1752,10 @@ function view1() {
     var cname = c ? c.n : '';
     var si = (sel != null) ? sel : 0;
 
-    if ((p.sizes || []).length) {
+    if (inPs) {
+      
+      h += '<div class="pset-note">這款屬於上方「' + esc(psRule().name) + '」，請在上方一組一組挑選</div>';
+    } else if ((p.sizes || []).length) {
       
       
       
@@ -1585,7 +1818,7 @@ function view1() {
     }
 
     
-    if (!picked && !ordered && !orderFailed) {
+    if (!picked && !ordered && !orderFailed && !inPs) {
       h += '<div class="pick-first"><i class="bi bi-arrow-up"></i> 請先選擇' +
            esc(ow) + '</div>';
     }
@@ -1604,8 +1837,11 @@ function view1() {
   } else if (orderFailed) {
     h += '<div class="bar"><div class="t">訂單狀態未知<b>—</b></div>' +
          '<button disabled>請先確認</button></div>';
+  } else if (cancelBlocked) {
+    h += '<div class="bar"><div class="t">無法自動填單<b>—</b></div>' +
+         '<button disabled>請聯繫客服</button></div>';
   } else {
-    h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件') : '尚未選購') +
+    h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件' + (pSets.length ? '（' + esc(psRule().name) + ' ' + pSets.length + ' 組）' : '')) : '尚未選購') +
          '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
          (closed
            ? '<button disabled>已截止</button>'
@@ -1696,7 +1932,12 @@ function view2() {
          '</span>' +
          '<span class="a">' + (up * q).toLocaleString() + '</span></div>';
   });
-  h += '</div><div class="sums">';
+  h += '</div>';
+  if (pSets.length && psRule()) {
+    h += '<div class="note" style="margin:0 0 10px">' + esc(psRule().name) + ' 共 ' + pSets.length + ' 組，每組 NT$' +
+      Number(psRule().price).toLocaleString() + '（每件 NT$' + Math.round(psRule().price / psRule().n).toLocaleString() + '）</div>';
+  }
+  h += '<div class="sums">';
 
   if (official) {
     h += '<div><span>貨款小計</span><span>NT$' + t.sum.toLocaleString() + '</span></div>' +
@@ -2452,6 +2693,12 @@ function submitOrder_() {
     draw();
     return;
   }
+  
+  if (psRule() && psCount() % psRule().n !== 0) {
+    alert('「' + psRule().name + '」要 ' + psRule().n + ' 件一組，請到上方組合區整組加入。');
+    psSync(); saveCart(); step = 1; draw(true);
+    return;
+  }
 
   var t = tot();
   window._lastTot = t;
@@ -2606,6 +2853,13 @@ function submitOrder_() {
         
         console.error('非 JSON 回應：', raw.substring(0, 200));
         setTimeout(function () { verifyAfterTimeout(0); }, 2000);
+        return;
+      }
+      if (d && d.status === 'BLOCKED') {
+        cancelBlocked = true;
+        step = 1;
+        draw(true);
+        alert(d.message || '礙於過去填單取消達3次，無法自動填單，請聯繫客服。');
         return;
       }
       if (d && d.status === 'DUPLICATE') {
