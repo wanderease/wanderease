@@ -151,6 +151,17 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
  
 .idbox .lead.first{color:var(--brown);font-weight:700;font-size:12.5px}
  
+.idbox.ask h4{font-size:13px;font-weight:700;color:var(--mute);margin-bottom:12px}
+.ask .q{border-left:3px solid var(--brown);background:#faf6f1;border-radius:0 10px 10px 0;
+        padding:12px 12px 12px 13px;margin-bottom:12px}
+.ask .q .qt{font-size:16px;font-weight:800;color:var(--ink);line-height:1.5;margin-bottom:9px}
+.ask .q .qt .req,.ask .q .qt .opt{display:inline-block;font-size:11px;border-radius:99px;
+        padding:1px 8px;margin-left:6px;vertical-align:2px;white-space:nowrap}
+.ask .q .qt .req{font-weight:700;color:#fff;background:var(--brown)}
+.ask .q .qt .opt{font-weight:600;color:var(--mute);border:1px solid var(--line);background:#fff}
+.ask .q input,.ask .q select{background:#fff}
+.ask .foot{font-size:11.5px;color:var(--mute)}
+ 
 .fgate{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;
   display:flex;align-items:center;justify-content:center;padding:20px}
 .fbox{background:var(--white);border-radius:14px;padding:26px 22px 20px;
@@ -2094,11 +2105,11 @@ function view2() {
   
   var asks = askFields();
   if (asks.length) {
-    h += '<div class="idbox"><h4>這一團需要你提供</h4>' +
-      '<div class="lead">送出後可以在會員中心看到你填的內容</div>';
+    h += '<div class="idbox ask"><h4>請協助回答以下問題</h4>';
     asks.forEach(function (f, i) {
       var v = askVal[f.label] || '';
-      h += '<div class="fld"><label>' + esc(f.label) + (f.required ? ' <b>*</b>' : '') + '</label>';
+      h += '<div class="fld q"><div class="qt">' + esc(f.label) +
+        (f.required ? '<span class="req">必填</span>' : '<span class="opt">選填</span>') + '</div>';
       if (f.type === 'select') {
         h += '<select id="fAsk' + i + '"' + dis + ' onchange="setAsk(' + i + ',this.value)">' +
           '<option value="">請選擇</option>' +
@@ -2107,12 +2118,12 @@ function view2() {
           }).join('') + '</select>';
       } else {
         h += '<input id="fAsk' + i + '"' + dis + ' maxlength="200" value="' + esc(v) + '"' +
-          ' placeholder="' + esc(f.hint || (f.required ? '必填' : '選填')) + '"' +
+          ' placeholder="' + esc(f.hint || '請輸入') + '"' +
           ' oninput="setAsk(' + i + ',this.value)">';
       }
       h += '</div>';
     });
-    h += '</div>';
+    h += '<div class="foot">送出後可以在會員中心看到你填的內容</div></div>';
   }
 
   
