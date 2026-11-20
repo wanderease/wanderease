@@ -773,14 +773,38 @@ function svmBar() {
   }
   return h + '</div>';
 }
+
 function svmIdBox() {
-  if (meLoading) return '<div class="idbox"><h4>登記人</h4><div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div></div>';
-  if (!(me && me.bound && me.name && me.phone && me.email)) {
-    return '<div class="idbox"><h4>登記前請先綁定會員</h4>' +
-      '<div class="lead first">意願登記會記在你的會員資料上，請先到會員中心完成綁定，再回來登記。</div>' +
-      '<div class="act"><a class="main" href="/m">前往會員中心</a></div></div>';
-  }
-  return '<div class="idbox"><h4>登記人</h4><div class="lead">' + esc(me.name) + '（會員資料）</div></div>';
+  var dis = meLoading ? ' disabled' : '';
+  var bound = !!(me && me.bound && me.name);
+  var h = '<div class="idbox"><h4>你的資料</h4>' +
+    (meLoading
+      ? '<div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div>'
+      : (me.bound
+        ? '<div class="lead">已帶入你的會員資料，如有變更請直接修改。</div>'
+        : '<div class="lead first">第一次登記嗎？請協助填寫資訊，成團時才能通知你，下次開始會自動帶入哦~</div>')) +
+    '<div class="fld">' +
+    (bound && !nameEditing
+      ? '<label class="row"><span>社群名稱 <b>*</b></span>' +
+        '<button type="button" class="edt" onclick="editName()">✏️ 修改社群名稱</button></label>' +
+        '<input id="fName" value="' + esc(me.name || '') + '" disabled>' +
+        '<div class="hint">這是系統裡記錄的名稱。在社群改過名字的話請按右上角修改。</div>'
+      : '<label>社群名稱 <b>*</b></label>' +
+        '<input id="fName"' + (bound ? '' : dis) + ' value="' + esc(me.name || '') + '" placeholder="例如：J">' +
+        '<div class="hint">' + (bound ? '請填你現在在社群裡顯示的名稱。送出時會一起更新你的會員資料。' : '您在泰中毒裡的社群名稱') + '</div>') +
+    '</div>' +
+    '<div class="fld"><label>手機號碼 <b>*</b></label>' +
+    '<input id="fPhone"' + dis + ' inputmode="numeric" value="' + esc(me.phone || '') + '" placeholder="09xxxxxxxx">' +
+    '<div class="hint">用來對應你過去的訂單，請填常用號碼。</div></div>' +
+    '<div class="fld"><label>電子信箱 <b>*</b></label>' +
+    '<input id="fMail"' + dis + ' value="' + esc(me.email || '') + '" placeholder="必填"></div></div>';
+  setTimeout(function () {
+    ['fName', 'fPhone', 'fMail'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.oninput = function () { touched[id] = 1; };
+    });
+  }, 0);
+  return h;
 }
 function svView2() {
   var t = tot(), m = svmKeys(), add = svmAdded();
@@ -825,7 +849,7 @@ function svView2() {
       ' onchange="setAgree(this.checked)"><span>我已閱讀並同意代購規則&須知</span></label>';
   }
   h += '</div>';
-  var ready = !meLoading && me.bound && me.name && me.phone && me.email && svm != null && !svmFailed;
+  var ready = !meLoading && svm != null && !svmFailed;
   var ok = ready && add > 0 && cfs.every(function (x) { return !!confirmAt[x]; }) && (!C.notice || agreed) && !isClosed() && !notStarted();
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
     '<div class="t">這次加 ' + add + ' 件<b>預估 NT$' + t.sum.toLocaleString() + '</b></div>' +
@@ -858,7 +882,12 @@ function svSubmit() {
   var uid = (me && me.uid) || null;
   try { uid = uid || localStorage.getItem('we_uid'); } catch (e) {}
   if (!uid) { alert('請先登入 LINE 再登記。'); draw(); return; }
-  if (!(me && me.bound && me.name && me.phone && me.email)) { alert('登記前請先到會員中心完成會員綁定。'); return; }
+  var name = String((document.getElementById('fName') || {}).value || '').trim();
+  var phone = String((document.getElementById('fPhone') || {}).value || '').trim();
+  var mail = String((document.getElementById('fMail') || {}).value || '').trim();
+  if (!name) { alert('請填社群暱稱。'); return; }
+  if (!/^09\d{8}$/.test(phone)) { alert('手機號碼要 09 開頭共 10 碼。'); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) { alert('請填正確的電子信箱。'); return; }
   if (svm == null || svmFailed) { alert('讀取你的登記失敗，請重新整理頁面再試一次。'); return; }
   var cfs = (C.confirms || []).filter(Boolean);
   var missing = cfs.filter(function (x) { return !confirmAt[x]; });
@@ -877,7 +906,7 @@ function svSubmit() {
   var lost = Object.keys(m).filter(function (k) { return (cart[k] || 0) < m[k]; });
   if (lost.length) { alert('登記只能增加、不能減少；要減少請聯繫官方 LINE。'); svmDone = false; svmPrefill(); step = 1; draw(true); return; }
   if (!added.length) { alert('這次沒有增加任何數量。'); return; }
-  var payload = { campaign: C.id, lineUid: uid, name: me.name, phone: me.phone, email: me.email, last5: '', survey: true,
+  var payload = { campaign: C.id, lineUid: uid, name: name, phone: phone, email: mail, last5: '', survey: true,
     agreedAt: new Date().toISOString(), confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
     items: items, friendFlag: friendState };
   var btns = document.querySelectorAll('.bar button');
@@ -898,6 +927,8 @@ function svSubmit() {
         var keep = (svm || []).filter(function (x) { return x.state !== '登記中'; });
         svm = keep.concat(items.map(function (x) { return { product: x.product, color: x.color, size: x.size, qty: x.qty, state: '登記中' }; }));
         svmLast = { at: new Date().toISOString(), added: added };
+        
+        if (!me.bound) { me.bound = true; me.name = name; me.phone = phone; me.email = mail; try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {} }
         clearCart();
         step = 3;
         draw(true);
