@@ -1591,7 +1591,7 @@
             return f.pub
               ? '<a class="cfm" href="/o/' + encodeURIComponent(f.pub) + '">已成團：<b>' + escHTML(f.name) + '</b>' + (f.due ? '，請在 ' + fmt(f.due) + ' 前' : '，請') + '到正式團確認並付款 <i class="bi bi-chevron-right"></i></a>'
               : '<div class="cfm">已成團：<b>' + escHTML(f.name) + '</b>，正式團目前沒有開放，請聯繫官方 LINE</div>'; }).join('') +
-          (g.pub ? '<div class="act"><a href="/o/' + encodeURIComponent(g.pub) + '">加登記</a></div><div class="note">登記只能增加、不能減少；要減少請聯繫官方 LINE。</div>' : '') +
+          (g.pub ? '<div class="act"><a href="/o/' + encodeURIComponent(g.pub) + '">加登記</a></div><div class="note">登記可以新增需求數量，若欲減少請聯繫官方 LINE。</div>' : '') +
           '</div>';
       }).join('');
     }
