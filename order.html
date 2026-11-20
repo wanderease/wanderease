@@ -123,6 +123,32 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
             background:var(--white);font-size:17px;color:var(--ink)}
 .stp button:disabled{opacity:.3}
 .stp span{width:28px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+ 
+.svm{margin:0 18px 14px;background:#fffaf2;border:2px solid #b07a3e;border-radius:14px;padding:13px 14px}
+.svm h4{font-size:14.5px;font-weight:800;margin:0 0 6px;color:#6b4423}
+.svm p{font-size:13px;color:#5b4d40;line-height:1.7;margin:0 0 4px}
+.svm .est{color:#96560a;font-weight:700}
+.svm .mine{background:#fff;border:1px solid #ead9c2;border-radius:10px;padding:8px 10px;margin-top:8px}
+.svm .mine b{font-size:12.5px;color:#6b4423}
+.svm .mine .r{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:3px 0;border-top:1px dashed #efe3d2}
+.svm .mine .r:first-of-type{border-top:0}
+.svm .tag{font-size:11px;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.svm .tag.reg{background:#eef1f6;color:#495057}.svm .tag.cf{background:#fbf4ea;color:#9a6420}
+.svm .tag.ok{background:#e6f4ea;color:#1d6b33}.svm .tag.no{background:#eceff1;color:#8a9399}
+.svm .warn{font-size:12.5px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;border-radius:9px;padding:7px 10px;margin-top:8px;line-height:1.6}
+.svm .bad{font-size:12.5px;color:#a3332a;background:#fdeceb;border:1px solid #f2c4bf;border-radius:9px;padding:7px 10px;margin-top:8px}
+.px .estl{font-size:11.5px;font-weight:700;color:#96560a;margin-right:4px}
+.estnote{font-size:11.5px;color:#96560a;margin-top:2px}
+.svbox{margin:0 18px 14px;background:#fff;border:2px solid #b07a3e;border-radius:14px;padding:13px 14px}
+.svbox h4{font-size:14px;font-weight:800;margin:0 0 6px}
+.svbox .ln{font-size:13px;color:#5b4d40;line-height:1.75}
+.svbox .hint{font-size:12px;color:#7a6a58;margin-top:6px;line-height:1.6}
+.svbox .warn{font-size:12.5px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;border-radius:9px;padding:7px 10px;margin-top:8px;line-height:1.6}
+.svbox .chk{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;border-radius:8px;padding:6px 10px;margin-top:6px}
+.svbox .chk.ok{background:#eef3e9;border:1px solid #cfdcc2;color:#33452f}
+.svbox .chk.ng{background:#fdeceb;border:1px solid #f2c4bf;color:#a3332a}
+.svbox label.ag{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.6;margin-top:10px;cursor:pointer}
+.svbox label.ag input{width:20px;height:20px;margin-top:2px;flex:0 0 auto;accent-color:var(--brown)}
 .note{margin:0 18px 16px;background:#f3efe9;border:1px solid var(--line);border-radius:12px;
       padding:13px 15px;font-size:12.5px;color:#5b4d40;white-space:pre-wrap}
 
@@ -599,6 +625,289 @@ function fmtDue(iso) {
 var CART_KEY = 'we_cart_' + CODE;
 var RESUME_KEY = 'we_resume_' + CODE;   
 var pending = null;                      
+
+
+
+var survey = null, svDone = false, svAgreed = false;
+
+
+
+var SV = false, svm = null, svmFailed = false, svmDone = false, svmLast = null;
+var SV_EST = '金額非正式，若可成團，以正式價格為準';
+function svMap() {
+  if (!survey || !C || !C.products) return [];
+  return survey.items.map(function (it) {
+    var pi = -1;
+    C.products.forEach(function (p, i) { if (pi < 0 && p.name === it.product) pi = i; });
+    var p = C.products[pi], ci = -1, ok = false;
+    if (p) {
+      var cs = p.colors || [];
+      if (cs.length) cs.forEach(function (c, i) { if (ci < 0 && c.n === it.color) ci = i; });
+      else if (!it.color) ci = 0;
+      var c = cs[ci];
+      var sizeOk = (p.sizes || []).length ? (it.size && p.sizes.indexOf(it.size) >= 0) : !it.size;
+      if (c && c.sz && c.sz.length && it.size && c.sz.indexOf(it.size) < 0) sizeOk = false;
+      ok = ci >= 0 && sizeOk && !isOff(p, c ? c.n : '', it.size || '-');
+    }
+    return { it: it, pi: pi, ci: ci, ok: ok, key: pi + '|' + ci + '|' + (it.size || '-') };
+  });
+}
+function surveyPrefill() {
+  if (svDone || !survey || !C || ordered) return;
+  svDone = true;
+  var m = svMap(), touched = {};
+  Object.keys(cart).forEach(function (k) { touched[k.split('|')[0]] = 1; });
+  var add = false;
+  m.forEach(function (x) {
+    if (!x.ok || touched[x.pi]) return;
+    cart[x.key] = Math.max(cart[x.key] || 0, x.it.qty);
+    if (colorSel[x.pi] == null && (C.products[x.pi].colors || []).length) colorSel[x.pi] = x.ci;   
+    add = true;
+  });
+  if (add) saveCart();
+}
+function svNeed() {
+  var need = {}, m = svMap();
+  m.forEach(function (x) {
+    if (!x.ok) return;
+    var k = x.pi + '|' + x.ci;
+    if (!need[k]) need[k] = { pi: x.pi, ci: x.ci, need: 0, got: 0 };
+    need[k].need += x.it.qty;
+  });
+  Object.keys(cart).forEach(function (k) {
+    var a = k.split('|'), g = need[a[0] + '|' + a[1]];
+    if (g) g.got += cart[k] || 0;
+  });
+  return Object.keys(need).map(function (k) { return need[k]; });
+}
+function svError() {
+  var bad = svNeed().filter(function (g) { return g.got < g.need; })[0];
+  if (!bad) return '';
+  var p = C.products[bad.pi], c = (p.colors || [])[bad.ci];
+  return '你在意願調查登記了「' + p.name + (c ? ' ' + c.n : '') + '」共 ' + bad.need + ' 件，這次只選了 ' + bad.got +
+    ' 件。同顏色合計不能少於登記的數量（尺寸可以換）；要減少請聯繫官方 LINE。';
+}
+function svBanner(confirmStep) {
+  if (!survey || ordered || !C) return '';
+  var m = svMap();
+  var lab = function (it) { return esc(it.product) + (it.color ? ' ' + esc(it.color) : '') + (it.size ? ' ' + esc(it.size) : ''); };
+  var h = '<div class="svbox"><h4>你在意願調查登記了</h4><div class="ln">' +
+    m.map(function (x) { return lab(x.it) + ' × ' + x.it.qty; }).join('<br>') + '</div>';
+  var no = m.filter(function (x) { return !x.ok; });
+  if (no.length) {
+    h += '<div class="warn">' + no.map(function (x) { return lab(x.it); }).join('、') +
+      ' 這次正式團沒有開，' + (no.length > 1 ? '這幾件' : '這 ' + no[0].it.qty + ' 件') + '請聯繫官方 LINE 處理（換規格或取消）。</div>';
+  }
+  svNeed().forEach(function (g) {
+    var p = C.products[g.pi], c = (p.colors || [])[g.ci], ok = g.got >= g.need;
+    h += '<div class="chk ' + (ok ? 'ok' : 'ng') + '"><span>' + esc(p.name) + (c ? ' ' + esc(c.n) : '') + '：已選 ' + g.got + ' 件／至少 ' + g.need + ' 件</span>' +
+      '<b>' + (ok ? '✓' : '還差 ' + (g.need - g.got) + ' 件') + '</b></div>';
+  });
+  h += '<div class="hint">已幫你帶入登記的數量。同顏色合計不能少於登記（尺寸可以換、可以加買）；要減少請聯繫官方 LINE。' +
+    (survey.due ? '請在 ' + fmtDue(survey.due) + ' 前完成，逾期登記作廢。' : '') + '</div>';
+  if (confirmStep) {
+    h += '<label class="ag"><input type="checkbox"' + (svAgreed ? ' checked' : '') +
+      ' onchange="svAgreed=this.checked"><span>我同意本頁列出的價格</span></label>';
+  }
+  return h + '</div>';
+}
+
+
+
+function svmKeys() {
+  var out = {};
+  (svm || []).forEach(function (it) {
+    if (it.state !== '登記中') return;
+    var pi = -1;
+    (C.products || []).forEach(function (p, i) { if (pi < 0 && p.name === it.product) pi = i; });
+    if (pi < 0) return;
+    var p = C.products[pi], ci = 0;
+    if ((p.colors || []).length) {
+      ci = -1;
+      p.colors.forEach(function (c, i) { if (ci < 0 && c.n === it.color) ci = i; });
+      if (ci < 0) return;
+    }
+    var k = pi + '|' + ci + '|' + (it.size || '-');
+    out[k] = (out[k] || 0) + (Number(it.qty) || 0);
+  });
+  return out;
+}
+function svmMin(k) { return SV ? (svmKeys()[k] || 0) : 0; }
+function svmPrefill() {
+  if (svmDone || !svm || !C) return;
+  svmDone = true;
+  var m = svmKeys();
+  Object.keys(m).forEach(function (k) { if ((cart[k] || 0) < m[k]) cart[k] = m[k]; });
+  
+  Object.keys(m).forEach(function (k) {
+    var a = k.split('|'), pi = Number(a[0]);
+    if (colorSel[pi] == null && (C.products[pi].colors || []).length) colorSel[pi] = Number(a[1]);
+  });
+}
+
+function svmAdded() {
+  var m = svmKeys(), n = 0;
+  Object.keys(cart).forEach(function (k) { n += Math.max(0, (cart[k] || 0) - (m[k] || 0)); });
+  return n;
+}
+function svmTag(st) {
+  var t = { '登記中': ['reg', '登記中'], '待確認': ['cf', '已成團・請到正式團確認'], '已確認': ['ok', '已成團・已確認'], '已作廢': ['no', '已作廢'] }[st] || ['reg', st];
+  return '<span class="tag ' + t[0] + '">' + esc(t[1]) + '</span>';
+}
+function svmBar() {
+  var h = '<div class="svm"><h4><i class="bi bi-clipboard-heart"></i> 意願調查｜登記想要的數量，不用付款</h4>' +
+    '<p>達到數量才會成團。成團後會用 LINE 通知你到正式團確認、付款；沒有成團不會有任何費用。</p>' +
+    '<p class="est">頁面上的價格是預估價（' + SV_EST + '）。</p>';
+  if (!(me && me.uid)) {
+    h += '<p style="margin-top:6px">登入 LINE 後可以看到你已經登記的數量。</p>';
+  } else if (svmFailed) {
+    h += '<div class="bad">讀取你的登記失敗，請重新整理頁面再試一次。</div>';
+  } else if (svm == null) {
+    h += '<p style="margin-top:6px"><span class="ld"></span> 讀取你的登記中…</p>';
+  } else if (svm.length) {
+    h += '<div class="mine"><b>你目前的登記</b>' + svm.map(function (it) {
+      return '<div class="r"><span>' + esc(it.product) + (it.color ? ' ' + esc(it.color) : '') + (it.size ? ' ' + esc(it.size) : '') +
+        ' × ' + it.qty + '</span>' + svmTag(it.state) + '</div>';
+    }).join('') + '</div>' +
+    '<div class="warn">登記只能增加、不能減少；要減少請聯繫官方 LINE。</div>';
+  }
+  return h + '</div>';
+}
+function svmIdBox() {
+  if (meLoading) return '<div class="idbox"><h4>登記人</h4><div class="lead"><span class="ld"></span> 讀取你的會員資料中…</div></div>';
+  if (!(me && me.bound && me.name && me.phone && me.email)) {
+    return '<div class="idbox"><h4>登記前請先綁定會員</h4>' +
+      '<div class="lead first">意願登記會記在你的會員資料上，請先到會員中心完成綁定，再回來登記。</div>' +
+      '<div class="act"><a class="main" href="/m">前往會員中心</a></div></div>';
+  }
+  return '<div class="idbox"><h4>登記人</h4><div class="lead">' + esc(me.name) + '（會員資料）</div></div>';
+}
+function svView2() {
+  var t = tot(), m = svmKeys(), add = svmAdded();
+  var h = '<div class="step"><h2>確認登記</h2><div class="lines">';
+  Object.keys(cart).forEach(function (k) {
+    var q = cart[k];
+    if (!q) return;
+    var a = k.split('|'), p = C.products[Number(a[0])];
+    var c = (p.colors || [])[Number(a[1])];
+    var up = priceOf(Number(a[0]), Number(a[1]), a[2]), was = m[k] || 0;
+    h += '<div class="ln"><div class="n"><b>' + esc(p.name) + (c ? '－' + esc(c.n) : '') + '</b>' +
+      '<s>' + (a[2] !== '-' ? '尺寸 ' + esc(a[2]) + ' · ' : '') + '預估 NT$' + up.toLocaleString() + '</s>' +
+      '</div><span class="q">×' + q + (was ? '<br><small style="color:#a0907a">原本 ' + was + (q > was ? '，加 ' + (q - was) : '') + '</small>'
+        : '<br><small style="color:#96560a">新登記</small>') + '</span>' +
+      '<span class="a">' + (up * q).toLocaleString() + '</span></div>';
+  });
+  h += '</div><div class="sums"><div class="tt"><span>預估總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div></div>' +
+    '<div class="note" style="margin:0 0 14px">' + SV_EST + '。登記不用付款，成團後會用 LINE 通知你到正式團確認並付款。</div>';
+  if (!me || !me.uid) {
+    h += '</div><div class="gate"><div class="ic"><i class="bi bi-chat-dots-fill"></i></div><h4>請先登入 LINE</h4>' +
+      '<p>成團時要用 LINE 通知你，<br>請先登入後再登記。</p><button class="btn" onclick="doLogin()">使用 LINE 登入</button></div>' +
+      '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button><div class="t">預估<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
+      '<button disabled>送出登記</button></div>';
+    return h;
+  }
+  h += svmIdBox();
+  var cfs = (C.confirms || []).filter(Boolean);
+  if (cfs.length) {
+    var left = cfs.filter(function (x) { return !confirmAt[x]; }).length;
+    h += '<div class="confirms"><h4>請逐項確認</h4><div class="lead">請再次確認重要事項</div>';
+    cfs.forEach(function (x, i) {
+      var on = !!confirmAt[x];
+      h += '<label class="cf' + (on ? ' on' : '') + '"><input type="checkbox"' + (on ? ' checked' : '') +
+        ' onchange="setConfirm(' + i + ',this.checked)"><span>' + esc(x) + '</span></label>';
+    });
+    if (left) h += '<div class="left"><i class="bi bi-exclamation-circle"></i> 還有 ' + left + ' 項未確認</div>';
+    h += '</div>';
+  }
+  if (C.notice) {
+    h += '<div class="note" style="margin:0 0 12px">' + esc(C.notice) + '</div>' +
+      '<label class="agree"><input type="checkbox" id="fAgree"' + (agreed ? ' checked' : '') +
+      ' onchange="setAgree(this.checked)"><span>我已閱讀並同意代購規則&須知</span></label>';
+  }
+  h += '</div>';
+  var ready = !meLoading && me.bound && me.name && me.phone && me.email && svm != null && !svmFailed;
+  var ok = ready && add > 0 && cfs.every(function (x) { return !!confirmAt[x]; }) && (!C.notice || agreed) && !isClosed() && !notStarted();
+  h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
+    '<div class="t">這次加 ' + add + ' 件<b>預估 NT$' + t.sum.toLocaleString() + '</b></div>' +
+    '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">' +
+    (isClosed() ? '已截止' : (notStarted() ? '預覽中・尚未開放' : (meLoading || svm == null ? '讀取中…' : '送出登記'))) + '</button></div>';
+  return h;
+}
+function svView3() {
+  var r = svmLast || {}, t = tot();
+  var h = '<div class="done"><div class="ic"><i class="bi bi-check-circle-fill"></i></div><h2>登記完成</h2>' +
+    '<p>成團後會用 LINE 通知你到正式團確認並付款。<br>想多登記可以隨時回來加。</p></div>';
+  if (friendState === false) {
+    h += '<div class="step"><div class="fwarn"><b>你尚未加入官方 LINE</b>' +
+      '<p>成團通知是用 LINE 私訊發送，沒有加入好友會收不到，請幫我們加入官方 LINE。</p>' +
+      '<button type="button" onclick="friendOpenLine()">加入官方 LINE</button></div></div>';
+  }
+  h += '<div class="step"><div class="infobox"><div class="rows2">' +
+    '<div><span>登記時間</span><span>' + esc(fmtWhen(r.at) || '') + '</span></div>' +
+    '<div><span>這次加登記</span><span>' + (r.added || []).map(function (x) { return esc(x); }).join('<br>') + '</span></div>' +
+    '<div><span>你的登記</span><span>' + (svm || []).filter(function (x) { return x.state === '登記中'; }).map(function (x) {
+      return esc(x.product) + (x.color ? ' ' + esc(x.color) : '') + (x.size ? ' ' + esc(x.size) : '') + ' × ' + x.qty;
+    }).join('<br>') + '</span></div>' +
+    '<div><span>預估總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div>' +
+    '</div></div><div class="note" style="margin:12px 0 0">' + SV_EST + '。要減少登記請聯繫官方 LINE。</div></div>';
+  h += '<div class="bar"><button class="ghost" onclick="location.href=\'/\'">回首頁</button><div class="t">　<b></b></div>' +
+    '<button onclick="go(1)">繼續登記</button></div>';
+  return h;
+}
+function svSubmit() {
+  var uid = (me && me.uid) || null;
+  try { uid = uid || localStorage.getItem('we_uid'); } catch (e) {}
+  if (!uid) { alert('請先登入 LINE 再登記。'); draw(); return; }
+  if (!(me && me.bound && me.name && me.phone && me.email)) { alert('登記前請先到會員中心完成會員綁定。'); return; }
+  if (svm == null || svmFailed) { alert('讀取你的登記失敗，請重新整理頁面再試一次。'); return; }
+  var cfs = (C.confirms || []).filter(Boolean);
+  var missing = cfs.filter(function (x) { return !confirmAt[x]; });
+  if (missing.length) { alert('還有 ' + missing.length + ' 項確認事項未勾選。'); return; }
+  if (C.notice && !agreed) { alert('請先勾選同意代購規則。'); return; }
+  var m = svmKeys(), items = [], added = [];
+  Object.keys(cart).forEach(function (k) {
+    var q = cart[k];
+    if (!q) return;
+    var a = k.split('|'), p = C.products[Number(a[0])], c = (p.colors || [])[Number(a[1])];
+    var nm = p.name + (c ? ' ' + c.n : '') + (a[2] !== '-' ? ' ' + a[2] : '');
+    items.push({ product: p.name, color: c ? c.n : '', size: a[2] === '-' ? '' : a[2], qty: q, price: priceOf(Number(a[0]), Number(a[1]), a[2]) });
+    if (q > (m[k] || 0)) added.push(nm + ' +' + (q - (m[k] || 0)));
+  });
+  
+  var lost = Object.keys(m).filter(function (k) { return (cart[k] || 0) < m[k]; });
+  if (lost.length) { alert('登記只能增加、不能減少；要減少請聯繫官方 LINE。'); svmDone = false; svmPrefill(); step = 1; draw(true); return; }
+  if (!added.length) { alert('這次沒有增加任何數量。'); return; }
+  var payload = { campaign: C.id, lineUid: uid, name: me.name, phone: me.phone, email: me.email, last5: '', survey: true,
+    agreedAt: new Date().toISOString(), confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
+    items: items, friendFlag: friendState };
+  var btns = document.querySelectorAll('.bar button');
+  try { btns.forEach(function (b) { b.disabled = true; }); } catch (e) {}
+  var sendBtn = btns.length ? btns[btns.length - 1] : null;
+  if (sendBtn) sendBtn.textContent = '送出中…';
+  var unsure = function () {
+    alert('網路不穩，不確定有沒有登記成功。\n請重新整理頁面看「你目前的登記」；沒有成功的話再送一次就好（重送不會重複登記）。');
+    draw();
+  };
+  fetch(SUBMIT_URL, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ action: 'campaignSubmit', payload: JSON.stringify(payload) }) })
+    .then(function (r) { return r.text(); })
+    .then(function (raw) {
+      var d; try { d = JSON.parse(raw); } catch (e) { unsure(); return; }
+      if (d && d.status === 'SUCCESS') {
+        
+        var keep = (svm || []).filter(function (x) { return x.state !== '登記中'; });
+        svm = keep.concat(items.map(function (x) { return { product: x.product, color: x.color, size: x.size, qty: x.qty, state: '登記中' }; }));
+        svmLast = { at: new Date().toISOString(), added: added };
+        clearCart();
+        step = 3;
+        draw(true);
+        return;
+      }
+      if (d && d.message) { alert('登記失敗：' + d.message); draw(); return; }
+      unsure();
+    })
+    .catch(unsure);
+}
 
 function saveCart() {
   try {
@@ -1216,6 +1525,7 @@ function boot(d) {
       location.replace(C.myship);
       return;
     }
+    SV = !!C && C.mode === '意願調查';
     if (!C) {
       document.getElementById('root').innerHTML =
         '<div class="empty"><i class="bi bi-search" style="font-size:30px;display:block;margin-bottom:10px"></i>' +
@@ -1233,7 +1543,8 @@ function boot(d) {
     
     
     
-    try {
+    
+    if (!SV) try {
       var idx = JSON.parse(sessionStorage.getItem('we_ordered_idx') || 'null');
       if (idx && (idx.codes || []).indexOf(CODE) >= 0) {
         ordered = { partial: true, items: [] };
@@ -1390,6 +1701,11 @@ function boot(d) {
         payDone = true;
         if (d.pay && d.pay.needPay) payInfo = d.pay;
         
+        survey = (d.survey && d.survey.items && d.survey.items.length) ? d.survey : null;
+        
+        if (d.mine) { svm = d.mine.items || []; svmFailed = !!d.mine.failed; svmDone = false; }
+        else if (SV) svmFailed = true;
+        
         
         
         if (d.ordered && d.ordered.adminOnly) { adminAdded = d.ordered; ordered = null; }
@@ -1421,6 +1737,7 @@ function boot(d) {
         }
         meLoading = false;
         payDone = true;     
+        if (SV) { svmFailed = true; draw(); return; }
         if (step === 2) draw();
       });
   }
@@ -1464,6 +1781,8 @@ function restoreForm(o) {
 function draw(toTop) {
   var y = window.scrollY;
   var form = snapForm();
+  if (survey && !svDone) surveyPrefill();
+  if (SV && svm && !svmDone) svmPrefill();
 
   
   pruneCart();
@@ -1480,9 +1799,10 @@ function draw(toTop) {
   }
   if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
 
-  document.getElementById('root').innerHTML =
-    (ordered && step === 2) ? view1()
-      : (step === 1 ? view1() : (step === 2 ? view2() : view3()));
+  document.getElementById('root').innerHTML = SV
+    ? (step === 1 ? view1() : (step === 2 ? svView2() : svView3()))
+    : ((ordered && step === 2) ? view1()
+      : (step === 1 ? view1() : (step === 2 ? view2() : view3())));
 
   restoreForm(form);
   if (toTop) window.scrollTo(0, 0);
@@ -1657,6 +1977,8 @@ function view1() {
        (closed ? '已於 ' + fmtDue(C.due) + ' 截止' : '收單至 ' + fmtDue(C.due)) +
        '</span></div>';
   if (C.about) h += '<div class="about">' + esc(C.about) + '</div>';
+  h += svBanner(false);
+  if (SV) h += svmBar();
 
   
   
@@ -1672,7 +1994,7 @@ function view1() {
   if (ordered) h += orderedBar();
   else if (orderFailed) h += failedBar();
   else if (adminAdded) h += adminBar();
-  if (!ordered && !orderFailed && cancelBlocked) h += blockedBar();
+  if (!ordered && !orderFailed && cancelBlocked && !SV) h += blockedBar();
 
   if (pending && !ordered) {
     h += '<div class="resume"><div class="t">' +
@@ -1740,8 +2062,8 @@ function view1() {
          '<h2>' + esc(p.name) + '</h2>' +
          (inPs
            ? '<div class="px" style="font-size:13px">' + esc(psRule().name) + '</div>'
-           : '<div class="px">NT$' + shown.toLocaleString() + (showFrom ? '<em>起</em>' : '') + '</div>') +
-         '</div>' +
+           : '<div class="px">' + (SV ? '<span class="estl">預估價</span>' : '') + 'NT$' + shown.toLocaleString() + (showFrom ? '<em>起</em>' : '') + '</div>') +
+         '</div>' + (SV && !inPs ? '<div class="estnote">' + SV_EST + '</div>' : '') +
          
          (p.limit ? '<span class="lim">' + (multiSku(p) ? '每個規格各限購 ' : '每人限購 ') + p.limit + ' 件</span>' : '') +
          '</div><div class="pbody">';
@@ -1818,8 +2140,8 @@ function view1() {
       var offN = 0;
       avail.forEach(function (s) {
         var k = pi + '|' + si + '|' + s;
-        var mine = om[cname + '|' + s] || 0;
-        var q = mine || cart[k] || 0;
+        var mine = SV ? svmMin(k) : (om[cname + '|' + s] || 0);
+        var q = SV ? (cart[k] || 0) : (mine || cart[k] || 0);
         
         
         
@@ -1846,8 +2168,8 @@ function view1() {
       }
     } else {
       var k0 = pi + '|' + si + '|-';
-      var mine0 = om[cname + '|'] || 0;
-      var q0 = mine0 || cart[k0] || 0;
+      var mine0 = SV ? svmMin(k0) : (om[cname + '|'] || 0);
+      var q0 = SV ? (cart[k0] || 0) : (mine0 || cart[k0] || 0);
       h += '<h3>' + (p.bundle ? '已選' : '數量') + '</h3>';
       
       if (isOff(p, cname, '-')) {
@@ -1882,9 +2204,16 @@ function view1() {
   } else if (orderFailed) {
     h += '<div class="bar"><div class="t">訂單狀態未知<b>—</b></div>' +
          '<button disabled>請先確認</button></div>';
-  } else if (cancelBlocked) {
+  } else if (cancelBlocked && !SV) {
     h += '<div class="bar"><div class="t">無法自動填單<b>—</b></div>' +
          '<button disabled>請聯繫客服</button></div>';
+  } else if (SV) {
+    var addN = svmAdded();
+    h += '<div class="bar"><div class="t">' + (t.n ? (addN ? '這次加 ' + addN + ' 件' : '已登記 ' + t.n + ' 件') : '尚未登記') +
+         '<b>預估 NT$' + t.sum.toLocaleString() + '</b></div>' +
+         (closed ? '<button disabled>已截止</button>'
+           : '<button' + (addN && !svmFailed ? '' : ' disabled') + ' onclick="go(2)">' + (t.n && !addN ? '選要加的數量' : '下一步') + '</button>') +
+         '</div>';
   } else {
     h += '<div class="bar"><div class="t">' + (t.n ? ('共 ' + t.n + ' 件' + (pSets.length ? '（' + esc(psRule().name) + ' ' + pSets.length + ' 組）' : '')) : '尚未選購') +
          '<b>NT$' + t.sum.toLocaleString() + '</b></div>' +
@@ -1914,11 +2243,11 @@ function soldRow(label, mine) {
 function stepRow(k, label, price, q, full, closed, pi, showPrice, mine) {
   return '<div class="srow' + (q ? ' has' : '') + '">' +
     '<span class="sl">' + label +
-    (mine ? '<span class="mine">已訂 ' + mine + '</span>' : '') +
-    (showPrice ? '<span class="sp">　NT$' + (price || 0).toLocaleString() + '</span>' : '') +
+    (mine ? '<span class="mine">' + (SV ? '已登記 ' : '已訂 ') + mine + '</span>' : '') +
+    (showPrice ? '<span class="sp">　' + (SV ? '預估 ' : '') + 'NT$' + (price || 0).toLocaleString() + '</span>' : '') +
     '</span>' +
     '<span class="stp">' +
-    '<button' + (q ? '' : ' disabled') + ' onclick="ch(\'' + k + '\',-1)">−</button>' +
+    '<button' + (q > (SV ? mine : 0) ? '' : ' disabled') + ' onclick="ch(\'' + k + '\',-1)">−</button>' +
     '<span>' + q + '</span>' +
     '<button' + ((full || closed) ? ' disabled' : '') + ' onclick="ch(\'' + k + '\',1,' + pi + ')">＋</button>' +
     '</span></div>';
@@ -1960,7 +2289,7 @@ function unitsOf(p, opt, size) {
 function view2() {
   var t = tot();
   var official = (C.mode === '直接成立正式訂單');
-  var h = '<div class="step"><h2>' + (official ? '確認訂單與付款' : '確認訂單') + '</h2><div class="lines">';
+  var h = '<div class="step"><h2>' + (official ? '確認訂單與付款' : '確認訂單') + '</h2>' + svBanner(true) + '<div class="lines">';
 
   Object.keys(cart).forEach(function (k) {
     var q = cart[k];
@@ -2311,6 +2640,10 @@ function ch(k, d, pi) {
       return;
     }
   }
+  if (d < 0 && SV && (cart[k] || 0) + d < svmMin(k)) {
+    alert('登記只能增加、不能減少；要減少請聯繫官方 LINE。');
+    return;
+  }
   cart[k] = Math.max(0, (cart[k] || 0) + d);
   if (!cart[k]) delete cart[k];
   saveCart();
@@ -2650,6 +2983,14 @@ function submitOrder_() {
   if (notStarted()) {
     alert('這一團 ' + fmtDue(C.start) + ' 才開放填單。');
     return;
+  }
+  
+  if (SV) { svSubmit(); return; }
+  
+  if (survey && !ordered) {
+    var svErr = svError();
+    if (svErr) { alert(svErr); step = 1; draw(true); return; }
+    if (!svAgreed) { alert('請先勾選「我同意本頁列出的價格」。'); return; }
   }
 
   

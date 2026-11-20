@@ -53,6 +53,7 @@ body{
 .tag.adm{background:#fdf6ec;border-color:#f0dcc0;color:#8a5a1c}
  
 .tag.myship{background:#fff4e5;border-color:#f3d2a2;color:#a35a00}
+.tag.survey{background:#fffaf2;border-color:#e2c39b;color:#8a5a22}
 .tag.soon{background:#eef2f8;border-color:#c9d4e6;color:#34507a}
 
 .empty{padding:60px 24px;text-align:center;color:var(--mute);font-size:13.5px}
@@ -369,6 +370,7 @@ function render() {
       '<s>' + esc(c.brand) + (my ? '' : ' · ' + n + ' 個商品') + '</s>' +
       '<div class="tags">' +
         (my ? '<span class="tag myship">賣貨便下單</span>' : '') +
+        (c.mode === '意願調查' ? '<span class="tag survey">意願調查・不用付款</span>' : '') +
         (campEarly(c) && campWaitingRaw(c)
           ? '<span class="tag soon">提前開放給你・' + esc(fmtDue(c.start)) + ' 正式開放</span>'
           : waiting
