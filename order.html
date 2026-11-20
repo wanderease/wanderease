@@ -768,7 +768,7 @@ function svmBar() {
       return '<div class="r"><span>' + esc(it.product) + (it.color ? ' ' + esc(it.color) : '') + (it.size ? ' ' + esc(it.size) : '') +
         ' × ' + it.qty + '</span>' + svmTag(it.state) + '</div>';
     }).join('') + '</div>' +
-    '<div class="warn">登記只能增加、不能減少；要減少請聯繫官方 LINE。</div>';
+    '<div class="warn">登記可以新增需求數量，若欲減少請聯繫官方 LINE。</div>';
   }
   return h + '</div>';
 }
@@ -872,7 +872,7 @@ function svView3() {
       return esc(x.product) + (x.color ? ' ' + esc(x.color) : '') + (x.size ? ' ' + esc(x.size) : '') + ' × ' + x.qty;
     }).join('<br>') + '</span></div>' +
     '<div><span>預估總金額</span><span>NT$' + t.sum.toLocaleString() + '</span></div>' +
-    '</div></div><div class="note" style="margin:12px 0 0">' + SV_EST + '。要減少登記請聯繫官方 LINE。</div></div>';
+    '</div></div><div class="note" style="margin:12px 0 0">' + SV_EST + '。若欲減少登記請聯繫官方 LINE。</div></div>';
   h += '<div class="bar"><button class="ghost" onclick="location.href=\'/\'">回首頁</button><div class="t">　<b></b></div>' +
     '<button onclick="go(1)">繼續登記</button></div>';
   return h;
@@ -903,7 +903,7 @@ function svSubmit() {
   });
   
   var lost = Object.keys(m).filter(function (k) { return (cart[k] || 0) < m[k]; });
-  if (lost.length) { alert('登記只能增加、不能減少；要減少請聯繫官方 LINE。'); svmDone = false; svmPrefill(); step = 1; draw(true); return; }
+  if (lost.length) { alert('登記可以新增需求數量，若欲減少請聯繫官方 LINE。'); svmDone = false; svmPrefill(); step = 1; draw(true); return; }
   if (!added.length) { alert('這次沒有增加任何數量。'); return; }
   var payload = { campaign: C.id, lineUid: uid, name: name, phone: phone, email: mail, last5: '', survey: true,
     agreedAt: new Date().toISOString(), confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
@@ -2676,7 +2676,7 @@ function ch(k, d, pi) {
     }
   }
   if (d < 0 && SV && (cart[k] || 0) + d < svmMin(k)) {
-    alert('登記只能增加、不能減少；要減少請聯繫官方 LINE。');
+    alert('登記可以新增需求數量，若欲減少請聯繫官方 LINE。');
     return;
   }
   cart[k] = Math.max(0, (cart[k] || 0) + d);
