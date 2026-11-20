@@ -134,6 +134,7 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .svm .mine .r:first-of-type{border-top:0}
 .svm .tag{font-size:11px;border-radius:99px;padding:1px 8px;white-space:nowrap}
 .svm .tag.reg{background:#eef1f6;color:#495057}.svm .tag.cf{background:#fbf4ea;color:#9a6420}
+.svm a.tag.go{text-decoration:none;font-weight:700;border:1px solid #e2c39b}
 .svm .tag.ok{background:#e6f4ea;color:#1d6b33}.svm .tag.no{background:#eceff1;color:#8a9399}
 .svm .warn{font-size:12.5px;color:#96560a;background:#fdf1e2;border:1px solid #f0d7b6;border-radius:9px;padding:7px 10px;margin-top:8px;line-height:1.6}
 .svm .bad{font-size:12.5px;color:#a3332a;background:#fdeceb;border:1px solid #f2c4bf;border-radius:9px;padding:7px 10px;margin-top:8px}
@@ -143,6 +144,7 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
 .svbox h4{font-size:14px;font-weight:800;margin:0 0 6px}
 .svbox .ln{font-size:13px;color:#5b4d40;line-height:1.75}
 .svbox .hint{font-size:12px;color:#7a6a58;margin-top:6px;line-height:1.6}
+.sold-note a.svgo{display:inline-block;margin-top:6px;background:#7b5232;color:#fff;font-weight:700;border-radius:9px;padding:6px 12px;text-decoration:none}
 .svagree{display:flex;gap:10px;align-items:flex-start;margin:0;background:#fbf4ea;border-top:1px solid var(--line);padding:12px 16px;font-size:14px;font-weight:700;line-height:1.6;cursor:pointer;color:#6b4423}
 .svagree input{width:20px;height:20px;margin-top:2px;flex:0 0 auto;accent-color:var(--brown)}
 .svbox .svdue{display:block;background:none;padding:0;border-radius:0;font-size:13.5px;font-weight:800;color:#222;margin-top:6px;line-height:1.6}
@@ -631,7 +633,7 @@ var pending = null;
 
 
 
-var survey = null, svDone = false, svAgreed = false;
+var survey = null, svDone = false, svJumped = false;
 
 
 
@@ -683,7 +685,9 @@ function svNeed() {
   });
   return Object.keys(need).map(function (k) { return need[k]; });
 }
+
 function svError() {
+  return '';
   var bad = svNeed().filter(function (g) { return g.got < g.need; })[0];
   if (!bad) return '';
   var p = C.products[bad.pi], c = (p.colors || [])[bad.ci];
@@ -702,11 +706,11 @@ function svBanner(confirmStep) {
       ' 這次正式團沒有開，' + (no.length > 1 ? '這幾件' : '這 ' + no[0].it.qty + ' 件') + '請聯繫官方 LINE 處理（換規格或取消）。</div>';
   }
   svNeed().forEach(function (g) {
-    var p = C.products[g.pi], c = (p.colors || [])[g.ci], ok = g.got >= g.need;
-    h += '<div class="chk ' + (ok ? 'ok' : 'ng') + '"><span>' + esc(p.name) + (c ? ' ' + esc(c.n) : '') + '：已選 ' + g.got + ' 件／至少 ' + g.need + ' 件</span>' +
-      '<b>' + (ok ? '✓' : '還差 ' + (g.need - g.got) + ' 件') + '</b></div>';
+    var p = C.products[g.pi], c = (p.colors || [])[g.ci];
+    h += '<div class="chk ok"><span>' + esc(p.name) + (c ? ' ' + esc(c.n) : '') + '：這次選 ' + g.got + ' 件（登記 ' + g.need + ' 件）</span>' +
+      '<b>' + (g.got ? '✓' : '') + '</b></div>';
   });
-  h += '<div class="hint">已幫你帶入登記的數量。尺寸可以換、可以加買；要減少請聯繫官方 LINE。</div>' +
+  h += '<div class="hint">已幫你帶入登記的數量，可以增加、減少或換尺寸。</div>' +
     (survey.due ? '<div class="svdue">請在 ' + fmtDue(survey.due) + ' 前完成，逾期登記將作廢。</div>' : '');
   return h + '</div>';
 }
@@ -765,8 +769,16 @@ function svmBar() {
     h += '<p style="margin-top:6px"><span class="ld"></span> 讀取你的登記中…</p>';
   } else if (svm.length) {
     h += '<div class="mine"><b>你目前的登記</b>' + svm.map(function (it) {
+      
+      var f = null;
+      if (it.state === '待確認') {
+        var pp = (C.products || []).filter(function (x) { return x.name === it.product; })[0];
+        f = svFormalOf(pp, it.color || '');
+      }
       return '<div class="r"><span>' + esc(it.product) + (it.color ? ' ' + esc(it.color) : '') + (it.size ? ' ' + esc(it.size) : '') +
-        ' × ' + it.qty + '</span>' + svmTag(it.state) + '</div>';
+        ' × ' + it.qty + '</span>' + (f && f.open
+          ? '<a class="tag cf go" href="/o/' + encodeURIComponent(f.pub) + '">已成團・前往正式團確認 ›</a>'
+          : svmTag(it.state)) + '</div>';
     }).join('') + '</div>' +
     '<div class="warn">登記可以新增需求數量，若欲減少請聯繫官方 LINE。</div>';
   }
@@ -1732,6 +1744,7 @@ function boot(d) {
         if (d.pay && d.pay.needPay) payInfo = d.pay;
         
         survey = (d.survey && d.survey.items && d.survey.items.length) ? d.survey : null;
+        if (d.me && d.me.last5) me.last5 = d.me.last5;
         
         if (d.mine) { svm = d.mine.items || []; svmFailed = !!d.mine.failed; svmDone = false; }
         else if (SV) svmFailed = true;
@@ -1754,6 +1767,10 @@ function boot(d) {
 
         
         
+        
+        if (survey && !ordered && !orderFailed && !svJumped && /[?&]go=confirm\b/.test(location.search)) {
+          svJumped = true; surveyPrefill(); step = 2; draw(true); return;
+        }
         if (ordered || orderFailed) { step = 1; draw(step !== 1); }
         else if (step === 2) fillIfEmpty();
         else draw();
@@ -2184,7 +2201,7 @@ function view1() {
         h += (p.bundle ? bundleRow : stepRow)(k, esc(s), priceOf(pi, si, s), q, skuFull(p, k), closed, pi, varies, mine);
       });
       if (lockQty) h += '</div>';
-      if (offN) h += '<div class="sold-note">' + SOLD_NOTE + '</div>';
+      if (offN) h += '<div class="sold-note">' + soldNote(p, cname, true) + '</div>';
 
       
       
@@ -2204,7 +2221,7 @@ function view1() {
       
       if (isOff(p, cname, '-')) {
         h += soldRow(esc(cname || '數量'), mine0) +
-             '<div class="sold-note">' + SOLD_NOTE + '</div>';
+             '<div class="sold-note">' + soldNote(p, cname, true) + '</div>';
       } else {
         if (lockQty) h += '<div class="qty-off">';
         
@@ -2259,13 +2276,29 @@ function view1() {
 var SOLD_NOTE = '官方目前已售完，若有補貨會再開放';
 
 
+function svFormalOf(p, color) {
+  var fs = (p && p.formal) || [];
+  return fs.filter(function (x) { return (x.c || []).indexOf(color) >= 0; })[0] ||
+         fs.filter(function (x) { return !(x.c || []).length; })[0] || null;
+}
+function soldNote(p, color, html) {
+  if (!SV) return SOLD_NOTE;
+  var f = svFormalOf(p, color || '');
+  if (!f) return '已正式成團，停止登記。登記過的人請看 LINE 通知；沒登記到的人請看官方 LINE 公告的正式團連結';
+  if (!html) return '已正式成團，請到正式團「' + f.name + '」下單' + (f.open ? '' : '（正式團已截止）');
+  return '已正式成團，停止登記。' + (f.open
+    ? '<a class="svgo" href="/o/' + encodeURIComponent(f.pub) + '">前往正式團「' + esc(f.name) + '」下單 ›</a>'
+    : '正式團「' + esc(f.name) + '」已截止。');
+}
+
+
 
 function soldRow(label, mine) {
   return '<div class="srow out">' +
     '<span class="sl">' + label +
-    (mine ? '<span class="mine">已訂 ' + mine + '</span>' : '') +
+    (mine ? '<span class="mine">' + (SV ? '已登記 ' : '已訂 ') + mine + '</span>' : '') +
     '</span>' +
-    '<span class="sold">官方已售完</span></div>';
+    '<span class="sold">' + (SV ? '已正式成團' : '官方已售完') + '</span></div>';
 }
 
 
@@ -2302,7 +2335,7 @@ function bpick(k, pi) {
   if (isClosed()) { alert('這一團已經截止收單了。'); dueReached(); return; }
   var a = String(k).split('|'), p = C.products[pi];
   var cc = p ? (p.colors || [])[Number(a[1])] : null;
-  if (p && isOff(p, cc ? cc.n : '', a[2])) { alert(SOLD_NOTE + '。'); draw(); return; }
+  if (p && isOff(p, cc ? cc.n : '', a[2])) { alert(soldNote(p, cc ? cc.n : '') + '。'); draw(); return; }
   Object.keys(cart).forEach(function (x) { if (Number(x.split('|')[0]) === pi) delete cart[x]; });
   cart[k] = 1;
   saveCart();
@@ -2336,11 +2369,6 @@ function view2() {
          '</span>' +
          '<span class="a">' + (up * q).toLocaleString() + '</span></div>';
   });
-  
-  if (survey && !ordered) {
-    h += '<label class="svagree"><input type="checkbox"' + (svAgreed ? ' checked' : '') +
-      ' onchange="svAgreed=this.checked"><span>我同意本次正式團的價格</span></label>';
-  }
   h += '</div>';
   if (pSets.length && psRule()) {
     h += '<div class="note" style="margin:0 0 10px">' + esc(psRule().name) + ' 共 ' + pSets.length + ' 組，每組 NT$' +
@@ -2460,8 +2488,10 @@ function view2() {
     
     '<div class="fld"><label>' +
       (official ? '匯款帳號後五碼' : '預計匯款帳戶後五碼') + ' <b>*</b></label>' +
-    '<input id="fLast5"' + dis + ' maxlength="20" ' +
+    '<input id="fLast5"' + dis + ' maxlength="20" value="' + esc((me && me.last5) || '') + '" ' +
       'placeholder="' + (official ? '' : '請先提供預計匯款的帳戶') + '">' +
+    
+    ((me && me.last5) ? '<div class="hint" style="color:#96560a">已帶入你上次填的帳號後五碼，這次換帳戶匯款請修改。</div>' : '') +
     (official ? ''
       : '<div class="hint">之後實際匯款時若換了帳戶，到會員中心修改即可。</div>') +
     '</div></div>';
@@ -2663,7 +2693,7 @@ function ch(k, d, pi) {
     var pp = C.products[Number(a[0])];
     var cc = pp ? (pp.colors || [])[Number(a[1])] : null;
     if (pp && isOff(pp, cc ? cc.n : '', a[2])) {
-      alert(SOLD_NOTE + '。');
+      alert(soldNote(pp, cc ? cc.n : '') + '。');
       draw();
       return;
     }
@@ -3025,7 +3055,6 @@ function submitOrder_() {
   if (survey && !ordered) {
     var svErr = svError();
     if (svErr) { alert(svErr); step = 1; draw(true); return; }
-    if (!svAgreed) { alert('請先勾選「我同意本次正式團的價格」。'); return; }
   }
 
   
