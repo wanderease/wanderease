@@ -287,6 +287,23 @@
     .big-frame .frame-count{font-size:10.5px;opacity:.92;}
     .big-frame .frame-title{font-size:14px;font-weight:700;margin-bottom:10px;position:relative;z-index:1;padding-right:55px;}
     .frame-preorder{background:linear-gradient(135deg,var(--pre-soft) 0%,var(--pre-soft-2) 100%);}
+     
+    .frame-survey{background:linear-gradient(135deg,#c99a5b 0%,#a8773c 100%);}
+    .svg-card{background:#fff;color:#3d3328;border-radius:12px;padding:11px 12px;margin-top:8px;position:relative;z-index:1;}
+    .svg-card .hd{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;}
+    .svg-card .hd b{font-size:13.5px;}
+    .svg-card .hd .st{font-size:10.5px;color:#8a7a68;white-space:nowrap;}
+    .svg-card .r{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;padding:5px 0;border-top:1px dashed #efe3d2;}
+    .svg-card .r:first-of-type{border-top:0;}
+    .svg-card .tg{font-size:10.5px;border-radius:99px;padding:1px 8px;white-space:nowrap;}
+    .svg-card .tg.reg{background:#eef1f6;color:#495057}.svg-card .tg.cf{background:#fbf4ea;color:#9a6420;font-weight:700}
+    .svg-card .tg.ok{background:#e6f4ea;color:#1d6b33}.svg-card .tg.no{background:#eceff1;color:#8a9399}
+    .svg-card .r.no{color:#a39a90;}
+    .svg-card .cfm{display:block;margin-top:6px;background:#fdf1e2;border:1px solid #f0d7b6;border-radius:9px;padding:7px 10px;font-size:12px;color:#96560a;text-decoration:none;line-height:1.55;}
+    .svg-card .cfm b{color:#7a4510;}
+    .svg-card .act{display:flex;gap:8px;margin-top:8px;}
+    .svg-card .act a{flex:1;text-align:center;font-size:12.5px;font-weight:700;border-radius:9px;padding:7px 0;text-decoration:none;background:#7b5232;color:#fff;}
+    .svg-card .note{font-size:11px;color:#8a7a68;margin-top:6px;}
     .frame-order{background:linear-gradient(135deg,var(--ord-soft) 0%,var(--ord-soft-2) 100%);}
     .frame-ship{background:linear-gradient(135deg,var(--ship-soft) 0%,var(--ship-soft-2) 100%);}
     .frame-wait{background:linear-gradient(135deg,var(--wait-soft) 0%,var(--wait-soft-2) 100%);}
@@ -503,6 +520,15 @@
             
             <div id="ntRemind" style="display:none;"></div>
             
+            <div id="svFrameWrap" class="big-frame frame-survey" style="display:none;">
+              <div class="watermark"><i class="bi bi-clipboard-heart"></i></div>
+              <div class="frame-head">
+                <span class="frame-tag"><i class="bi bi-clipboard-heart"></i> 我的意願登記</span>
+                <span class="frame-count" id="svFrameCount"></span>
+              </div>
+              <div class="frame-title" id="svFrameTitle"></div>
+              <div id="svCards"></div>
+            </div>
             <div id="preFrameWrap" class="big-frame frame-preorder" style="display:none;">
               <div class="watermark"><i class="bi bi-cart3"></i></div>
               <div class="frame-head">
@@ -1089,7 +1115,7 @@
       }
     }
 
-    function renderMemberBody(d){try{if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();
+    function renderMemberBody(d){try{if(d.status==="MAINTENANCE"){document.getElementById('maintenanceArea').style.display='block';document.getElementById('maintenanceMsg').innerText=d.message;return;}if(d.status==="BOUND"){document.getElementById('homeArea').style.display='block';document.getElementById('welcomeMsg').innerText=`嗨嗨～ ${d.userData["最新社群名稱"]}`;window.IS_ADMIN=!!d.isAdmin;if(d.isAdmin){document.getElementById('adminArea').style.display='block';document.getElementById('adminTopBar').style.display='flex';if(d.isUnderMaintenance)document.getElementById('adminMaintenanceAlert').style.display='block';}var _ht=document.getElementById('pageTab3');if(_ht)_ht.style.display='';var _hd=document.getElementById('swipeDot3');if(_hd)_hd.style.display='';var _hp=document.getElementById('swipePage3');if(_hp)_hp.style.display='';window.lastAdminSearchText="";renderOrders(d.orders||[],d.promos||[],d.globalPages||{rules:{content:''},instock:[]});poData=d.preorderData||{preorders:[],cancelCount:0};pendingEdits={};pendingSweep={};renderPoCards();renderSvFrame(d.surveyData,d.surveyFailed);
       
       
       
@@ -1158,6 +1184,7 @@
           poData=d.preorderData||{preorders:[],cancelCount:0};
           pendingEdits={};pendingSweep={};
           renderPoCards();
+          renderSvFrame(d.surveyData,d.surveyFailed);
           wlInitialData=d.waitlistData||{groups:[],cancelled:[]};
           renderWL(wlInitialData);
           window.instkAdminData = d.instockData || null;  
@@ -1532,6 +1559,43 @@
     
     
     
+    
+    function renderSvFrame(sd, failed){
+      const w = document.getElementById('svFrameWrap');
+      if(!w) return;
+      const groups = (sd && sd.groups) || [];
+      if(failed){
+        w.style.display = 'block';
+        document.getElementById('svFrameCount').innerText = '';
+        document.getElementById('svFrameTitle').innerText = '意願登記讀取失敗，請重新整理';
+        document.getElementById('svCards').innerHTML = '';
+        return;
+      }
+      if(!groups.length){ w.style.display = 'none'; return; }
+      w.style.display = 'block';
+      const fmt = (iso) => { const d = new Date(iso); if(isNaN(d)) return ''; const t = new Date(d.getTime() + 8*3600000); const p = n => (n<10?'0':'')+n; return (t.getUTCMonth()+1)+'/'+t.getUTCDate()+' '+p(t.getUTCHours())+':'+p(t.getUTCMinutes()); };
+      const tag = (st) => ({ '登記中':'<span class="tg reg">登記中</span>', '待確認':'<span class="tg cf">已成團・待確認</span>', '已確認':'<span class="tg ok">已確認</span>', '已作廢':'<span class="tg no">已作廢</span>' })[st] || ('<span class="tg reg">'+escHTML(st)+'</span>');
+      const lab = (x) => escHTML(x.product) + (x.color ? ' ' + escHTML(x.color) : '') + (x.size ? ' ' + escHTML(x.size) : '');
+      let pend = 0;
+      groups.forEach(g => g.items.forEach(x => { if(x.state === '待確認') pend++; }));
+      document.getElementById('svFrameCount').innerText = groups.length + ' 團';
+      document.getElementById('svFrameTitle').innerText = pend > 0 ? (pend + ' 項已成團，請到正式團確認') : '成團後會用 LINE 通知你';
+      document.getElementById('svCards').innerHTML = groups.map(g => {
+        
+        const fm = {};
+        g.items.forEach(x => { if(x.state === '待確認' && x.formal){ const k = x.formal.pub || x.formal.name; (fm[k] = fm[k] || { f: x.formal, n: 0 }).n++; } });
+        return '<div class="svg-card"><div class="hd"><b>' + escHTML(g.name || '意願調查') + '</b><span class="st">' +
+          (g.pub ? '收登記中' + (g.due ? '・至 ' + fmt(g.due) : '') : '已停止登記') + '</span></div>' +
+          g.items.map(x => '<div class="r' + (x.state === '已作廢' ? ' no' : '') + '"><span>' + lab(x) + ' × ' + x.qty + '</span>' + tag(x.state) + '</div>').join('') +
+          Object.keys(fm).map(k => { const f = fm[k].f;
+            return f.pub
+              ? '<a class="cfm" href="/o/' + encodeURIComponent(f.pub) + '">已成團：<b>' + escHTML(f.name) + '</b>' + (f.due ? '，請在 ' + fmt(f.due) + ' 前' : '，請') + '到正式團確認並付款 <i class="bi bi-chevron-right"></i></a>'
+              : '<div class="cfm">已成團：<b>' + escHTML(f.name) + '</b>，正式團目前沒有開放，請聯繫官方 LINE</div>'; }).join('') +
+          (g.pub ? '<div class="act"><a href="/o/' + encodeURIComponent(g.pub) + '">加登記</a></div><div class="note">登記只能增加、不能減少；要減少請聯繫官方 LINE。</div>' : '') +
+          '</div>';
+      }).join('');
+    }
+
     function renderHomeFrames(orders, preorderData, shipData){
       
       const preList = (preorderData && (preorderData.mergedPreorders !== undefined)) ? (preorderData.mergedPreorders || []) : (preorderData && preorderData.preorders || []);
