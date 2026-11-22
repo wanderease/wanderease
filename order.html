@@ -513,7 +513,9 @@ var adminAdded = null;
 
 
 var FORM_IDS = ['fName', 'fPhone', 'fMail', 'fLast5'];
-var lastOrder = null;    
+var lastOrder = null;
+
+var addon = null;    
 var orderFailed = false; 
                          
 var payInfo = null;   
@@ -1127,7 +1129,7 @@ function psPick(i, f, v) {
  
 function psOver(k, extra) {
   var p = C.products[Number(String(k).split('|')[0])];
-  return !!p && p.limit > 0 && (cart[k] || 0) + extra > p.limit;
+  return !!p && p.limit > 0 && (cart[k] || 0) + addonPriorKey(k) + extra > p.limit;
 }
 function psAdd() {
   var r = psRule();
@@ -1533,7 +1535,8 @@ function priceRange(pi) {
 }
 
 function skuFull(p, k) {
-  return !!p && p.limit > 0 && (cart[k] || 0) >= p.limit;
+  
+  return !!p && p.limit > 0 && (cart[k] || 0) + addonPriorKey(k) >= p.limit;
 }
 function multiSku(p) {
   return ((p.colors || []).length || 0) * Math.max(1, (p.sizes || []).length) > 1 || (p.sizes || []).length > 1;
@@ -1754,6 +1757,7 @@ function boot(d) {
         
         
         if (d.ordered && d.ordered.adminOnly) { adminAdded = d.ordered; ordered = null; }
+        else if (d.ordered && addon) { addon.items = d.ordered.items || addon.items; addon.nos = [d.ordered.orderNo].concat((d.ordered.addons || []).map(function (x) { return x.orderNo; })); ordered = null; adminAdded = null; }   
         else if (d.ordered) { ordered = d.ordered; adminAdded = null; }
         else if (!d.orderFailed) { ordered = null; adminAdded = null; }
         orderFailed = !!d.orderFailed;
@@ -1868,6 +1872,9 @@ function orderedBar() {
 
   if (ordered.orderNo) rows += '<div><span>訂單編號</span><span class="no">' +
                                esc(ordered.orderNo) + '</span></div>';
+  (ordered.addons || []).forEach(function (a) {
+    rows += '<div><span>加單編號</span><span class="no">' + esc(a.orderNo) + '</span></div>';
+  });
   if (when) rows += '<div><span>填單時間</span><span>' + esc(when) + '</span></div>';
 
   
@@ -1897,17 +1904,24 @@ function orderedBar() {
     rows = '<div><span></span><span><span class="ld"></span> 讀取訂單內容…</span></div>';
   }
 
+  
+  var canAdd = official && !isClosed() && !notStarted() && !ordered.partial && !!ordered.orderNo && !SV;
   return '<div class="done-bar">' +
     '<div class="t1"><i class="bi bi-check-circle-fill"></i><b>您已填過單</b></div>' +
     '<div class="rows2">' + rows + '</div>' +
     '<div class="act">' +
-      (official
+      (canAdd
+        ? '<a class="sub" href="' + esc(SERVICE_URL) + '">聯繫客服</a>' +
+          '<a class="main" href="javascript:void(0)" onclick="startAddon()">我要加單</a>'
+        : official
         ? '<a class="main" href="' + esc(SERVICE_URL) + '">聯繫客服</a>'
         : '<a class="sub" href="' + esc(SERVICE_URL) + '">聯繫客服</a>' +
           '<a class="main" href="/m">前往會員中心修改</a>') +
     '</div>' +
     '<div class="hint">' +
-      (official
+      (canAdd
+        ? '若想加單可以在結單期間內自行加單哦~<br>有任何問題請聯繫客服'
+        : official
         ? '正式訂單已進入採購流程，如需修改請聯繫客服'
         : '收單截止前都可以到會員中心調整數量或加購') +
     '</div></div>';
@@ -2009,6 +2023,47 @@ function orderedMap() {
   return m;
 }
 
+
+function startAddon() {
+  if (!ordered || isClosed()) return;
+  addon = { orderNo: ordered.orderNo, items: (ordered.items || []).slice(),
+    nos: [ordered.orderNo].concat((ordered.addons || []).map(function (a) { return a.orderNo; })) };
+  ordered = null;
+  clearCart();
+  step = 1;
+  draw(true);
+}
+function cancelAddon() {
+  location.reload();
+}
+ 
+function addonPrior(pi, cname, size) {
+  if (!addon) return 0;
+  var p = C.products[pi]; if (!p) return 0;
+  var sz = (size === '-' ? '' : (size || '')), n = 0;
+  addon.items.forEach(function (it) {
+    if (it.product === p.name && (it.color || '') === (cname || '') && (it.size || '') === sz) n += Number(it.qty) || 0;
+  });
+  return n;
+}
+function addonPriorKey(k) {
+  if (!addon) return 0;
+  var a = String(k).split('|'), p = C.products[Number(a[0])];
+  var c = p ? (p.colors || [])[Number(a[1])] : null;
+  return addonPrior(Number(a[0]), c ? c.n : '', a[2]);
+}
+function addonBar(short) {
+  var its = (addon.items || []).map(function (it) {
+    return it.product + (it.color ? ' ' + it.color : '') + (it.size ? ' ' + it.size : '') + ' ×' + it.qty;
+  });
+  return '<div class="done-bar adm">' +
+    '<div class="t1"><i class="bi bi-plus-circle-fill"></i><b>加單｜原訂單 ' + esc(addon.orderNo) + '</b></div>' +
+    (short ? '' : '<div class="hint">這次新增的品項會成立一張<b>新的訂單</b>，原訂單不變。' +
+      (its.length ? '<br>原訂單已經買的：' + esc(its.join('、')) : '') +
+      '<br><a href="javascript:void(0)" onclick="cancelAddon()" style="color:#8a5a1c">不加了，回到我的訂單</a></div>') +
+    '</div>';
+}
+
 function view1() {
   var closed = isClosed();
   var h = '<div class="crumb"><a href="/c"><i class="bi bi-chevron-left"></i> 開團預購</a></div>';
@@ -2041,6 +2096,7 @@ function view1() {
 
   
   if (ordered) h += orderedBar();
+  else if (addon) h += addonBar();
   else if (orderFailed) h += failedBar();
   else if (adminAdded) h += adminBar();
   if (!ordered && !orderFailed && cancelBlocked && !SV) h += blockedBar();
@@ -2189,8 +2245,8 @@ function view1() {
       var offN = 0;
       avail.forEach(function (s) {
         var k = pi + '|' + si + '|' + s;
-        var mine = SV ? svmMin(k) : (om[cname + '|' + s] || 0);
-        var q = SV ? (cart[k] || 0) : (mine || cart[k] || 0);
+        var mine = SV ? svmMin(k) : (addon ? addonPrior(pi, cname, s) : (om[cname + '|' + s] || 0));
+        var q = (SV || addon) ? (cart[k] || 0) : (mine || cart[k] || 0);
         
         
         
@@ -2217,8 +2273,8 @@ function view1() {
       }
     } else {
       var k0 = pi + '|' + si + '|-';
-      var mine0 = SV ? svmMin(k0) : (om[cname + '|'] || 0);
-      var q0 = SV ? (cart[k0] || 0) : (mine0 || cart[k0] || 0);
+      var mine0 = SV ? svmMin(k0) : (addon ? addonPrior(pi, cname, '-') : (om[cname + '|'] || 0));
+      var q0 = (SV || addon) ? (cart[k0] || 0) : (mine0 || cart[k0] || 0);
       h += '<h3>' + (p.bundle ? '已選' : '數量') + '</h3>';
       
       if (isOff(p, cname, '-')) {
@@ -2361,7 +2417,8 @@ function unitsOf(p, opt, size) {
 function view2() {
   var t = tot();
   var official = (C.mode === '直接成立正式訂單');
-  var h = '<div class="step"><h2>' + (official ? '確認訂單與付款' : '確認訂單') + '</h2>' + svBanner(true) + '<div class="lines">';
+  var h = '<div class="step"><h2>' + (official ? '確認訂單與付款' : '確認訂單') + '</h2>' + svBanner(true) +
+    (addon ? '<div style="margin:0 -18px">' + addonBar(true) + '</div>' : '') + '<div class="lines">';
 
   Object.keys(cart).forEach(function (k) {
     var q = cart[k];
@@ -2390,7 +2447,8 @@ function view2() {
          '<div><span>出貨預留尾款（' + t.n + ' 件 × ' + DEPOSIT + '）</span>' +
          '<span>−NT$' + t.dep.toLocaleString() + '</span></div>' +
          '<div style="color:#a0907a;font-size:12.5px">尾款將於日後出貨時支付</div>' +
-         '<div class="tt"><span>應匯金額</span><span>NT$' + t.pay.toLocaleString() + '</span></div></div>';
+         '<div class="tt"><span>' + (addon ? '這次加單應匯' : '應匯金額') + '</span><span>NT$' + t.pay.toLocaleString() + '</span></div>' +
+         (addon ? '<div style="color:#a0907a;font-size:12.5px">若原訂單尚未匯款可以加總後一起匯款哦~</div>' : '') + '</div>';
 
     
     
@@ -2609,8 +2667,9 @@ function view3() {
   
   h += '<div class="step"><div class="infobox">' +
     '<div class="rows2">' +
-      (r.orderNo ? '<div><span>訂單編號</span><span class="no">' +
+      (r.orderNo ? '<div><span>' + (r.addonOf ? '加單編號' : '訂單編號') + '</span><span class="no">' +
                    esc(r.orderNo) + '</span></div>' : '') +
+      (r.addonOf ? '<div><span>原訂單</span><span class="no">' + esc(r.addonOf) + '</span></div>' : '') +
       '<div><span>填單時間</span><span>' + esc(when) + '</span></div>' +
       (r.summary ? '<div><span>訂購內容</span><span>' + esc(r.summary) + '</span></div>' : '') +
       (r.extras || []).map(function (x) {
@@ -3168,7 +3227,8 @@ function submitOrder_() {
     sum: t.sum,
     pay: t.pay,
     summary: itemsSummary(items),
-    extras: extras
+    extras: extras,
+    addonOf: addon ? addon.orderNo : ''
   };
 
   var payload = {
@@ -3184,7 +3244,8 @@ function submitOrder_() {
     deposit: t.dep,
     
     
-    friendFlag: friendState
+    friendFlag: friendState,
+    addon: addon ? addon.orderNo : undefined
   };
 
   
@@ -3243,10 +3304,12 @@ function submitOrder_() {
 
     fetch(SUBMIT_URL + '?action=campaignCheckOrdered&lineUid=' +
           encodeURIComponent((me && me.uid) || '') +
-          '&campaign=' + encodeURIComponent(CODE))
+          '&campaign=' + encodeURIComponent(CODE) +
+          (addon ? '&exclude=' + encodeURIComponent(addon.nos.join(',')) : ''))
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res && res.ordered && !res.adminOnly) {
+          addon = null;
           
           if (lastOrder) lastOrder.orderNo = res.orderNo || '';
           clearCart();
@@ -3337,6 +3400,7 @@ function submitOrder_() {
                     d.lap ? JSON.stringify(d.lap) : '');
         if (lastOrder) {
           lastOrder.orderNo = d.orderNo || '';
+          addon = null;
           lastOrder.ms = ms;
           lastOrder.lap = d.lap || null;
         }
