@@ -1574,7 +1574,7 @@
       if(!groups.length){ w.style.display = 'none'; return; }
       w.style.display = 'block';
       const fmt = (iso) => { const d = new Date(iso); if(isNaN(d)) return ''; const t = new Date(d.getTime() + 8*3600000); const p = n => (n<10?'0':'')+n; return (t.getUTCMonth()+1)+'/'+t.getUTCDate()+' '+p(t.getUTCHours())+':'+p(t.getUTCMinutes()); };
-      const tag = (st) => ({ '登記中':'<span class="tg reg">登記中</span>', '待確認':'<span class="tg cf">已成團・待確認</span>', '已確認':'<span class="tg ok">已確認</span>', '已作廢':'<span class="tg no">已作廢</span>' })[st] || ('<span class="tg reg">'+escHTML(st)+'</span>');
+      const tag = (st) => ({ '登記中':'<span class="tg reg">登記中</span>', '待確認':'<span class="tg cf">已成團・待確認</span>', '已確認':'<span class="tg ok">已確認</span>', '已作廢':'<span class="tg no">已作廢</span>', '未成團':'<span class="tg no">未成團</span>' })[st] || ('<span class="tg reg">'+escHTML(st)+'</span>');
       const lab = (x) => escHTML(x.product) + (x.color ? ' ' + escHTML(x.color) : '') + (x.size ? ' ' + escHTML(x.size) : '');
       let pend = 0;
       groups.forEach(g => g.items.forEach(x => { if(x.state === '待確認') pend++; }));
@@ -1586,7 +1586,7 @@
         g.items.forEach(x => { if(x.state === '待確認' && x.formal){ const k = x.formal.pub || x.formal.name; (fm[k] = fm[k] || { f: x.formal, n: 0 }).n++; } });
         return '<div class="svg-card"><div class="hd"><b>' + escHTML(g.name || '意願調查') + '</b><span class="st">' +
           (g.pub ? '收登記中' + (g.due ? '・至 ' + fmt(g.due) : '') : '已停止登記') + '</span></div>' +
-          g.items.map(x => '<div class="r' + (x.state === '已作廢' ? ' no' : '') + '"><span>' + lab(x) + ' × ' + x.qty + '</span>' + tag(x.state) + '</div>').join('') +
+          g.items.map(x => '<div class="r' + (x.state === '已作廢' || x.state === '未成團' ? ' no' : '') + '"><span>' + lab(x) + ' × ' + x.qty + '</span>' + tag(x.state) + '</div>').join('') +
           Object.keys(fm).map(k => { const f = fm[k].f;
             return f.pub
               ? '<a class="cfm" href="/o/' + encodeURIComponent(f.pub) + '">已成團：<b>' + escHTML(f.name) + '</b>' + (f.due ? '，請在 ' + fmt(f.due) + ' 前' : '，請') + '到正式團確認並付款 <i class="bi bi-chevron-right"></i></a>'
