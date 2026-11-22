@@ -754,7 +754,7 @@ function svmAdded() {
   return n;
 }
 function svmTag(st) {
-  var t = { '登記中': ['reg', '登記中'], '待確認': ['cf', '已成團・請到正式團確認'], '已確認': ['ok', '已成團・已確認'], '已作廢': ['no', '已作廢'] }[st] || ['reg', st];
+  var t = { '登記中': ['reg', '登記中'], '待確認': ['cf', '已成團・請到正式團確認'], '已確認': ['ok', '已成團・已確認'], '已作廢': ['no', '已作廢'], '未成團': ['no', '未成團'] }[st] || ['reg', st];
   return '<span class="tag ' + t[0] + '">' + esc(t[1]) + '</span>';
 }
 function svmBar() {
@@ -2195,7 +2195,7 @@ function view1() {
         
         if (isOff(p, cname, s)) {
           offN++;
-          h += soldRow(esc(s), mine);
+          h += soldRow(esc(s), mine, p, cname);
           return;
         }
         h += (p.bundle ? bundleRow : stepRow)(k, esc(s), priceOf(pi, si, s), q, skuFull(p, k), closed, pi, varies, mine);
@@ -2220,7 +2220,7 @@ function view1() {
       h += '<h3>' + (p.bundle ? '已選' : '數量') + '</h3>';
       
       if (isOff(p, cname, '-')) {
-        h += soldRow(esc(cname || '數量'), mine0) +
+        h += soldRow(esc(cname || '數量'), mine0, p, cname) +
              '<div class="sold-note">' + soldNote(p, cname, true) + '</div>';
       } else {
         if (lockQty) h += '<div class="qty-off">';
@@ -2276,6 +2276,11 @@ function view1() {
 var SOLD_NOTE = '官方目前已售完，若有補貨會再開放';
 
 
+
+function svFailOf(p, color) {
+  var fs = (p && p.fail) || [];
+  return fs.indexOf('*') >= 0 || fs.indexOf(color || '') >= 0;
+}
 function svFormalOf(p, color) {
   var fs = (p && p.formal) || [];
   return fs.filter(function (x) { return (x.c || []).indexOf(color) >= 0; })[0] ||
@@ -2283,6 +2288,7 @@ function svFormalOf(p, color) {
 }
 function soldNote(p, color, html) {
   if (!SV) return SOLD_NOTE;
+  if (svFailOf(p, color)) return '這次未成團，停止登記。登記過的人不會收取任何費用';
   var f = svFormalOf(p, color || '');
   if (!f) return '已正式成團，停止登記。登記過的人請看 LINE 通知；沒登記到的人請看官方 LINE 公告的正式團連結';
   if (!html) return '已正式成團，請到正式團「' + f.name + '」下單' + (f.open ? '' : '（正式團已截止）');
@@ -2293,12 +2299,12 @@ function soldNote(p, color, html) {
 
 
 
-function soldRow(label, mine) {
+function soldRow(label, mine, p, color) {
   return '<div class="srow out">' +
     '<span class="sl">' + label +
     (mine ? '<span class="mine">' + (SV ? '已登記 ' : '已訂 ') + mine + '</span>' : '') +
     '</span>' +
-    '<span class="sold">' + (SV ? '已正式成團' : '官方已售完') + '</span></div>';
+    '<span class="sold">' + (SV ? (svFailOf(p, color) ? '未成團' : '已正式成團') : '官方已售完') + '</span></div>';
 }
 
 
