@@ -642,6 +642,56 @@ var survey = null, svDone = false, svJumped = false;
 
 
 var SV = false, svm = null, svmFailed = false, svmDone = false, svmLast = null;
+
+var svmExtras = '';
+function svAskPrefill() {
+  if (!svmExtras) return;
+  var prev = {};
+  svmExtras.split('\n').forEach(function (l) { var i = l.indexOf('：'); if (i > 0) prev[l.slice(0, i)] = l.slice(i + 1); });
+  askFields().forEach(function (f) { if (askVal[f.label] == null && prev[f.label] != null) askVal[f.label] = prev[f.label]; });
+}
+ 
+function svAskNow() {
+  var extras = [], miss = [];
+  askFields().forEach(function (f) {
+    var v = askClean(askVal[f.label]);
+    if (f.type === 'select' && v && (f.options || []).indexOf(askVal[f.label]) < 0) v = '';
+    if (!v) { if (f.required) miss.push(f.label); return; }
+    extras.push({ label: f.label, value: v });
+  });
+  return { extras: extras, miss: miss, text: extras.map(function (x) { return x.label + '：' + x.value; }).join('\n') };
+}
+function svAnsChanged() { return askFields().length > 0 && svAskNow().text !== svmExtras; }
+function svAskBox() {
+  var asks = askFields();
+  if (!asks.length) return '';
+  var h = '<div class="idbox ask"><h4>請協助回答以下問題</h4>';
+  asks.forEach(function (f, i) {
+    var v = askVal[f.label] || '';
+    h += '<div class="fld q"><div class="qt">' + esc(f.label) +
+      (f.required ? '<span class="req">必填</span>' : '<span class="opt">選填</span>') + '</div>';
+    if (f.type === 'select') {
+      h += '<select id="fAsk' + i + '" onchange="setAsk(' + i + ',this.value);svAskTouched()"><option value="">請選擇</option>' +
+        (f.options || []).map(function (o) { return '<option value="' + esc(o) + '"' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
+    } else {
+      h += '<input id="fAsk' + i + '" maxlength="200" value="' + esc(v) + '" placeholder="' + esc(f.hint || '請輸入') + '" oninput="setAsk(' + i + ',this.value);svAskTouched()">';
+    }
+    h += '</div>';
+  });
+  h += '<div class="foot">' + (svmExtras ? '已帶入你上次填的，要改直接修改。' : '') + '每次加登記都可以修改，以最後一次填的為準</div></div>';
+  return h;
+}
+
+function svAskTouched() {
+  if (step !== 2) return;
+  var b = document.querySelectorAll('.bar button'), sb = b.length ? b[b.length - 1] : null;
+  if (!sb || sb.textContent !== '送出登記') return;
+  if (svmAdded() > 0) return;
+  var cfs = (C.confirms || []).filter(Boolean);
+  sb.disabled = !(svAnsChanged() && cfs.every(function (x) { return !!confirmAt[x]; }) && (!C.notice || agreed));
+  var t = document.querySelector('.bar .t');
+  if (t && svAnsChanged()) t.innerHTML = '只更新回答<b>　</b>';
+}
 var SV_EST = '金額非正式，若可成團，以正式價格為準';
 function svMap() {
   if (!survey || !C || !C.products) return [];
@@ -846,6 +896,7 @@ function svView2() {
     return h;
   }
   h += svmIdBox();
+  h += svAskBox();
   var cfs = (C.confirms || []).filter(Boolean);
   if (cfs.length) {
     var left = cfs.filter(function (x) { return !confirmAt[x]; }).length;
@@ -865,9 +916,10 @@ function svView2() {
   }
   h += '</div>';
   var ready = !meLoading && svm != null && !svmFailed;
-  var ok = ready && add > 0 && cfs.every(function (x) { return !!confirmAt[x]; }) && (!C.notice || agreed) && !isClosed() && !notStarted();
+  var ansOnly = add === 0 && svAnsChanged();
+  var ok = ready && (add > 0 || ansOnly) && cfs.every(function (x) { return !!confirmAt[x]; }) && (!C.notice || agreed) && !isClosed() && !notStarted();
   h += '<div class="bar"><button class="ghost" onclick="go(1)">上一步</button>' +
-    '<div class="t">這次加 ' + add + ' 件<b>預估 NT$' + t.sum.toLocaleString() + '</b></div>' +
+    (ansOnly ? '<div class="t">只更新回答<b>　</b></div>' : '<div class="t">這次加 ' + add + ' 件<b>預估 NT$' + t.sum.toLocaleString() + '</b></div>') +
     '<button' + (ok ? '' : ' disabled') + ' onclick="submitOrder()">' +
     (isClosed() ? '已截止' : (notStarted() ? '預覽中・尚未開放' : (meLoading || svm == null ? '讀取中…' : '送出登記'))) + '</button></div>';
   return h;
@@ -883,7 +935,8 @@ function svView3() {
   }
   h += '<div class="step"><div class="infobox"><div class="rows2">' +
     '<div><span>登記時間</span><span>' + esc(fmtWhen(r.at) || '') + '</span></div>' +
-    '<div><span>這次加登記</span><span>' + (r.added || []).map(function (x) { return esc(x); }).join('<br>') + '</span></div>' +
+    (r.ansOnly ? '<div><span>這次</span><span>更新了回答</span></div>'
+      : '<div><span>這次加登記</span><span>' + (r.added || []).map(function (x) { return esc(x); }).join('<br>') + '</span></div>') +
     '<div><span>你的登記</span><span>' + (svm || []).filter(function (x) { return x.state === '登記中'; }).map(function (x) {
       return esc(x.product) + (x.color ? ' ' + esc(x.color) : '') + (x.size ? ' ' + esc(x.size) : '') + ' × ' + x.qty;
     }).join('<br>') + '</span></div>' +
@@ -920,10 +973,12 @@ function svSubmit() {
   
   var lost = Object.keys(m).filter(function (k) { return (cart[k] || 0) < m[k]; });
   if (lost.length) { alert('登記可以新增需求數量，若欲減少請聯繫官方 LINE。'); svmDone = false; svmPrefill(); step = 1; draw(true); return; }
-  if (!added.length) { alert('這次沒有增加任何數量。'); return; }
+  var ask = svAskNow();
+  if (ask.miss.length) { alert('請填寫：' + ask.miss.join('、')); return; }
+  if (!added.length && !svAnsChanged()) { alert('這次沒有增加任何數量。'); return; }
   var payload = { campaign: C.id, lineUid: uid, name: name, phone: phone, email: mail, last5: '', survey: true,
     agreedAt: new Date().toISOString(), confirms: cfs.map(function (x) { return { text: x, at: confirmAt[x] || '' }; }),
-    items: items, friendFlag: friendState };
+    items: items, friendFlag: friendState, extras: ask.extras };
   var btns = document.querySelectorAll('.bar button');
   try { btns.forEach(function (b) { b.disabled = true; }); } catch (e) {}
   var sendBtn = btns.length ? btns[btns.length - 1] : null;
@@ -941,7 +996,8 @@ function svSubmit() {
         
         var keep = (svm || []).filter(function (x) { return x.state !== '登記中'; });
         svm = keep.concat(items.map(function (x) { return { product: x.product, color: x.color, size: x.size, qty: x.qty, state: '登記中' }; }));
-        svmLast = { at: new Date().toISOString(), added: added };
+        svmLast = { at: new Date().toISOString(), added: added, ansOnly: !added.length };
+        if (askFields().length) svmExtras = ask.text;
         
         if (!me.bound) { me.bound = true; me.name = name; me.phone = phone; me.email = mail; try { sessionStorage.setItem('we_me', JSON.stringify(me)); } catch (e) {} }
         clearCart();
@@ -1751,7 +1807,7 @@ function boot(d) {
         survey = (d.survey && d.survey.items && d.survey.items.length) ? d.survey : null;
         if (d.me && d.me.last5) me.last5 = d.me.last5;
         
-        if (d.mine) { svm = d.mine.items || []; svmFailed = !!d.mine.failed; svmDone = false; }
+        if (d.mine) { svm = d.mine.items || []; svmFailed = !!d.mine.failed; svmDone = false; svmExtras = d.mine.extras || ''; svAskPrefill(); }
         else if (SV) svmFailed = true;
         
         
