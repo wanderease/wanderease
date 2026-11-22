@@ -2017,8 +2017,10 @@ function itemsSummary(items) {
 function orderedMap() {
   var m = {};
   if (!ordered || !ordered.items) return m;
+  
   ordered.items.forEach(function (it) {
-    m[(it.color || '') + '|' + (it.size || '')] = Number(it.qty) || 0;
+    var key = (it.product || '') + '|' + (it.color || '') + '|' + (it.size || '');
+    m[key] = (m[key] || 0) + (Number(it.qty) || 0);
   });
   return m;
 }
@@ -2245,7 +2247,7 @@ function view1() {
       var offN = 0;
       avail.forEach(function (s) {
         var k = pi + '|' + si + '|' + s;
-        var mine = SV ? svmMin(k) : (addon ? addonPrior(pi, cname, s) : (om[cname + '|' + s] || 0));
+        var mine = SV ? svmMin(k) : (addon ? addonPrior(pi, cname, s) : (om[p.name + '|' + cname + '|' + s] || 0));
         var q = (SV || addon) ? (cart[k] || 0) : (mine || cart[k] || 0);
         
         
@@ -2273,7 +2275,7 @@ function view1() {
       }
     } else {
       var k0 = pi + '|' + si + '|-';
-      var mine0 = SV ? svmMin(k0) : (addon ? addonPrior(pi, cname, '-') : (om[cname + '|'] || 0));
+      var mine0 = SV ? svmMin(k0) : (addon ? addonPrior(pi, cname, '-') : (om[p.name + '|' + cname + '|'] || 0));
       var q0 = (SV || addon) ? (cart[k0] || 0) : (mine0 || cart[k0] || 0);
       h += '<h3>' + (p.bundle ? '已選' : '數量') + '</h3>';
       
