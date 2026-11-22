@@ -357,6 +357,8 @@ h3{font-size:12.5px;color:var(--mute);font-weight:700;margin:15px 0 7px}
  
 .pay .red{color:#c0392b;font-weight:800}
  
+.pay .nomemo{font-size:12px;color:#c0392b;font-weight:700;margin-top:8px;text-align:right}
+ 
 .itemlines{line-height:1.7}
 .itemlines i{display:block;font-style:normal}
 .rows2 .amt{font-weight:800;color:#42513a}
@@ -2277,6 +2279,7 @@ var SOLD_NOTE = '官方目前已售完，若有補貨會再開放';
 
 
 
+var NOMEMO = '<div class="nomemo">⚠️ 匯款時請不要寫備註訊息，會對不到後五碼</div>';
 function svFailOf(p, color) {
   var fs = (p && p.fail) || [];
   return fs.indexOf('*') >= 0 || fs.indexOf(color || '') >= 0;
@@ -2397,7 +2400,7 @@ function view2() {
       h += '<div class="pay"><h4>請匯款至以下帳戶</h4>' +
         '<div class="r"><span>銀行</span><span>' + esc(payInfo.bank || '—') + '</span></div>' +
         '<div class="r" style="margin-top:6px"><span></span>' +
-        '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div></div>';
+        '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>' + NOMEMO + '</div>';
 
     } else if (!signedIn) {
       
@@ -2629,7 +2632,7 @@ function view3() {
         '<span class="acc">' + esc(payInfo.acc || '—') + '</span></div>' +
         '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;padding-top:10px;' +
         'font-weight:800"><span>應匯金額</span><span class="red">NT$' +
-        (r.pay || 0).toLocaleString() + '</span></div></div>';
+        (r.pay || 0).toLocaleString() + '</span></div>' + NOMEMO + '</div>';
     } else {
       
       
@@ -2642,7 +2645,7 @@ function view3() {
         '<div class="r"><span>請至會員中心查看匯款帳戶</span></div>' +
         '<div class="r" style="border-top:1px solid #cfdbcb;margin-top:10px;' +
         'padding-top:10px;font-weight:800"><span>應匯金額</span>' +
-        '<span class="red">NT$' + (r.pay || 0).toLocaleString() + '</span></div></div>';
+        '<span class="red">NT$' + (r.pay || 0).toLocaleString() + '</span></div>' + NOMEMO + '</div>';
     }
   }
   h += '</div>';
