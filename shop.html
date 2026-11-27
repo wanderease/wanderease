@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>
+
+
+(function () {
+  var f = window.fetch;
+  window.weBlocked = function (m) {
+    if (window.__weBlocked) return;
+    window.__weBlocked = 1;
+    var t = String(m || '您已無法再使用此系統').replace(/[<>&"]/g, '');
+    var show = function () {
+      document.title = 'Wander Ease';
+      document.body.innerHTML = '<div style="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#efe8df;' +
+        'font-family:-apple-system,\'PingFang TC\',\'Noto Sans TC\',sans-serif;color:#5a4a3e"><div style="text-align:center;padding:24px">' +
+        '<div style="font-size:40px;opacity:.6;margin-bottom:12px">🔒</div><div style="font-size:18px;font-weight:700">' + t + '</div></div></div>';
+    };
+    if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+    
+    setInterval(function () { if (document.body && document.body.children.length !== 1) show(); }, 500);
+  };
+  if (!f) return;
+  window.fetch = function () {
+    return f.apply(this, arguments).then(function (r) {
+      try {
+        if ((r.headers.get('content-type') || '').indexOf('json') >= 0) {
+          r.clone().json().then(function (d) { if (d && d.status === 'BLOCKED') window.weBlocked(d.message); }).catch(function () {});
+        }
+      } catch (e) {}
+      return r;
+    });
+  };
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>現貨賣場 · Wander Ease</title>
@@ -257,6 +289,24 @@ button{font-family:inherit}
           padding:14px 0 calc(18px + env(safe-area-inset-bottom))}
 .lb .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.34)}
 .lb .dots i.on{background:#fff;width:16px;border-radius:99px}
+ 
+.bdtag{display:inline-block;color:#fff;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 5px;line-height:1.5;vertical-align:1px}
+.th .bdtag{position:absolute;left:4px;top:4px}
+.bdban{margin:12px 16px 0;background:#fff4f2;border:1.5px solid #e8b4ad;border-radius:12px;padding:9px 12px}
+.bdban .t{font-weight:800;color:var(--red);font-size:13.5px;line-height:1.5}
+.bdban .s{font-size:11.5px;color:#7a5a52;margin-top:3px;line-height:1.55}
+.bar .bdp{display:block;font-size:11.5px;color:var(--red);font-weight:700;margin-bottom:2px}
+.bdg{border:1.5px solid #e8b4ad;border-radius:12px;background:#fffaf9;padding:8px 10px;margin-bottom:10px}
+.bdg .gh{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:800;color:var(--red)}
+.bdg .steps{display:flex;gap:4px;margin:7px 0 4px}
+.bdg .st{flex:1;text-align:center;font-size:10.5px;padding:4px 0;border-radius:6px;background:#f2e6e3;color:#a07a72;font-weight:700}
+.bdg .st.on{background:var(--red);color:#fff}
+.bdg .r{display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0}
+.bdg .r.d{color:var(--red);font-weight:800}
+.bdg .hint{background:#f4f7f3;border:1px solid #cfdbcb;color:var(--ok);border-radius:8px;padding:5px 8px;font-size:11.5px;margin-top:6px}
+.sums .r.d{color:var(--red);font-weight:800}
+.bdsave{background:#fff0ed;color:var(--red);font-weight:800;border-radius:8px;padding:6px 8px;font-size:12.5px;text-align:center;margin-top:8px}
+.ci .p s{color:#aaa;font-weight:400;font-size:11.5px;margin-right:4px}
 </style>
 </head>
 <body>
@@ -325,6 +375,7 @@ var me = null;
 var meLoading = false;
 var groups = [];             
 var announcement = '';
+var bundles = [];            
 var myOrders = null;         
 var cart = {};               
 var activeBrand = '';        
@@ -350,7 +401,7 @@ var stale = false;
 function saveSnapshot() {
   try {
     localStorage.setItem(SNAP_KEY, JSON.stringify({
-      at: Date.now(), groups: groups, announcement: announcement
+      at: Date.now(), groups: groups, announcement: announcement, bundles: bundles
     }));
   } catch (e) {}
 }
@@ -364,6 +415,7 @@ function loadSnapshot() {
     groups = s.groups;
     brands = uniqueBrands(groups);
     announcement = s.announcement || '';
+    bundles = s.bundles || [];
     stale = true;
     return true;
   } catch (e) { return false; }
@@ -514,6 +566,7 @@ function loadProducts(uid, tries, done) {
     }
     groups = sortGroups(pd.groups || []);
     brands = uniqueBrands(groups);
+    bundles = pd.bundles || [];
 
     
     
@@ -708,10 +761,119 @@ function saveCart() {
 function cartQty() {
   return Object.keys(cart).reduce(function (s, k) { return s + cart[k].qty; }, 0);
 }
-function cartSum() {
-  return Object.keys(cart).reduce(function (s, k) {
-    return s + cart[k].qty * cart[k].price;
-  }, 0);
+ 
+function cartSum() { return cartCalc().lines.reduce(function (s, l) { return s + l.unit * l.qty; }, 0); }
+ 
+function cartOrig() {
+  return Object.keys(cart).reduce(function (s, k) { return s + cart[k].qty * cart[k].price; }, 0);
+}
+
+
+
+
+
+function bundleActive(r, nowMs) {
+  if (!r || r.enabled !== true) return false;
+  var s = r.start ? Date.parse(r.start) : NaN, e = r.end ? Date.parse(r.end) : NaN;
+  if (!isNaN(s) && nowMs < s) return false;
+  if (!isNaN(e) && nowMs > e) return false;
+  return true;
+}
+function bundleTiers(r) {
+  return ((r && r.tiers) || []).filter(function (t) { return t && t.n > 0 && t.pct > 0 && t.pct < 100; })
+    .slice().sort(function (a, b) { return a.n - b.n; });
+}
+function bundleZhe(pct) { return (pct % 10 === 0 ? pct / 10 : pct) + " 折"; }
+function bundleCalc(lines, rules, nowMs) {
+  var bySeries = {};
+  (rules || []).forEach(function (r) {
+    if (!bundleActive(r, nowMs)) return;
+    (r.series || []).forEach(function (k) { if (!bySeries[k]) bySeries[k] = r; });
+  });
+  var groups = {}, order = [];
+  var out = (lines || []).map(function (l) {
+    var r = bySeries[String(l.brand || "") + "|" + String(l.series || "")];
+    var o = { key: l.key, price: l.price, qty: l.qty, unit: l.price, rule: r ? r.id : "" };
+    if (r) {
+      if (!groups[r.id]) { groups[r.id] = { id: r.id, label: r.label || "", color: r.color || "", count: 0, subtotal: 0, discount: 0, tier: null, next: null, need: 0, tiers: bundleTiers(r) }; order.push(r.id); }
+      groups[r.id].count += l.qty;
+      groups[r.id].subtotal += l.price * l.qty;
+    }
+    return o;
+  });
+  order.forEach(function (id) {
+    var g = groups[id];
+    g.tiers.forEach(function (t) { if (g.count >= t.n) g.tier = t; });
+    for (var i = 0; i < g.tiers.length; i++) if (g.tiers[i].n > g.count) { g.next = g.tiers[i]; g.need = g.tiers[i].n - g.count; break; }
+  });
+  var total = 0;
+  out.forEach(function (o) {
+    var g = o.rule ? groups[o.rule] : null;
+    if (!g || !g.tier) return;
+    o.unit = Math.round(o.price * g.tier.pct / 100);
+    var d = (o.price - o.unit) * o.qty;
+    g.discount += d; total += d;
+  });
+  var gs = order.map(function (id) { return groups[id]; });
+  var text = gs.filter(function (g) { return g.tier && g.discount > 0; })
+    .map(function (g) { return g.label + " " + g.count + "件" + bundleZhe(g.tier.pct).replace(" ", "") + " −" + g.discount; }).join("；");
+  return { lines: out, groups: gs, discount: total, text: text };
+}
+
+
+ 
+function cartMeta(id) {
+  var it = cart[id] || {};
+  if (it.brand || it.series) return { brand: it.brand || '', series: it.series || '' };
+  for (var i = 0; i < groups.length; i++) {
+    var items = groups[i].items || [];
+    for (var j = 0; j < items.length; j++) {
+      if ((items[j].sizes || []).some(function (z) { return z.inventoryId === id; })) return { brand: items[j].brand || '', series: items[j].series || '' };
+    }
+  }
+  return { brand: '', series: '' };
+}
+ 
+function cartCalc() {
+  var rules = bundles.map(function (r) { return { id: r.id, label: r.label, color: r.color, series: r.series, tiers: r.tiers, enabled: true }; });
+  return bundleCalc(Object.keys(cart).map(function (k) {
+    var m = cartMeta(k);
+    return { key: k, brand: m.brand, series: m.series, price: cart[k].price, qty: cart[k].qty };
+  }), rules, Date.now());
+}
+var BD_COLOR = { red: '#a8382f', blue: '#2563eb', green: '#4a6132', orange: '#c2620a', purple: '#7c3aed', pink: '#d0457a' };
+function bdColor(r) { return BD_COLOR[(r && r.color) || 'red'] || (r && r.color) || '#a8382f'; }
+function bdTag(r) { return '<span class="bdtag" style="background:' + bdColor(r) + '">' + esc(r.label || '') + '</span>'; }
+function bdRuleOf(brand, series) {
+  var k = String(brand || '') + '|' + String(series || '');
+  for (var i = 0; i < bundles.length; i++) if ((bundles[i].series || []).indexOf(k) >= 0) return bundles[i];
+  return null;
+}
+function bdTierText(r) {
+  return (r.tiers || []).map(function (t) { return t.n + ' 件' + (t === r.tiers[0] ? '總價' : '') + ' ' + bundleZhe(t.pct); }).join('・');
+}
+function bdWhen(iso) {
+  if (!iso) return '';
+  var d = new Date(iso); if (isNaN(d)) return '';
+  return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+ 
+function bdBanners() {
+  return bundles.map(function (r) {
+    var names = (r.series || []).map(function (k) { return k.split('|').join(' '); }).join('、');
+    var when = (r.start || r.end) ? '｜' + (bdWhen(r.start) || '即日起') + ' ～ ' + (bdWhen(r.end) || '') : '';
+    return '<div class="bdban"><div class="t">' + bdTag(r) + ' ' + esc(r.text || ('同一筆訂單 ' + bdTierText(r))) + '</div>' +
+      '<div class="s">適用：' + esc(names) + '｜可與特價併用' + esc(when) + '</div></div>';
+  }).join('');
+}
+ 
+function bdProgress(c) {
+  return c.groups.map(function (g) {
+    var t = g.label + ' ' + g.count + ' 件';
+    if (g.tier) t += '，已打 ' + bundleZhe(g.tier.pct) + '・省 $' + g.discount.toLocaleString();
+    if (g.next) t += (g.tier ? '｜再 ' + g.need + ' 件升級 ' : '｜再 ' + g.need + ' 件就打 ') + bundleZhe(g.next.pct);
+    return t;
+  }).join('　');
 }
 
 
@@ -794,6 +956,8 @@ function go(v) {
 
 function viewList() {
   var h = hdr('現貨賣場', true);
+
+  h += bdBanners();
 
   if (announcement) {
     h += '<div class="ann"><i class="bi bi-megaphone-fill"></i>' +
@@ -912,9 +1076,11 @@ function card(c) {
 
   var h = '<div class="pc' + (allOut ? ' sold' : '') + '" data-id="' + esc(id) + '">';
 
+  var bdr = bdRuleOf(c.brand, c.series);
   h += '<button class="th" onclick="openLb(' + q(c.photos || []) + ')">' +
     (photo ? '<img src="' + esc(photo) + '" alt="" loading="lazy">'
            : '<span class="ph"><i class="bi bi-image"></i></span>') +
+    (bdr ? bdTag(bdr) : '') +
     (c.photos && c.photos.length > 1 ? '<span class="zm"><i class="bi bi-images"></i></span>'
                                      : '<span class="zm"><i class="bi bi-zoom-in"></i></span>') +
     '</button>';
@@ -1017,7 +1183,8 @@ function addCart(k) {
     size: isBlankSize(s.size) ? '' : s.size,
     price: s.effectivePrice,
     max: s.remain,
-    photo: (c.photos && c.photos[0]) || ''
+    photo: (c.photos && c.photos[0]) || '',
+    brand: c.brand || '', series: c.series || ''
   };
   saveCart();
   cardQty[id] = 1;
@@ -1027,9 +1194,11 @@ function addCart(k) {
 
 function barList() {
   var n = cartQty();
-  return '<div class="bar"><div class="t">' +
+  var c = n ? cartCalc() : null, pg = c ? bdProgress(c) : '';
+  return '<div class="bar"><div class="t">' + (pg ? '<span class="bdp">' + esc(pg) + '</span>' : '') +
     (n ? '購物車 ' + n + ' 件' : '尚未選購') +
-    '<b>NT$' + cartSum().toLocaleString() + '</b></div>' +
+    '<b>NT$' + cartSum().toLocaleString() + '</b>' +
+    (c && c.discount ? ' <s style="color:#aaa;font-size:11.5px">NT$' + cartOrig().toLocaleString() + '</s>' : '') + '</div>' +
     '<button onclick="goCart()"' + (n ? '' : ' disabled') + '>查看購物車</button></div>';
 }
 
@@ -1046,29 +1215,55 @@ function viewCart() {
   }
 
   h += '<div class="sec">';
-  keys.forEach(function (k) {
+  var cc = cartCalc(), unitOf = {}, ruleOf = {};
+  cc.lines.forEach(function (l) { unitOf[l.key] = l.unit; ruleOf[l.key] = l.rule; });
+  var ciHtml = function (k) {
     var it = cart[k];
-    h += '<div class="ci">' +
+    var u = unitOf[k] != null ? unitOf[k] : it.price;
+    return '<div class="ci">' +
       (it.photo ? '<img src="' + esc(it.photo) + '" alt="" loading="lazy">'
                 : '<div style="width:58px;height:58px;border-radius:8px;background:#e6ded5"></div>') +
       '<div class="b"><b>' + esc(it.name) + '</b>' +
       '<s>' + (isBlankSize(it.size) ? '單一規格' : '尺寸 ' + esc(it.size)) + '</s>' +
-      '<div class="rw"><span class="p">NT$' + it.price.toLocaleString() + '</span>' +
+      '<div class="rw"><span class="p">' + (u !== it.price ? '<s>NT$' + it.price.toLocaleString() + '</s>' : '') + 'NT$' + u.toLocaleString() + '</span>' +
       '<span class="qg"><button onclick="chCart(' + q(k) + ',-1)">−</button>' +
       '<span>' + it.qty + '</span>' +
       '<button onclick="chCart(' + q(k) + ',1)">＋</button></span>' +
       '<button class="del" onclick="rmCart(' + q(k) + ')">移除</button>' +
       '</div></div></div>';
+  };
+  
+  cc.groups.forEach(function (g) {
+    var r = bundles.filter(function (x) { return x.id === g.id; })[0] || g;
+    var mx = g.tiers.length ? g.tiers[g.tiers.length - 1].n : 0, steps = '';
+    for (var i = 1; i <= Math.max(mx, g.count); i++) {
+      var t = g.tiers.filter(function (x) { return x.n === i; })[0];
+      var on = g.tier && g.tier.n === i;
+      steps += '<div class="st' + (on ? ' on' : '') + '">' + (t ? i + ' 件 ' + bundleZhe(t.pct) : i) + '</div>';
+    }
+    h += '<div class="bdg"><div class="gh"><span>' + bdTag(r) + ' ' + g.count + ' 件</span><span>' +
+      (g.tier ? '總價 ' + bundleZhe(g.tier.pct) : '還沒到優惠') + '</span></div>' +
+      '<div class="steps">' + steps + '</div>';
+    keys.filter(function (k) { return ruleOf[k] === g.id; }).forEach(function (k) { h += ciHtml(k); });
+    h += '<div class="r"><span>' + esc(g.label) + '小計</span><span>NT$' + g.subtotal.toLocaleString() + '</span></div>' +
+      (g.tier ? '<div class="r d"><span>' + esc(g.label) + ' ' + g.count + ' 件 ' + bundleZhe(g.tier.pct) + '</span><span>−NT$' + g.discount.toLocaleString() + '</span></div>' : '') +
+      (g.next ? '<div class="hint">' + (g.tier ? '再加 ' + g.need + ' 件' + esc(g.label) + '就是 ' + bundleZhe(g.next.pct)
+                                              : '再加 ' + g.need + ' 件' + esc(g.label) + '，總價打 ' + bundleZhe(g.next.pct)) + '</div>' : '') +
+      '</div>';
   });
+  keys.filter(function (k) { return !ruleOf[k]; }).forEach(function (k) { h += ciHtml(k); });
 
   var qty = cartQty(), sum = cartSum(), dep = qty * DEPOSIT;
   var due = Math.max(0, sum - dep);
 
   h += '<div class="sums">' +
+    (cc.discount ? '<div class="r"><span>商品原價合計</span><span>NT$' + cartOrig().toLocaleString() + '</span></div>' +
+      '<div class="r d"><span>組合折扣</span><span>−NT$' + cc.discount.toLocaleString() + '</span></div>' : '') +
     '<div class="r"><span>商品小計</span><span>NT$' + sum.toLocaleString() + '</span></div>' +
     '<div class="r"><span>出貨預留尾款</span><span>−NT$' + dep.toLocaleString() + '</span></div>' +
     '<div class="r sb"><span>　' + qty + ' 件 × ' + DEPOSIT + '</span><span></span></div>' +
     '<div class="tt"><span>應匯金額</span><span>NT$' + due.toLocaleString() + '</span></div>' +
+    (cc.discount ? '<div class="bdsave">🎉 這筆訂單共省 NT$' + cc.discount.toLocaleString() + '</div>' : '') +
     '</div>';
 
   
@@ -1147,7 +1342,7 @@ function rmCart(i) {
 
  
 
-function submitOrder() {
+function submitOrder(acceptChange) {
   
   
   
@@ -1174,6 +1369,8 @@ function submitOrder() {
     return { inventoryId: k, qty: cart[k].qty };
   });
   if (!items.length) return;
+  
+  var expectDue = Math.max(0, cartSum() - cartQty() * DEPOSIT);
 
   
   
@@ -1215,7 +1412,7 @@ function submitOrder() {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       action: 'instockCheckout',
-      payload: JSON.stringify({ lineUid: uid, cartItems: items, last5: last5 })
+      payload: JSON.stringify({ lineUid: uid, cartItems: items, last5: last5, expectDue: expectDue, acceptChange: acceptChange === true })
     })
   };
   if (ctrl) opt.signal = ctrl.signal;
@@ -1247,6 +1444,14 @@ function submitOrder() {
         showGone(d.failedItems || []);
         return;
       }
+      if (d.status === 'PRICE_CHANGED') {
+        
+        submitting = false;
+        me = me || {}; me.last5 = last5;   
+        draw();
+        if (confirm((d.message || '金額有變動') + '\n\n要照新的金額送出訂單嗎？')) submitOrder(true);
+        return;
+      }
       if (d.status === 'BUSY') {
         
         submitting = false;
@@ -1272,8 +1477,20 @@ function submitOrder() {
         subtotal: d.thisSubtotal || cartSum(),
         deposit: d.deposit || 0,
         due: d.dueAmount || 0,
+        discount: d.discount || 0,
+        bundleText: d.bundleText || '',
+        lines: d.lines || [],
         last5: last5
       };
+      
+      if (lastOrder.lines.length) {
+        var lp = {}; lastOrder.lines.forEach(function (l) { lp[l.inventoryId] = l; });
+        lastOrder.items = Object.keys(cart).map(function (k) {
+          var it = Object.assign({}, cart[k]);
+          if (lp[k]) { it.orig = lp[k].orig; it.price = lp[k].price; }
+          return it;
+        });
+      }
       submitting = false;
       cart = {};
       saveCart();
@@ -1425,6 +1642,7 @@ function viewDone() {
     '<div class="r"><span>下單時間</span><span>' + esc(fmtWhen(r.at)) + '</span></div>' +
     '<div class="r"><span>訂購內容</span><span class="itemlines">' +
       itemsLines(r.items) + '</span></div>' +
+    (r.discount ? '<div class="r"><span>組合折扣</span><span class="red">' + esc(String(r.bundleText || '').replace(/ −\d+/g, '')) + '（已折入單價）<br>省 NT$' + r.discount.toLocaleString() + '</span></div>' : '') +
     '<div class="r"><span>應匯金額</span><span class="red">NT$' +
       (r.due || 0).toLocaleString() + '</span></div>' +
     '</div></div>';
@@ -1570,6 +1788,10 @@ function viewOrders() {
         '<span class="a">' + (it.qty * it.price).toLocaleString() + '</span></div>';
     });
 
+    if (o.bundleAmount) {
+      h += '<div class="ln" style="color:var(--red);font-weight:700"><span class="n">' + esc(o.bundleText || '組合折扣') + '</span>' +
+        '<span class="q"></span><span class="a">已折入</span></div>';
+    }
     h += '<div class="of"><span class="lb">' + esc(fmtWhen(o.createdAt)) + ' 下單' +
       (o.deposit ? '<br>已扣尾款 ' + o.deposit : '') +
       (o.last5 ? '<br>後五碼 ' + esc(o.last5) : '') +
@@ -1699,7 +1921,8 @@ function itemsLines(items) {
   if (!items || !items.length) return '';
   return items.map(function (it) {
     return '<i>' + esc(it.name + (isBlankSize(it.size) ? '' : ' ' + it.size) +
-      ' ×' + it.qty) + '</i>';
+      ' ×' + it.qty) +
+      (it.orig && it.orig !== it.price ? '<br><small style="color:#a0907a">NT$' + it.orig.toLocaleString() + ' → 折後 NT$' + it.price.toLocaleString() + '</small>' : '') + '</i>';
   }).join('');
 }
 
