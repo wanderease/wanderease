@@ -1,6 +1,38 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>
+
+
+(function () {
+  var f = window.fetch;
+  window.weBlocked = function (m) {
+    if (window.__weBlocked) return;
+    window.__weBlocked = 1;
+    var t = String(m || '您已無法再使用此系統').replace(/[<>&"]/g, '');
+    var show = function () {
+      document.title = 'Wander Ease';
+      document.body.innerHTML = '<div style="position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#efe8df;' +
+        'font-family:-apple-system,\'PingFang TC\',\'Noto Sans TC\',sans-serif;color:#5a4a3e"><div style="text-align:center;padding:24px">' +
+        '<div style="font-size:40px;opacity:.6;margin-bottom:12px">🔒</div><div style="font-size:18px;font-weight:700">' + t + '</div></div></div>';
+    };
+    if (document.body) show(); else document.addEventListener('DOMContentLoaded', show);
+    
+    setInterval(function () { if (document.body && document.body.children.length !== 1) show(); }, 500);
+  };
+  if (!f) return;
+  window.fetch = function () {
+    return f.apply(this, arguments).then(function (r) {
+      try {
+        if ((r.headers.get('content-type') || '').indexOf('json') >= 0) {
+          r.clone().json().then(function (d) { if (d && d.status === 'BLOCKED') window.weBlocked(d.message); }).catch(function () {});
+        }
+      } catch (e) {}
+      return r;
+    });
+  };
+})();
+</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <title>Wander Ease 會員中心</title>
@@ -1400,9 +1432,9 @@
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
             
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
-            db = `${shipBar}${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            db = `${shipBar}${groupsHtml}<div class="details-box shadow-sm mb-3"><div class="summary-row"><span>商品總計</span><span>$${o.itemsTotal}</span></div>${o.bundleAmount ? `<div class="summary-row" style="color:#a8382f;font-weight:700"><span>${escHTML(String(o.bundleText||'組合折扣').replace(/ −\d+/g,''))}（已折入）</span><span>省 $${o.bundleAmount}</span></div>` : ''}<div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           } else {
-            // 候補單（單一品牌）：顯示 flowNote
+            
             if (isWL) {
               if (o.waitlistFlowNote) {
                 ph = `<div class="waitlist-flow-note"><div class="wfn-title">📦 候補貨況&公告</div>${escHTML(o.waitlistFlowNote)}</div>`;
@@ -1533,7 +1565,7 @@
             const l5 = o.last5 ? `<span class="last5-value">${escHTML(o.last5)} ${eb}</span>` : `<span class="text-muted fst-italic fw-normal" style="font-size:13px;">尚未提供 ${eb}</span>`;
             
             const shipBar = o.allShipped ? `<div class="ship-complete-bar"><span>✅</span><span>已全數出貨完成</span></div>` : '';
-            db = `<div class="details-box shadow-sm mb-3">${shipBar}${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div><div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
+            db = `<div class="details-box shadow-sm mb-3">${shipBar}${ih}<div class="summary-divider"></div><div class="summary-row"><span>商品小計</span><span>$${o.itemsTotal}</span></div>${o.bundleAmount ? `<div class="summary-row" style="color:#a8382f;font-weight:700"><span>${escHTML(String(o.bundleText||'組合折扣').replace(/ −\d+/g,''))}（已折入）</span><span>省 $${o.bundleAmount}</span></div>` : ''}<div class="summary-row mb-3"><span>賣貨便金額</span><span>${sd}</span></div><div class="last5-row"><div>匯款後五碼</div>${l5}</div><div class="total-row"><span>應匯款金額</span><span class="total-price">$${o.due}</span></div></div>`;
           }
 
           
@@ -1559,7 +1591,7 @@
     
     
     
-    
+    // 🆕 2026-11-20 我的意願登記（Worker memberMain 的 surveyData）。只能看；加登記回意願調查團的頁面，減少請聯繫官方 LINE
     function renderSvFrame(sd, failed){
       const w = document.getElementById('svFrameWrap');
       if(!w) return;
